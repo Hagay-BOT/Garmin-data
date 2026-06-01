@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>דשבורד ריצות</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body class="bg-gray-100 text-gray-900 min-h-screen">
+
+  <div id="error-banner" class="hidden bg-red-100 border border-red-400 text-red-800 px-4 py-3 m-4 rounded-lg text-sm"></div>
+
+  <header class="bg-white shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-6">
+      <h1 class="text-2xl font-bold tracking-tight">דשבורד ריצות</h1>
+      <p id="last-updated" class="text-xs text-gray-400 mt-1"></p>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-8 space-y-8">
+
+    <!-- Stat cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-white rounded-2xl shadow-sm p-6 text-center">
+        <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">סה"כ ריצות</p>
+        <p id="stat-runs" class="text-4xl font-bold text-blue-600">—</p>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm p-6 text-center">
+        <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">סה"כ ק"מ</p>
+        <p id="stat-km" class="text-4xl font-bold text-emerald-600">—</p>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm p-6 text-center">
+        <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">קצב ממוצע</p>
+        <p id="stat-pace" class="text-4xl font-bold text-orange-500">—</p>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-white rounded-2xl shadow-sm p-5">
+        <h2 class="text-sm font-semibold text-gray-600 mb-4">קצב (דק׳/ק"מ)</h2>
+        <canvas id="chart-pace" height="200"></canvas>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm p-5">
+        <h2 class="text-sm font-semibold text-gray-600 mb-4">קדנס (צעדים/דקה)</h2>
+        <canvas id="chart-cadence" height="200"></canvas>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm p-5">
+        <h2 class="text-sm font-semibold text-gray-600 mb-4">Ground Contact Time (ms)</h2>
+        <canvas id="chart-gct" height="200"></canvas>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm p-5">
+        <h2 class="text-sm font-semibold text-gray-600 mb-4">מרחק (ק"מ)</h2>
+        <canvas id="chart-distance" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-100">
+        <h2 class="font-semibold">כל הריצות</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-right">
+          <thead class="bg-gray-50 text-gray-400 text-xs uppercase tracking-wide">
+            <tr>
+              <th class="px-4 py-3 font-medium">תאריך</th>
+              <th class="px-4 py-3 font-medium">מרחק</th>
+              <th class="px-4 py-3 font-medium">זמן</th>
+              <th class="px-4 py-3 font-medium">קצב</th>
+              <th class="px-4 py-3 font-medium">דופק ממוצע</th>
+              <th class="px-4 py-3 font-medium">דופק מקסימום</th>
+              <th class="px-4 py-3 font-medium">קדנס</th>
+              <th class="px-4 py-3 font-medium">GCT</th>
+            </tr>
+          </thead>
+          <tbody id="runs-table" class="divide-y divide-gray-50 text-gray-700"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    function fmtPace(sec) {
+      if (sec == null) return '—';
+      return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+    }
+
+    function fmtDuration(sec) {
+      if (sec == null || sec === 0) return '—';
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+      if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      return `${m}:${String(s).padStart(2, '0')}`;
+    }
+
+    function fmtDate(iso) {
+      if (!iso) return '—';
+      const [y, m, d] = iso.split('-');
+      return `${d}/${m}/${y}`;
+    }
+
+    function makeChart(id, labels, data, color, options = {}) {
+      const ctx = document.getElementById(id);
+      return new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            data,
+            borderColor: color,
+            backgroundColor: color + '18',
+            borderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            fill: true,
+            tension: 0.3,
+            spanGaps: false,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { maxTicksLimit: 8, font: { size: 11 } } },
+            y: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 11 } } },
+          },
+          ...options,
+        }
+      });
+    }
+
+    function buildDashboard(data) {
+      // last updated
+      if (data.last_updated) {
+        const d = new Date(data.last_updated);
+        document.getElementById('last-updated').textContent =
+          `עודכן: ${d.toLocaleDateString('he-IL')} ${d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}`;
+      }
+
+      const runs = data.runs || [];
+      const labels = runs.map(r => fmtDate(r.date));
+
+      // stat cards
+      document.getElementById('stat-runs').textContent = runs.length;
+      const totalKm = runs.reduce((s, r) => s + (r.distance_km || 0), 0);
+      document.getElementById('stat-km').textContent = totalKm.toFixed(1);
+      const paceRuns = runs.filter(r => r.pace_sec_per_km != null);
+      if (paceRuns.length > 0) {
+        const avgPace = Math.round(paceRuns.reduce((s, r) => s + r.pace_sec_per_km, 0) / paceRuns.length);
+        document.getElementById('stat-pace').textContent = fmtPace(avgPace);
+      }
+
+      // pace chart (Y reversed: lower = faster)
+      makeChart('chart-pace', labels,
+        runs.map(r => r.pace_sec_per_km ?? null),
+        '#f97316',
+        {
+          scales: {
+            x: { grid: { display: false }, ticks: { maxTicksLimit: 8, font: { size: 11 } } },
+            y: {
+              reverse: true,
+              grid: { color: '#f3f4f6' },
+              ticks: {
+                font: { size: 11 },
+                callback: v => fmtPace(v),
+              }
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => fmtPace(ctx.parsed.y) } }
+          }
+        }
+      );
+
+      makeChart('chart-cadence', labels,
+        runs.map(r => r.cadence_spm ?? null),
+        '#3b82f6'
+      );
+
+      makeChart('chart-gct', labels,
+        runs.map(r => r.gct_ms ?? null),
+        '#8b5cf6'
+      );
+
+      makeChart('chart-distance', labels,
+        runs.map(r => r.distance_km ?? null),
+        '#10b981'
+      );
+
+      // table — descending (newest first)
+      const tbody = document.getElementById('runs-table');
+      const sorted = [...runs].reverse();
+      tbody.innerHTML = sorted.map(r => `
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="px-4 py-3 font-medium">${fmtDate(r.date)}</td>
+          <td class="px-4 py-3">${r.distance_km != null ? r.distance_km + ' ק"מ' : '—'}</td>
+          <td class="px-4 py-3">${fmtDuration(r.duration_sec)}</td>
+          <td class="px-4 py-3">${fmtPace(r.pace_sec_per_km)}</td>
+          <td class="px-4 py-3">${r.avg_hr ?? '—'}</td>
+          <td class="px-4 py-3">${r.max_hr ?? '—'}</td>
+          <td class="px-4 py-3">${r.cadence_spm ?? '—'}</td>
+          <td class="px-4 py-3">${r.gct_ms != null ? r.gct_ms + ' ms' : '—'}</td>
+        </tr>
+      `).join('');
+    }
+
+    fetch('data.json')
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+      .then(buildDashboard)
+      .catch(err => {
+        const banner = document.getElementById('error-banner');
+        banner.textContent = `שגיאה בטעינת נתונים: ${err.message}`;
+        banner.classList.remove('hidden');
+      });
+  </script>
+
+</body>
+</html>

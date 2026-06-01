@@ -1,0 +1,135 @@
+{
+  "last_updated": "2026-06-01T19:29:33.743660+00:00",
+  "runs": [
+    {
+      "date": "2026-04-18",
+      "distance_km": 5.22,
+      "duration_sec": 1830,
+      "pace_sec_per_km": 351,
+      "avg_hr": 150.0,
+      "max_hr": 171.0,
+      "cadence_spm": 159.03125,
+      "gct_ms": null
+    },
+    {
+      "date": "2026-04-21",
+      "distance_km": 5.01,
+      "duration_sec": 1809,
+      "pace_sec_per_km": 361,
+      "avg_hr": 147.0,
+      "max_hr": 171.0,
+      "cadence_spm": 159.0625,
+      "gct_ms": null
+    },
+    {
+      "date": "2026-04-29",
+      "distance_km": 5.01,
+      "duration_sec": 1807,
+      "pace_sec_per_km": 361,
+      "avg_hr": 158.0,
+      "max_hr": 175.0,
+      "cadence_spm": 162.203125,
+      "gct_ms": null
+    },
+    {
+      "date": "2026-05-02",
+      "distance_km": 6.01,
+      "duration_sec": 2054,
+      "pace_sec_per_km": 342,
+      "avg_hr": 171.0,
+      "max_hr": 180.0,
+      "cadence_spm": 169.09375,
+      "gct_ms": null
+    },
+    {
+      "date": "2026-05-09",
+      "distance_km": 6.01,
+      "duration_sec": 2129,
+      "pace_sec_per_km": 354,
+      "avg_hr": 170.0,
+      "max_hr": 183.0,
+      "cadence_spm": 166.1875,
+      "gct_ms": null
+    },
+    {
+      "date": "2026-05-11",
+      "distance_km": 3.61,
+      "duration_sec": 1280,
+      "pace_sec_per_km": 355,
+      "avg_hr": 169.0,
+      "max_hr": 186.0,
+      "cadence_spm": 147.578125,
+      "gct_ms": null
+    },
+    {
+      "date": "2026-05-16",
+      "distance_km": 2.61,
+      "duration_sec": 921,
+      "pace_sec_per_km": 352,
+      "avg_hr": 143.0,
+      "max_hr": 161.0,
+      "cadence_spm": 167.390625,
+      "gct_ms": null
+    },
+    {
+      "date": "2026-05-16",
+      "distance_km": 3.91,
+      "duration_sec": 1384,
+      "pace_sec_per_km": 354,
+      "avg_hr": 149.0,
+      "max_hr": 170.0,
+      "cadence_spm": 167.578125,
+      "gct_ms": null
+    },
+    {
+      "date": "2026-05-18",
+      "distance_km": 6.46,
+      "duration_sec": 2994,
+      "pace_sec_per_km": 463,
+      "avg_hr": 162.0,
+      "max_hr": 200.0,
+      "cadence_spm": 121.84375,
+      "gct_ms": null
+    },
+    {
+      "date": "2026-05-23",
+      "distance_km": 8.15,
+      "duration_sec": 2763,
+      "pace_sec_per_km": 339,
+      "avg_hr": 147.0,
+      "max_hr": 177.0,
+      "cadence_spm": 167.140625,
+      "gct_ms": null
+    },
+    {
+      "date": "2026-05-25",
+      "distance_km": 6.9,
+      "duration_sec": 2437,
+      "pace_sec_per_km": 353,
+      "avg_hr": 154.0,
+      "max_hr": 201.0,
+      "cadence_spm": 133.84375,
+      "gct_ms": null
+    },
+    {
+      "date": "2026-05-30",
+      "distance_km": 7.0,
+      "duration_sec": 2579,
+      "pace_sec_per_km": 368,
+      "avg_hr": 156.0,
+      "max_hr": 176.0,
+      "cadence_spm": 162.21875,
+      "gct_ms": null
+    },
+    {
+      "date": "2026-06-01",
+      "distance_km": 4.01,
+      "duration_sec": 1541,
+      "pace_sec_per_km": 384,
+      "avg_hr": 145.0,
+      "max_hr": 165.0,
+      "cadence_spm": 160.296875,
+      "gct_ms": null
+    }
+  ]
+}
