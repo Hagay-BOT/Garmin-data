@@ -43,25 +43,36 @@ for activity in activities:
     if not activity_id:
         continue
 
-    avg_speed = activity.get("averageSpeed", 0)  # m/s
+    avg_speed = activity.get("averageSpeed", 0)
     pace_sec_per_km = round(1000 / avg_speed) if avg_speed and avg_speed > 0 else None
 
     distance_m = activity.get("distance", 0)
     distance_km = round(distance_m / 1000, 2) if distance_m else None
 
     gct_ms = None
+    gps_points = []
     try:
         details = client.get_activity_details(activity_id)
+
+        # GCT
         gct_ms = details.get("avgGroundContactTime")
         if gct_ms is None:
             for m in details.get("connectIQMeasurements", []):
                 if "groundContact" in str(m.get("key", "")).lower():
                     gct_ms = m.get("value")
                     break
-    except Exception:
-        pass
 
-    time.sleep(0.5)
+        # GPS — דגימה כל 10 נקודות לחיסכון בנפח
+        geo = details.get("geoPolylineDTO", {}).get("polyline", [])
+        gps_points = [
+            {"lat": p["lat"], "lon": p["lon"]}
+            for p in geo[::10]
+            if "lat" in p and "lon" in p
+        ]
+    except Exception:
+        pass  # GCT ו-GPS לא קריטיים — ממשיך בלעדיהם
+
+    time.sleep(0.5)  # מניעת rate limiting
 
     runs.append({
         "date": activity.get("startTimeLocal", "")[:10],
@@ -70,8 +81,9 @@ for activity in activities:
         "pace_sec_per_km": pace_sec_per_km,
         "avg_hr": activity.get("averageHR"),
         "max_hr": activity.get("maxHR"),
-        "cadence_spm": activity.get("averageRunningCadenceInStepsPerMinute"),
+        "cadence_spm": round(activity.get("averageRunningCadenceInStepsPerMinute") or 0) or None,
         "gct_ms": gct_ms,
+        "gps": gps_points,
     })
 
 output = {

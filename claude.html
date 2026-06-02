@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>שלח לקלוד</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: rgba(255,255,255,0.9);
+      direction: rtl;
+    }
+
+    nav {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding: 0 1.5rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-title { font-weight: 700; font-size: 1.1rem; color: #00f5ff; }
+    nav a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: #00f5ff; }
+
+    main {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    .glass {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 20px;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .page-header h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .page-header p { color: rgba(255,255,255,0.55); font-size: 0.95rem; }
+
+    #error-banner {
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.4);
+      color: #fca5a5;
+      border-radius: 12px;
+      padding: 0.9rem 1.2rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+    }
+    #error-banner.hidden { display: none; }
+
+    /* run count selector */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .controls label { font-size: 0.9rem; color: rgba(255,255,255,0.6); }
+    .controls select {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+      border-radius: 8px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.9rem;
+    }
+
+    /* recent run cards */
+    #run-cards { display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1.5rem; }
+
+    .run-card {
+      padding: 1rem 1.25rem;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.6rem 1.2rem;
+      align-items: center;
+    }
+    .run-date {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #00f5ff;
+      white-space: nowrap;
+    }
+    .run-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .metric-chip {
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.75);
+    }
+    .metric-chip span { color: white; font-weight: 600; }
+
+    /* preview box */
+    .preview-section { margin-bottom: 1.5rem; }
+    .preview-section h2 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 0.75rem;
+    }
+    #preview-box {
+      padding: 1.2rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.75);
+      white-space: pre-wrap;
+      line-height: 1.6;
+      max-height: 280px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.2) transparent;
+    }
+
+    /* copy button */
+    #copy-btn {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, #00f5ff22, #c084fc22);
+      border: 1px solid rgba(0,245,255,0.4);
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 1rem;
+    }
+    #copy-btn:hover {
+      background: linear-gradient(135deg, #00f5ff40, #c084fc40);
+      border-color: rgba(0,245,255,0.7);
+      transform: translateY(-1px);
+    }
+    #copy-btn.copied {
+      background: linear-gradient(135deg, #4ade8040, #22c55e40);
+      border-color: rgba(74,222,128,0.7);
+    }
+
+    /* instructions */
+    .instructions {
+      padding: 1.2rem 1.5rem;
+    }
+    .instructions h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem; color: rgba(255,255,255,0.7); }
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.6rem;
+    }
+    .step-num {
+      min-width: 24px;
+      height: 24px;
+      background: rgba(0,245,255,0.2);
+      border: 1px solid rgba(0,245,255,0.4);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #00f5ff;
+    }
+    .step-text { font-size: 0.88rem; color: rgba(255,255,255,0.65); padding-top: 2px; }
+    .step-text a { color: #00f5ff; text-decoration: none; }
+    .step-text a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-title">ריצות</span>
+  <div style="display:flex;gap:1.5rem">
+    <a href="index.html">← דשבורד</a>
+    <a href="claude.html" style="color:#00f5ff">שלח לקלוד</a>
+  </div>
+</nav>
+
+<main>
+  <div class="page-header">
+    <h1>שלח נתונים לקלוד</h1>
+    <p>העתק את הריצות האחרונות שלך והדבק בפרויקט Claude</p>
+  </div>
+
+  <div id="error-banner" class="hidden"></div>
+
+  <div class="controls">
+    <label for="run-count">מספר ריצות לייצוא:</label>
+    <select id="run-count" onchange="refresh()">
+      <option value="3">3 אחרונות</option>
+      <option value="5" selected>5 אחרונות</option>
+      <option value="10">10 אחרונות</option>
+      <option value="all">כל הריצות</option>
+    </select>
+  </div>
+
+  <div id="run-cards"></div>
+
+  <div class="preview-section">
+    <h2>תצוגה מקדימה — מה שייועתק</h2>
+    <div id="preview-box" class="glass"></div>
+  </div>
+
+  <button id="copy-btn" onclick="copyToClipboard()">העתק לקלוד</button>
+
+  <div class="instructions glass">
+    <h3>איך להשתמש</h3>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">לחץ <strong>העתק לקלוד</strong> למעלה</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">כנס ל<a href="https://claude.ai/projects" target="_blank">פרויקט Claude שלך</a></div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">הדבק את הטקסט (Ctrl+V) ושלח</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-text">קבל פידבק מותאם אישית על האימונים שלך</div>
+    </div>
+  </div>
+</main>
+
+<script>
+  let allRuns = [];
+
+  function fmtPace(sec) {
+    if (!sec) return '—';
+    return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${String(y).slice(2)}`;
+  }
+
+  function fmtDuration(sec) {
+    if (!sec) return '—';
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    return `${m}:${String(s).padStart(2,'0')}`;
+  }
+
+  function getSelectedRuns() {
+    const val = document.getElementById('run-count').value;
+    const sorted = [...allRuns].reverse(); // newest first
+    if (val === 'all') return sorted;
+    return sorted.slice(0, parseInt(val));
+  }
+
+  function buildRunCards(runs) {
+    const container = document.getElementById('run-cards');
+    container.innerHTML = runs.map(r => `
+      <div class="run-card glass">
+        <div class="run-date">${fmtDate(r.date)}</div>
+        <div class="run-metrics">
+          ${r.distance_km != null ? `<div class="metric-chip">מרחק <span>${r.distance_km} ק"מ</span></div>` : ''}
+          ${r.pace_sec_per_km ? `<div class="metric-chip">קצב <span>${fmtPace(r.pace_sec_per_km)}</span></div>` : ''}
+          ${r.duration_sec ? `<div class="metric-chip">זמן <span>${fmtDuration(r.duration_sec)}</span></div>` : ''}
+          ${r.avg_hr ? `<div class="metric-chip">דופק ממוצע <span>${r.avg_hr}</span></div>` : ''}
+          ${r.max_hr ? `<div class="metric-chip">דופק מקס <span>${r.max_hr}</span></div>` : ''}
+          ${r.cadence_spm ? `<div class="metric-chip">קדנס <span>${r.cadence_spm}</span></div>` : ''}
+          ${r.gct_ms != null ? `<div class="metric-chip">GCT <span>${r.gct_ms}ms</span></div>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function buildMarkdown(runs) {
+    const now = new Date().toLocaleDateString('he-IL');
+    let md = `## נתוני ריצה — ${now}\n\n`;
+
+    md += `| תאריך | מרחק | זמן | קצב | דופק ממוצע | דופק מקס | קדנס | GCT |\n`;
+    md += `|-------|------|-----|-----|------------|----------|------|-----|\n`;
+
+    runs.forEach(r => {
+      md += `| ${fmtDate(r.date)} `;
+      md += `| ${r.distance_km != null ? r.distance_km + ' ק"מ' : '—'} `;
+      md += `| ${fmtDuration(r.duration_sec)} `;
+      md += `| ${fmtPace(r.pace_sec_per_km)} `;
+      md += `| ${r.avg_hr ?? '—'} `;
+      md += `| ${r.max_hr ?? '—'} `;
+      md += `| ${r.cadence_spm ?? '—'} `;
+      md += `| ${r.gct_ms != null ? r.gct_ms + 'ms' : '—'} |\n`;
+    });
+
+    // averages
+    const withPace = runs.filter(r => r.pace_sec_per_km);
+    const withHR = runs.filter(r => r.avg_hr);
+    const withCadence = runs.filter(r => r.cadence_spm);
+    const withGCT = runs.filter(r => r.gct_ms != null);
+
+    md += `\n**ממוצעים (${runs.length} ריצות):**\n`;
+    if (withPace.length)
+      md += `- קצב ממוצע: ${fmtPace(Math.round(withPace.reduce((s,r) => s + r.pace_sec_per_km, 0) / withPace.length))} דק'/ק"מ\n`;
+    if (withHR.length)
+      md += `- דופק ממוצע: ${Math.round(withHR.reduce((s,r) => s + r.avg_hr, 0) / withHR.length)}\n`;
+    if (withCadence.length)
+      md += `- קדנס ממוצע: ${Math.round(withCadence.reduce((s,r) => s + r.cadence_spm, 0) / withCadence.length)} spm\n`;
+    if (withGCT.length)
+      md += `- GCT ממוצע: ${Math.round(withGCT.reduce((s,r) => s + r.gct_ms, 0) / withGCT.length)}ms\n`;
+
+    const totalKm = runs.reduce((s,r) => s + (r.distance_km || 0), 0);
+    md += `- סה"כ ק"מ בתקופה: ${totalKm.toFixed(1)}\n`;
+
+    return md;
+  }
+
+  function refresh() {
+    const runs = getSelectedRuns();
+    buildRunCards(runs);
+    document.getElementById('preview-box').textContent = buildMarkdown(runs);
+  }
+
+  function copyToClipboard() {
+    const runs = getSelectedRuns();
+    const text = buildMarkdown(runs);
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = '✓ הועתק!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'העתק לקלוד';
+        btn.classList.remove('copied');
+      }, 2500);
+    }).catch(() => {
+      // fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = '✓ הועתק!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'העתק לקלוד'; btn.classList.remove('copied'); }, 2500);
+    });
+  }
+
+  fetch('data.json')
+    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+    .then(data => {
+      allRuns = data.runs || [];
+      refresh();
+    })
+    .catch(err => {
+      const banner = document.getElementById('error-banner');
+      banner.textContent = `שגיאה בטעינת נתונים: ${err.message}`;
+      banner.classList.remove('hidden');
+    });
+</script>
+</body>
+</html>

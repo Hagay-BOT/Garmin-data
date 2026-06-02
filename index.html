@@ -4,220 +4,739 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>דשבורד ריצות</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9/dist/leaflet.css"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="https://unpkg.com/leaflet@1.9/dist/leaflet.js"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --cyan: #00f5ff;
+      --purple: #c084fc;
+      --green: #4ade80;
+      --orange: #fb923c;
+      --glass-bg: rgba(255,255,255,0.08);
+      --glass-border: rgba(255,255,255,0.15);
+      --text: rgba(255,255,255,0.9);
+      --muted: rgba(255,255,255,0.45);
+    }
+
+    body {
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: var(--text);
+      direction: rtl;
+    }
+
+    /* NAV */
+    nav {
+      background: rgba(15,12,41,0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 0 1.5rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 200;
+    }
+    .nav-brand { font-weight: 800; font-size: 1.1rem; color: var(--cyan); letter-spacing: -0.02em; }
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none; font-size: 0.88rem; transition: color .2s;
+    }
+    .nav-links a.active, .nav-links a:hover { color: var(--cyan); }
+    #last-updated { font-size: 0.72rem; color: var(--muted); }
+
+    /* GLASS */
+    .glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+    }
+
+    /* ERROR */
+    #error-banner {
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.4);
+      color: #fca5a5;
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin: 1rem;
+      font-size: 0.9rem;
+    }
+    #error-banner.hidden { display: none; }
+
+    /* MAIN */
+    main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 3rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
+    /* SECTION TITLES */
+    .section-title {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    /* ── 1. HERO STATS ── */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+    @media (max-width: 900px) { .hero-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .hero-grid { grid-template-columns: 1fr 1fr; } }
+
+    .stat-card {
+      padding: 1.4rem 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      filter: blur(30px);
+      opacity: 0.4;
+    }
+    .stat-card-runs::before  { background: var(--cyan); }
+    .stat-card-km::before    { background: var(--green); }
+    .stat-card-pace::before  { background: var(--orange); }
+    .stat-card-streak::before{ background: var(--purple); }
+
+    .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .stat-value { font-size: 2.4rem; font-weight: 800; line-height: 1; }
+    .stat-card-runs  .stat-value { color: var(--cyan); }
+    .stat-card-km    .stat-value { color: var(--green); }
+    .stat-card-pace  .stat-value { color: var(--orange); }
+    .stat-card-streak .stat-value { color: var(--purple); }
+    .stat-sub { font-size: 0.72rem; color: var(--muted); }
+
+    /* ── 2. HEATMAP ── */
+    .heatmap-wrap { padding: 1.4rem 1.5rem; }
+    #heatmap { overflow-x: auto; }
+    .heatmap-inner { display: flex; gap: 3px; min-width: max-content; }
+    .heatmap-col { display: flex; flex-direction: column; gap: 3px; }
+    .heatmap-month-label {
+      height: 16px; font-size: 9px; color: var(--muted);
+      text-align: center; line-height: 16px;
+    }
+    .heatmap-dot {
+      width: 11px; height: 11px; border-radius: 2px;
+      cursor: default; transition: transform .1s;
+    }
+    .heatmap-dot:hover { transform: scale(1.4); }
+    .heatmap-legend {
+      display: flex; gap: 6px; align-items: center;
+      margin-top: 10px; font-size: 0.72rem; color: var(--muted);
+    }
+    .legend-dot { width: 11px; height: 11px; border-radius: 2px; }
+
+    /* ── 3. GPS GALLERY ── */
+    .section-pad { padding: 1.4rem 1.5rem; }
+    .gps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    @media (max-width: 768px) { .gps-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 480px) { .gps-grid { grid-template-columns: 1fr; } }
+
+    .map-card { overflow: hidden; }
+    .map-container { height: 180px; background: rgba(0,0,0,0.3); }
+    .map-footer {
+      padding: 0.6rem 0.9rem;
+      display: flex; justify-content: space-between;
+      font-size: 0.8rem; color: var(--muted);
+    }
+    .map-footer span:first-child { color: var(--cyan); font-weight: 600; }
+    .gps-placeholder {
+      text-align: center; padding: 3rem 1rem;
+      color: var(--muted); font-size: 0.9rem;
+    }
+
+    /* ── CHARTS ROW ── */
+    .charts-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 768px) { .charts-row { grid-template-columns: 1fr; } }
+
+    .charts-row-equal {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 768px) { .charts-row-equal { grid-template-columns: 1fr; } }
+
+    .chart-card { padding: 1.4rem 1.5rem; }
+    .chart-glow canvas { filter: drop-shadow(0 0 10px rgba(0,245,255,0.2)); }
+
+    /* ── 6. PR CARDS ── */
+    .pr-section { padding: 1.4rem 1.5rem; }
+    .pr-cards-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .pr-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 0.85rem 1rem;
+      display: flex; align-items: center; gap: 0.85rem;
+      position: relative;
+    }
+    .pr-card--new { border-color: rgba(0,245,255,0.5); background: rgba(0,245,255,0.08); }
+    .pr-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .pr-label { font-size: 0.72rem; color: var(--muted); }
+    .pr-value { font-size: 1.2rem; font-weight: 700; line-height: 1.2; }
+    .pr-date { font-size: 0.7rem; color: var(--muted); }
+    .pr-badge {
+      position: absolute; top: -8px; left: 10px;
+      background: var(--cyan); color: #0f0c29;
+      font-size: 0.65rem; font-weight: 700;
+      padding: 2px 8px; border-radius: 20px;
+    }
+
+    /* ── 8. TABLE ── */
+    .table-wrap { padding: 1.4rem 1.5rem; }
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+    th {
+      text-align: right; padding: 0.5rem 0.75rem;
+      font-size: 0.7rem; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--muted); white-space: nowrap;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    td { padding: 0.7rem 0.75rem; white-space: nowrap; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.04); }
+    .td-date { color: var(--cyan); font-weight: 600; }
+    .td-pace { color: var(--orange); font-weight: 600; }
+    .td-hr   { color: #f87171; }
+  </style>
 </head>
-<body class="bg-gray-100 text-gray-900 min-h-screen">
+<body>
 
-  <div id="error-banner" class="hidden bg-red-100 border border-red-400 text-red-800 px-4 py-3 m-4 rounded-lg text-sm"></div>
+<nav>
+  <span class="nav-brand">ריצות</span>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+    <span id="last-updated"></span>
+  </div>
+  <div class="nav-links">
+    <a href="index.html" class="active">דשבורד</a>
+    <a href="claude.html">שלח לקלוד →</a>
+  </div>
+</nav>
 
-  <header class="bg-white shadow-sm">
-    <div class="max-w-6xl mx-auto px-4 py-6">
-      <h1 class="text-2xl font-bold tracking-tight">דשבורד ריצות</h1>
-      <p id="last-updated" class="text-xs text-gray-400 mt-1"></p>
+<div id="error-banner" class="hidden"></div>
+
+<main>
+
+  <!-- 1. Hero Stats -->
+  <div class="hero-grid">
+    <div class="glass stat-card stat-card-runs">
+      <div class="stat-label">ריצות</div>
+      <div class="stat-value" id="stat-runs">—</div>
+      <div class="stat-sub">מ-1/4/2026</div>
     </div>
-  </header>
-
-  <main class="max-w-6xl mx-auto px-4 py-8 space-y-8">
-
-    <!-- Stat cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div class="bg-white rounded-2xl shadow-sm p-6 text-center">
-        <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">סה"כ ריצות</p>
-        <p id="stat-runs" class="text-4xl font-bold text-blue-600">—</p>
-      </div>
-      <div class="bg-white rounded-2xl shadow-sm p-6 text-center">
-        <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">סה"כ ק"מ</p>
-        <p id="stat-km" class="text-4xl font-bold text-emerald-600">—</p>
-      </div>
-      <div class="bg-white rounded-2xl shadow-sm p-6 text-center">
-        <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">קצב ממוצע</p>
-        <p id="stat-pace" class="text-4xl font-bold text-orange-500">—</p>
-      </div>
+    <div class="glass stat-card stat-card-km">
+      <div class="stat-label">קילומטרים</div>
+      <div class="stat-value" id="stat-km">—</div>
+      <div class="stat-sub">סה"כ</div>
     </div>
-
-    <!-- Charts -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="bg-white rounded-2xl shadow-sm p-5">
-        <h2 class="text-sm font-semibold text-gray-600 mb-4">קצב (דק׳/ק"מ)</h2>
-        <canvas id="chart-pace" height="200"></canvas>
-      </div>
-      <div class="bg-white rounded-2xl shadow-sm p-5">
-        <h2 class="text-sm font-semibold text-gray-600 mb-4">קדנס (צעדים/דקה)</h2>
-        <canvas id="chart-cadence" height="200"></canvas>
-      </div>
-      <div class="bg-white rounded-2xl shadow-sm p-5">
-        <h2 class="text-sm font-semibold text-gray-600 mb-4">Ground Contact Time (ms)</h2>
-        <canvas id="chart-gct" height="200"></canvas>
-      </div>
-      <div class="bg-white rounded-2xl shadow-sm p-5">
-        <h2 class="text-sm font-semibold text-gray-600 mb-4">מרחק (ק"מ)</h2>
-        <canvas id="chart-distance" height="200"></canvas>
-      </div>
+    <div class="glass stat-card stat-card-pace">
+      <div class="stat-label">קצב ממוצע</div>
+      <div class="stat-value" id="stat-pace">—</div>
+      <div class="stat-sub">דק'/ק"מ</div>
     </div>
-
-    <!-- Table -->
-    <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
-      <div class="px-6 py-4 border-b border-gray-100">
-        <h2 class="font-semibold">כל הריצות</h2>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm text-right">
-          <thead class="bg-gray-50 text-gray-400 text-xs uppercase tracking-wide">
-            <tr>
-              <th class="px-4 py-3 font-medium">תאריך</th>
-              <th class="px-4 py-3 font-medium">מרחק</th>
-              <th class="px-4 py-3 font-medium">זמן</th>
-              <th class="px-4 py-3 font-medium">קצב</th>
-              <th class="px-4 py-3 font-medium">דופק ממוצע</th>
-              <th class="px-4 py-3 font-medium">דופק מקסימום</th>
-              <th class="px-4 py-3 font-medium">קדנס</th>
-              <th class="px-4 py-3 font-medium">GCT</th>
-            </tr>
-          </thead>
-          <tbody id="runs-table" class="divide-y divide-gray-50 text-gray-700"></tbody>
-        </table>
-      </div>
+    <div class="glass stat-card stat-card-streak">
+      <div class="stat-label">סטריק</div>
+      <div class="stat-value" id="stat-streak">—</div>
+      <div class="stat-sub">ימים ברצף</div>
     </div>
+  </div>
 
-  </main>
+  <!-- 2. Activity Heatmap -->
+  <div class="glass heatmap-wrap">
+    <div class="section-title">פעילות — 12 שבועות אחרונים</div>
+    <div id="heatmap"></div>
+  </div>
 
-  <script>
-    function fmtPace(sec) {
-      if (sec == null) return '—';
-      return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+  <!-- 3. GPS Gallery -->
+  <div class="glass section-pad">
+    <div class="section-title">מסלולים אחרונים</div>
+    <div id="gps-gallery" class="gps-grid"></div>
+  </div>
+
+  <!-- 4. Pace chart + 6. PR Cards -->
+  <div class="charts-row">
+    <div class="glass chart-card chart-glow">
+      <div class="section-title">קצב לאורך זמן (דק׳/ק"מ)</div>
+      <canvas id="chart-pace" height="220"></canvas>
+    </div>
+    <div class="glass pr-section">
+      <div class="section-title">שיאים אישיים</div>
+      <div id="pr-cards" class="pr-cards-list"></div>
+    </div>
+  </div>
+
+  <!-- 5. Weekly bars + 7. Cadence/GCT dual -->
+  <div class="charts-row-equal">
+    <div class="glass chart-card">
+      <div class="section-title">נפח שבועי (ק"מ)</div>
+      <canvas id="chart-weekly" height="220"></canvas>
+    </div>
+    <div class="glass chart-card">
+      <div class="section-title">קדנס & GCT</div>
+      <canvas id="chart-dual" height="220"></canvas>
+    </div>
+  </div>
+
+  <!-- 8. Runs Table -->
+  <div class="glass table-wrap">
+    <div class="section-title">כל הריצות</div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>תאריך</th>
+            <th>מרחק</th>
+            <th>זמן</th>
+            <th>קצב</th>
+            <th>דופק ממוצע</th>
+            <th>דופק מקס</th>
+            <th>קדנס</th>
+            <th>GCT</th>
+          </tr>
+        </thead>
+        <tbody id="runs-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  /* ── helpers ── */
+  function fmtPace(sec) {
+    if (!sec) return '—';
+    return `${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`;
+  }
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    const [y,m,d] = iso.split('-');
+    return `${d}/${m}/${String(y).slice(2)}`;
+  }
+  function fmtDuration(sec) {
+    if (!sec) return '—';
+    const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), s = sec%60;
+    if (h>0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    return `${m}:${String(s).padStart(2,'0')}`;
+  }
+
+  /* ── count-up ── */
+  function countUp(el, target, decimals=0, suffix='', duration=1300) {
+    const start = performance.now();
+    const step = now => {
+      const p = Math.min((now-start)/duration, 1);
+      const eased = 1 - Math.pow(1-p, 3);
+      el.textContent = (target*eased).toFixed(decimals) + suffix;
+      if (p < 1) requestAnimationFrame(step);
+      else el.textContent = target.toFixed(decimals) + suffix;
+    };
+    requestAnimationFrame(step);
+  }
+
+  /* ── Chart.js defaults ── */
+  Chart.defaults.color = 'rgba(255,255,255,0.45)';
+  Chart.defaults.borderColor = 'rgba(255,255,255,0.07)';
+  Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+  Chart.defaults.font.size = 11;
+
+  /* ── streak ── */
+  function calcStreak(runs) {
+    if (!runs.length) return 0;
+    const dates = new Set(runs.map(r => r.date));
+    const today = new Date(); today.setHours(0,0,0,0);
+    const todayStr = today.toISOString().slice(0,10);
+    const yd = new Date(today); yd.setDate(yd.getDate()-1);
+    const yStr = yd.toISOString().slice(0,10);
+    let check = dates.has(todayStr) ? new Date(today) : dates.has(yStr) ? yd : null;
+    if (!check) return 0;
+    let streak = 0;
+    while (dates.has(check.toISOString().slice(0,10))) {
+      streak++;
+      check.setDate(check.getDate()-1);
     }
+    return streak;
+  }
 
-    function fmtDuration(sec) {
-      if (sec == null || sec === 0) return '—';
-      const h = Math.floor(sec / 3600);
-      const m = Math.floor((sec % 3600) / 60);
-      const s = sec % 60;
-      if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-      return `${m}:${String(s).padStart(2, '0')}`;
-    }
+  /* ── 1. Hero Stats ── */
+  function buildHero(runs) {
+    const totalRuns = runs.length;
+    const totalKm = runs.reduce((s,r) => s+(r.distance_km||0), 0);
+    const paceRuns = runs.filter(r => r.pace_sec_per_km);
+    const avgPace = paceRuns.length ? Math.round(paceRuns.reduce((s,r)=>s+r.pace_sec_per_km,0)/paceRuns.length) : null;
+    const streak = calcStreak(runs);
 
-    function fmtDate(iso) {
-      if (!iso) return '—';
-      const [y, m, d] = iso.split('-');
-      return `${d}/${m}/${y}`;
-    }
+    countUp(document.getElementById('stat-runs'), totalRuns, 0);
+    countUp(document.getElementById('stat-km'), totalKm, 1);
+    document.getElementById('stat-pace').textContent = fmtPace(avgPace);
+    countUp(document.getElementById('stat-streak'), streak, 0);
+  }
 
-    function makeChart(id, labels, data, color, options = {}) {
-      const ctx = document.getElementById(id);
-      return new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [{
-            data,
-            borderColor: color,
-            backgroundColor: color + '18',
-            borderWidth: 2,
-            pointRadius: 4,
-            pointHoverRadius: 6,
-            fill: true,
-            tension: 0.3,
-            spanGaps: false,
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { grid: { display: false }, ticks: { maxTicksLimit: 8, font: { size: 11 } } },
-            y: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 11 } } },
-          },
-          ...options,
+  /* ── 2. Heatmap ── */
+  function buildHeatmap(runs) {
+    const runMap = {};
+    runs.forEach(r => { runMap[r.date] = (runMap[r.date]||0) + (r.distance_km||0); });
+
+    const today = new Date(); today.setHours(0,0,0,0);
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate()-83);
+    // Align to previous Sunday
+    startDate.setDate(startDate.getDate() - startDate.getDay());
+
+    const months = ['ינו','פבר','מרץ','אפר','מאי','יוני','יולי','אוג','ספט','אוק','נוב','דצמ'];
+
+    const inner = document.createElement('div');
+    inner.className = 'heatmap-inner';
+
+    let colDate = new Date(startDate);
+    while (colDate <= today) {
+      const col = document.createElement('div');
+      col.className = 'heatmap-col';
+
+      const monthLabel = document.createElement('div');
+      monthLabel.className = 'heatmap-month-label';
+      const firstDay = new Date(colDate);
+      if (firstDay.getDate() <= 7) monthLabel.textContent = months[firstDay.getMonth()];
+      col.appendChild(monthLabel);
+
+      for (let d = 0; d < 7; d++) {
+        const day = new Date(colDate);
+        day.setDate(colDate.getDate() + d);
+
+        const dot = document.createElement('div');
+        dot.className = 'heatmap-dot';
+        const dateStr = day.toISOString().slice(0,10);
+        const dist = runMap[dateStr] || 0;
+        const future = day > today;
+        const preRange = dateStr < '2026-04-01';
+
+        if (future || preRange) {
+          dot.style.background = 'rgba(255,255,255,0.03)';
+        } else if (dist === 0) {
+          dot.style.background = 'rgba(255,255,255,0.09)';
+        } else if (dist < 5) {
+          dot.style.background = 'rgba(74,222,128,0.45)';
+        } else if (dist < 10) {
+          dot.style.background = 'rgba(74,222,128,0.72)';
+        } else {
+          dot.style.background = 'rgba(74,222,128,1)';
+          dot.style.boxShadow = '0 0 6px rgba(74,222,128,0.5)';
         }
-      });
+
+        if (dist > 0) dot.title = `${fmtDate(dateStr)}: ${dist.toFixed(1)} ק"מ`;
+        col.appendChild(dot);
+      }
+
+      inner.appendChild(col);
+      colDate.setDate(colDate.getDate()+7);
     }
 
-    function buildDashboard(data) {
-      // last updated
-      if (data.last_updated) {
-        const d = new Date(data.last_updated);
-        document.getElementById('last-updated').textContent =
-          `עודכן: ${d.toLocaleDateString('he-IL')} ${d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}`;
-      }
+    const container = document.getElementById('heatmap');
+    container.appendChild(inner);
 
-      const runs = data.runs || [];
-      const labels = runs.map(r => fmtDate(r.date));
+    const legend = document.createElement('div');
+    legend.className = 'heatmap-legend';
+    legend.innerHTML = `
+      <span>פחות</span>
+      <div class="legend-dot" style="background:rgba(255,255,255,0.09)"></div>
+      <div class="legend-dot" style="background:rgba(74,222,128,0.45)"></div>
+      <div class="legend-dot" style="background:rgba(74,222,128,0.72)"></div>
+      <div class="legend-dot" style="background:rgba(74,222,128,1)"></div>
+      <span>יותר</span>`;
+    container.appendChild(legend);
+  }
 
-      // stat cards
-      document.getElementById('stat-runs').textContent = runs.length;
-      const totalKm = runs.reduce((s, r) => s + (r.distance_km || 0), 0);
-      document.getElementById('stat-km').textContent = totalKm.toFixed(1);
-      const paceRuns = runs.filter(r => r.pace_sec_per_km != null);
-      if (paceRuns.length > 0) {
-        const avgPace = Math.round(paceRuns.reduce((s, r) => s + r.pace_sec_per_km, 0) / paceRuns.length);
-        document.getElementById('stat-pace').textContent = fmtPace(avgPace);
-      }
+  /* ── 3. GPS Gallery ── */
+  function buildGPSGallery(runs) {
+    const withGPS = [...runs].reverse().filter(r => r.gps && r.gps.length > 2).slice(0,6);
+    const container = document.getElementById('gps-gallery');
 
-      // pace chart (Y reversed: lower = faster)
-      makeChart('chart-pace', labels,
-        runs.map(r => r.pace_sec_per_km ?? null),
-        '#f97316',
-        {
-          scales: {
-            x: { grid: { display: false }, ticks: { maxTicksLimit: 8, font: { size: 11 } } },
-            y: {
-              reverse: true,
-              grid: { color: '#f3f4f6' },
-              ticks: {
-                font: { size: 11 },
-                callback: v => fmtPace(v),
-              }
-            }
-          },
-          plugins: {
-            legend: { display: false },
-            tooltip: { callbacks: { label: ctx => fmtPace(ctx.parsed.y) } }
+    if (withGPS.length === 0) {
+      container.innerHTML = `<div class="gps-placeholder" style="grid-column:1/-1">
+        <div style="font-size:2.5rem;margin-bottom:0.5rem">🗺</div>
+        <p>מסלולי GPS יוצגו לאחר הרצת fetch_garmin.py עם הקוד המעודכן</p>
+      </div>`;
+      return;
+    }
+
+    withGPS.forEach((run, i) => {
+      const card = document.createElement('div');
+      card.className = 'map-card glass';
+      card.innerHTML = `
+        <div id="map-${i}" class="map-container"></div>
+        <div class="map-footer">
+          <span>${fmtDate(run.date)}</span>
+          <span>${run.distance_km} ק"מ</span>
+        </div>`;
+      container.appendChild(card);
+
+      setTimeout(() => {
+        const map = L.map(`map-${i}`, {
+          zoomControl: false, dragging: false,
+          scrollWheelZoom: false, doubleClickZoom: false,
+          touchZoom: false, attributionControl: false
+        });
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+        const lls = run.gps.map(p => [p.lat, p.lon]);
+        const poly = L.polyline(lls, { color: '#00f5ff', weight: 2.5, opacity: 0.9 }).addTo(map);
+        map.fitBounds(poly.getBounds(), { padding: [15,15] });
+      }, 150 * i);
+    });
+  }
+
+  /* ── 4. Pace Chart ── */
+  function buildPaceChart(runs) {
+    const labels = runs.map(r => fmtDate(r.date));
+    const data = runs.map(r => r.pace_sec_per_km ?? null);
+
+    new Chart(document.getElementById('chart-pace'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          data,
+          borderColor: '#00f5ff',
+          backgroundColor: 'rgba(0,245,255,0.08)',
+          borderWidth: 2.5,
+          pointRadius: 4,
+          pointBackgroundColor: '#00f5ff',
+          pointBorderColor: 'rgba(0,245,255,0.3)',
+          pointBorderWidth: 2,
+          fill: true,
+          tension: 0.35,
+          spanGaps: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: c => fmtPace(c.parsed.y) } }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { maxTicksLimit: 8 } },
+          y: {
+            reverse: true,
+            grid: { color: 'rgba(255,255,255,0.06)' },
+            ticks: { callback: v => fmtPace(v) }
           }
         }
-      );
+      }
+    });
+  }
 
-      makeChart('chart-cadence', labels,
-        runs.map(r => r.cadence_spm ?? null),
-        '#3b82f6'
-      );
+  /* ── 5. Weekly Bars ── */
+  function buildWeeklyChart(runs) {
+    const weekMap = {};
+    runs.forEach(r => {
+      if (!r.date) return;
+      const d = new Date(r.date);
+      const ws = new Date(d); ws.setDate(d.getDate() - d.getDay());
+      const key = ws.toISOString().slice(0,10);
+      weekMap[key] = (weekMap[key]||0) + (r.distance_km||0);
+    });
 
-      makeChart('chart-gct', labels,
-        runs.map(r => r.gct_ms ?? null),
-        '#8b5cf6'
-      );
-
-      makeChart('chart-distance', labels,
-        runs.map(r => r.distance_km ?? null),
-        '#10b981'
-      );
-
-      // table — descending (newest first)
-      const tbody = document.getElementById('runs-table');
-      const sorted = [...runs].reverse();
-      tbody.innerHTML = sorted.map(r => `
-        <tr class="hover:bg-gray-50 transition-colors">
-          <td class="px-4 py-3 font-medium">${fmtDate(r.date)}</td>
-          <td class="px-4 py-3">${r.distance_km != null ? r.distance_km + ' ק"מ' : '—'}</td>
-          <td class="px-4 py-3">${fmtDuration(r.duration_sec)}</td>
-          <td class="px-4 py-3">${fmtPace(r.pace_sec_per_km)}</td>
-          <td class="px-4 py-3">${r.avg_hr ?? '—'}</td>
-          <td class="px-4 py-3">${r.max_hr ?? '—'}</td>
-          <td class="px-4 py-3">${r.cadence_spm ?? '—'}</td>
-          <td class="px-4 py-3">${r.gct_ms != null ? r.gct_ms + ' ms' : '—'}</td>
-        </tr>
-      `).join('');
+    const today = new Date();
+    const weeks = [];
+    for (let i = 5; i >= 0; i--) {
+      const ws = new Date(today); ws.setDate(today.getDate() - today.getDay() - i*7);
+      const key = ws.toISOString().slice(0,10);
+      const [, m, d] = key.split('-');
+      weeks.push({ label: `${d}/${m}`, km: weekMap[key] || 0 });
     }
 
-    fetch('data.json')
-      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-      .then(buildDashboard)
-      .catch(err => {
-        const banner = document.getElementById('error-banner');
-        banner.textContent = `שגיאה בטעינת נתונים: ${err.message}`;
-        banner.classList.remove('hidden');
-      });
-  </script>
+    new Chart(document.getElementById('chart-weekly'), {
+      type: 'bar',
+      data: {
+        labels: weeks.map(w => w.label),
+        datasets: [{
+          data: weeks.map(w => w.km),
+          backgroundColor: weeks.map((_, i) => {
+            const t = i / 5;
+            const r = Math.round(0 + t*192), g = Math.round(245 + t*(132-245)), b = Math.round(255 + t*(252-255));
+            return `rgba(${r},${g},${b},0.7)`;
+          }),
+          borderColor: 'transparent',
+          borderRadius: 8,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false } },
+          y: { grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { callback: v => v + ' ק"מ' } }
+        }
+      }
+    });
+  }
 
+  /* ── 6. PR Cards ── */
+  function buildPRCards(runs) {
+    const longest = runs.reduce((m,r) => (r.distance_km||0) > (m.distance_km||0) ? r : m, {distance_km:0,date:''});
+    const paceRuns = runs.filter(r => r.pace_sec_per_km);
+    const fastest = paceRuns.length ? paceRuns.reduce((m,r) => r.pace_sec_per_km < m.pace_sec_per_km ? r : m) : null;
+
+    const weekMap = {};
+    runs.forEach(r => {
+      const d = new Date(r.date); const ws = new Date(d); ws.setDate(d.getDate()-d.getDay());
+      const k = ws.toISOString().slice(0,10);
+      weekMap[k] = (weekMap[k]||0) + (r.distance_km||0);
+    });
+    const bestWeekKm = Object.values(weekMap).length ? Math.max(...Object.values(weekMap)) : 0;
+
+    const last = runs.length ? runs[runs.length-1] : null;
+    const isNewLong = last && last.date === longest.date && longest.distance_km > 0;
+    const isNewFast = last && fastest && last.date === fastest.date;
+
+    document.getElementById('pr-cards').innerHTML = `
+      <div class="pr-card ${isNewLong ? 'pr-card--new' : ''}">
+        ${isNewLong ? '<span class="pr-badge">שיא חדש!</span>' : ''}
+        <div class="pr-icon">📏</div>
+        <div>
+          <div class="pr-label">ריצה ארוכה ביותר</div>
+          <div class="pr-value">${longest.distance_km || '—'} ק"מ</div>
+          <div class="pr-date">${fmtDate(longest.date)}</div>
+        </div>
+      </div>
+      <div class="pr-card ${isNewFast ? 'pr-card--new' : ''}">
+        ${isNewFast ? '<span class="pr-badge">שיא חדש!</span>' : ''}
+        <div class="pr-icon">⚡</div>
+        <div>
+          <div class="pr-label">קצב מהיר ביותר</div>
+          <div class="pr-value">${fastest ? fmtPace(fastest.pace_sec_per_km) : '—'}</div>
+          <div class="pr-date">${fastest ? fmtDate(fastest.date) : ''}</div>
+        </div>
+      </div>
+      <div class="pr-card">
+        <div class="pr-icon">📅</div>
+        <div>
+          <div class="pr-label">שבוע הכי חזק</div>
+          <div class="pr-value">${bestWeekKm.toFixed(1)} ק"מ</div>
+          <div class="pr-date">שבועי</div>
+        </div>
+      </div>`;
+  }
+
+  /* ── 7. Cadence & GCT Dual ── */
+  function buildDualChart(runs) {
+    const labels = runs.map(r => fmtDate(r.date));
+    new Chart(document.getElementById('chart-dual'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'קדנס (spm)',
+            data: runs.map(r => r.cadence_spm ?? null),
+            borderColor: '#60a5fa',
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            pointRadius: 3,
+            tension: 0.35,
+            spanGaps: false,
+            yAxisID: 'y1',
+          },
+          {
+            label: 'GCT (ms)',
+            data: runs.map(r => r.gct_ms ?? null),
+            borderColor: '#c084fc',
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            pointRadius: 3,
+            tension: 0.35,
+            spanGaps: false,
+            yAxisID: 'y2',
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: true, labels: { color: 'rgba(255,255,255,0.6)', boxWidth: 12 } } },
+        scales: {
+          x: { grid: { display: false }, ticks: { maxTicksLimit: 8 } },
+          y1: {
+            type: 'linear', position: 'right',
+            grid: { color: 'rgba(255,255,255,0.06)' },
+            ticks: { color: '#60a5fa' }
+          },
+          y2: {
+            type: 'linear', position: 'left',
+            grid: { drawOnChartArea: false },
+            ticks: { color: '#c084fc' }
+          }
+        }
+      }
+    });
+  }
+
+  /* ── 8. Table ── */
+  function buildTable(runs) {
+    const sorted = [...runs].reverse();
+    document.getElementById('runs-table').innerHTML = sorted.map(r => `
+      <tr>
+        <td class="td-date">${fmtDate(r.date)}</td>
+        <td>${r.distance_km != null ? r.distance_km + ' ק"מ' : '—'}</td>
+        <td>${fmtDuration(r.duration_sec)}</td>
+        <td class="td-pace">${fmtPace(r.pace_sec_per_km)}</td>
+        <td class="td-hr">${r.avg_hr ?? '—'}</td>
+        <td class="td-hr">${r.max_hr ?? '—'}</td>
+        <td>${r.cadence_spm != null ? Math.round(r.cadence_spm) : '—'}</td>
+        <td>${r.gct_ms != null ? r.gct_ms + 'ms' : '—'}</td>
+      </tr>`).join('');
+  }
+
+  /* ── main ── */
+  function buildDashboard(data) {
+    if (data.last_updated) {
+      const d = new Date(data.last_updated);
+      document.getElementById('last-updated').textContent =
+        `עודכן ${d.toLocaleDateString('he-IL')} ${d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}`;
+    }
+    const runs = data.runs || [];
+    buildHero(runs);
+    buildHeatmap(runs);
+    buildGPSGallery(runs);
+    buildPaceChart(runs);
+    buildPRCards(runs);
+    buildWeeklyChart(runs);
+    buildDualChart(runs);
+    buildTable(runs);
+  }
+
+  fetch('data.json')
+    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+    .then(buildDashboard)
+    .catch(err => {
+      const b = document.getElementById('error-banner');
+      b.textContent = `שגיאה בטעינת נתונים: ${err.message}`;
+      b.classList.remove('hidden');
+    });
+</script>
 </body>
 </html>
