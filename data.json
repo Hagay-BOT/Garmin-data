@@ -1,8 +1,170 @@
 {
-  "last_updated": "2026-06-02T10:42:04.845163+00:00",
-  "runs": [
+  "last_updated": "2026-06-02T18:18:15.247131+00:00",
+  "activities": [
+    {
+      "date": "2026-04-02",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 2058,
+      "pace_sec_per_km": null,
+      "avg_hr": 96.0,
+      "max_hr": 137.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 0.30000001192092896,
+      "anaerobic_effect": 0.0,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
+      "date": "2026-04-08",
+      "activity_type": "hiking",
+      "category": "other",
+      "distance_km": 12.59,
+      "duration_sec": 21112,
+      "pace_sec_per_km": 1677,
+      "avg_hr": 107.0,
+      "max_hr": 170.0,
+      "cadence_spm": 43,
+      "gct_ms": null,
+      "aerobic_effect": 2.299999952316284,
+      "anaerobic_effect": 0.5,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
+      "date": "2026-04-10",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 2165,
+      "pace_sec_per_km": null,
+      "avg_hr": 127.0,
+      "max_hr": 156.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 2.0,
+      "anaerobic_effect": 1.899999976158142,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
+      "date": "2026-04-10",
+      "activity_type": "treadmill_running",
+      "category": "other",
+      "distance_km": 4.02,
+      "duration_sec": 1795,
+      "pace_sec_per_km": 447,
+      "avg_hr": 140.0,
+      "max_hr": 174.0,
+      "cadence_spm": 126,
+      "gct_ms": null,
+      "aerobic_effect": 2.700000047683716,
+      "anaerobic_effect": 0.20000000298023224,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
+      "date": "2026-04-12",
+      "activity_type": "treadmill_running",
+      "category": "other",
+      "distance_km": 1.51,
+      "duration_sec": 1193,
+      "pace_sec_per_km": 791,
+      "avg_hr": 138.0,
+      "max_hr": 157.0,
+      "cadence_spm": 95,
+      "gct_ms": null,
+      "aerobic_effect": 2.0999999046325684,
+      "anaerobic_effect": 0.0,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
+      "date": "2026-04-12",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 4118,
+      "pace_sec_per_km": null,
+      "avg_hr": 87.0,
+      "max_hr": 137.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 0.4000000059604645,
+      "anaerobic_effect": 0.0,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
+      "date": "2026-04-13",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 2641,
+      "pace_sec_per_km": null,
+      "avg_hr": 130.0,
+      "max_hr": 167.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 2.200000047683716,
+      "anaerobic_effect": 1.399999976158142,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
+      "date": "2026-04-14",
+      "activity_type": "indoor_cardio",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 2876,
+      "pace_sec_per_km": null,
+      "avg_hr": 104.0,
+      "max_hr": 145.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 0.8999999761581421,
+      "anaerobic_effect": 0.10000000149011612,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
+      "date": "2026-04-16",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 2567,
+      "pace_sec_per_km": null,
+      "avg_hr": 116.0,
+      "max_hr": 152.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 1.399999976158142,
+      "anaerobic_effect": 1.2000000476837158,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
+      "date": "2026-04-17",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 3896,
+      "pace_sec_per_km": null,
+      "avg_hr": 104.0,
+      "max_hr": 152.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 1.2000000476837158,
+      "anaerobic_effect": 1.100000023841858,
+      "training_stress_score": null,
+      "gps": []
+    },
     {
       "date": "2026-04-18",
+      "activity_type": "running",
+      "category": "quality_run",
       "distance_km": 5.22,
       "duration_sec": 1830,
       "pace_sec_per_km": 351,
@@ -10,6 +172,9 @@
       "max_hr": 171.0,
       "cadence_spm": 159,
       "gct_ms": null,
+      "aerobic_effect": 3.0999999046325684,
+      "anaerobic_effect": 0.0,
+      "training_stress_score": null,
       "gps": [
         {
           "lat": 32.83354349434376,
@@ -678,7 +843,25 @@
       ]
     },
     {
+      "date": "2026-04-20",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 4154,
+      "pace_sec_per_km": null,
+      "avg_hr": 110.0,
+      "max_hr": 158.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 1.0,
+      "anaerobic_effect": 1.0,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
       "date": "2026-04-21",
+      "activity_type": "running",
+      "category": "quality_run",
       "distance_km": 5.01,
       "duration_sec": 1809,
       "pace_sec_per_km": 361,
@@ -686,6 +869,9 @@
       "max_hr": 171.0,
       "cadence_spm": 159,
       "gct_ms": null,
+      "aerobic_effect": 2.9000000953674316,
+      "anaerobic_effect": 0.0,
+      "training_stress_score": null,
       "gps": [
         {
           "lat": 32.833614153787494,
@@ -1354,7 +1540,57 @@
       ]
     },
     {
+      "date": "2026-04-22",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 3556,
+      "pace_sec_per_km": null,
+      "avg_hr": 100.0,
+      "max_hr": 164.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 1.0,
+      "anaerobic_effect": 0.699999988079071,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
+      "date": "2026-04-22",
+      "activity_type": "treadmill_running",
+      "category": "other",
+      "distance_km": 0.38,
+      "duration_sec": 926,
+      "pace_sec_per_km": 2463,
+      "avg_hr": 78.0,
+      "max_hr": 91.0,
+      "cadence_spm": 45,
+      "gct_ms": null,
+      "aerobic_effect": 0.0,
+      "anaerobic_effect": 0.0,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
+      "date": "2026-04-24",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 4555,
+      "pace_sec_per_km": null,
+      "avg_hr": 95.0,
+      "max_hr": 156.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 1.2000000476837158,
+      "anaerobic_effect": 0.8999999761581421,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
       "date": "2026-04-29",
+      "activity_type": "running",
+      "category": "quality_run",
       "distance_km": 5.01,
       "duration_sec": 1807,
       "pace_sec_per_km": 361,
@@ -1362,6 +1598,9 @@
       "max_hr": 175.0,
       "cadence_spm": 162,
       "gct_ms": null,
+      "aerobic_effect": 3.0999999046325684,
+      "anaerobic_effect": 0.0,
+      "training_stress_score": null,
       "gps": [
         {
           "lat": 31.625395668670535,
@@ -2090,7 +2329,41 @@
       ]
     },
     {
+      "date": "2026-04-29",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 2216,
+      "pace_sec_per_km": null,
+      "avg_hr": 110.0,
+      "max_hr": 145.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 0.699999988079071,
+      "anaerobic_effect": 0.0,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
+      "date": "2026-04-30",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 4040,
+      "pace_sec_per_km": null,
+      "avg_hr": 92.0,
+      "max_hr": 150.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 0.800000011920929,
+      "anaerobic_effect": 0.20000000298023224,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
       "date": "2026-05-02",
+      "activity_type": "running",
+      "category": "quality_run",
       "distance_km": 6.01,
       "duration_sec": 2054,
       "pace_sec_per_km": 342,
@@ -2098,6 +2371,9 @@
       "max_hr": 180.0,
       "cadence_spm": 169,
       "gct_ms": null,
+      "aerobic_effect": 3.799999952316284,
+      "anaerobic_effect": 0.5,
+      "training_stress_score": null,
       "gps": [
         {
           "lat": 32.834752248600125,
@@ -2915,6 +3191,8 @@
     },
     {
       "date": "2026-05-09",
+      "activity_type": "running",
+      "category": "quality_run",
       "distance_km": 6.01,
       "duration_sec": 2129,
       "pace_sec_per_km": 354,
@@ -2922,6 +3200,9 @@
       "max_hr": 183.0,
       "cadence_spm": 166,
       "gct_ms": null,
+      "aerobic_effect": 3.5999999046325684,
+      "anaerobic_effect": 0.0,
+      "training_stress_score": null,
       "gps": [
         {
           "lat": 32.66989018768072,
@@ -3779,6 +4060,24 @@
     },
     {
       "date": "2026-05-11",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 3385,
+      "pace_sec_per_km": null,
+      "avg_hr": 108.0,
+      "max_hr": 152.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 0.6000000238418579,
+      "anaerobic_effect": 0.6000000238418579,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
+      "date": "2026-05-11",
+      "activity_type": "running",
+      "category": "quality_run",
       "distance_km": 3.61,
       "duration_sec": 1280,
       "pace_sec_per_km": 355,
@@ -3786,6 +4085,9 @@
       "max_hr": 186.0,
       "cadence_spm": 148,
       "gct_ms": null,
+      "aerobic_effect": 3.200000047683716,
+      "anaerobic_effect": 3.200000047683716,
+      "training_stress_score": null,
       "gps": [
         {
           "lat": 31.694590710103512,
@@ -4302,7 +4604,41 @@
       ]
     },
     {
+      "date": "2026-05-12",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 3297,
+      "pace_sec_per_km": null,
+      "avg_hr": 101.0,
+      "max_hr": 147.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 0.699999988079071,
+      "anaerobic_effect": 0.4000000059604645,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
+      "date": "2026-05-14",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 1976,
+      "pace_sec_per_km": null,
+      "avg_hr": 119.0,
+      "max_hr": 169.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 2.0,
+      "anaerobic_effect": 1.5,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
       "date": "2026-05-16",
+      "activity_type": "running",
+      "category": "base_run",
       "distance_km": 2.61,
       "duration_sec": 921,
       "pace_sec_per_km": 352,
@@ -4310,6 +4646,9 @@
       "max_hr": 161.0,
       "cadence_spm": 167,
       "gct_ms": null,
+      "aerobic_effect": 2.299999952316284,
+      "anaerobic_effect": 0.0,
+      "training_stress_score": null,
       "gps": [
         {
           "lat": 32.81211046501994,
@@ -4687,6 +5026,8 @@
     },
     {
       "date": "2026-05-16",
+      "activity_type": "running",
+      "category": "quality_run",
       "distance_km": 3.91,
       "duration_sec": 1384,
       "pace_sec_per_km": 354,
@@ -4694,6 +5035,9 @@
       "max_hr": 170.0,
       "cadence_spm": 168,
       "gct_ms": null,
+      "aerobic_effect": 3.0,
+      "anaerobic_effect": 0.0,
+      "training_stress_score": null,
       "gps": [
         {
           "lat": 32.831133445724845,
@@ -5254,7 +5598,25 @@
       ]
     },
     {
+      "date": "2026-05-17",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 2845,
+      "pace_sec_per_km": null,
+      "avg_hr": 103.0,
+      "max_hr": 153.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 0.8999999761581421,
+      "anaerobic_effect": 0.0,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
       "date": "2026-05-18",
+      "activity_type": "running",
+      "category": "quality_run",
       "distance_km": 6.46,
       "duration_sec": 2994,
       "pace_sec_per_km": 463,
@@ -5262,6 +5624,9 @@
       "max_hr": 200.0,
       "cadence_spm": 122,
       "gct_ms": null,
+      "aerobic_effect": 3.799999952316284,
+      "anaerobic_effect": 3.5,
+      "training_stress_score": null,
       "gps": [
         {
           "lat": 31.693347757682204,
@@ -6462,7 +6827,57 @@
       ]
     },
     {
+      "date": "2026-05-19",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 2650,
+      "pace_sec_per_km": null,
+      "avg_hr": 105.0,
+      "max_hr": 159.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 0.800000011920929,
+      "anaerobic_effect": 0.800000011920929,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
+      "date": "2026-05-20",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 3457,
+      "pace_sec_per_km": null,
+      "avg_hr": 107.0,
+      "max_hr": 157.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 0.8999999761581421,
+      "anaerobic_effect": 1.0,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
+      "date": "2026-05-22",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 2631,
+      "pace_sec_per_km": null,
+      "avg_hr": 116.0,
+      "max_hr": 156.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 1.399999976158142,
+      "anaerobic_effect": 1.0,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
       "date": "2026-05-23",
+      "activity_type": "running",
+      "category": "quality_run",
       "distance_km": 8.15,
       "duration_sec": 2763,
       "pace_sec_per_km": 339,
@@ -6470,6 +6885,9 @@
       "max_hr": 177.0,
       "cadence_spm": 167,
       "gct_ms": null,
+      "aerobic_effect": 3.4000000953674316,
+      "anaerobic_effect": 0.0,
+      "training_stress_score": null,
       "gps": [
         {
           "lat": 31.71695899218321,
@@ -7386,7 +7804,41 @@
       ]
     },
     {
+      "date": "2026-05-23",
+      "activity_type": "breathwork",
+      "category": "other",
+      "distance_km": null,
+      "duration_sec": 334,
+      "pace_sec_per_km": null,
+      "avg_hr": 47.0,
+      "max_hr": 53.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 0.0,
+      "anaerobic_effect": 0.0,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
+      "date": "2026-05-24",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 4249,
+      "pace_sec_per_km": null,
+      "avg_hr": 111.0,
+      "max_hr": 150.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 1.399999976158142,
+      "anaerobic_effect": 0.5,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
       "date": "2026-05-25",
+      "activity_type": "running",
+      "category": "quality_run",
       "distance_km": 6.9,
       "duration_sec": 2437,
       "pace_sec_per_km": 353,
@@ -7394,6 +7846,9 @@
       "max_hr": 201.0,
       "cadence_spm": 134,
       "gct_ms": null,
+      "aerobic_effect": 3.299999952316284,
+      "anaerobic_effect": 3.799999952316284,
+      "training_stress_score": null,
       "gps": [
         {
           "lat": 31.717096036300063,
@@ -7702,7 +8157,57 @@
       ]
     },
     {
+      "date": "2026-05-26",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 5582,
+      "pace_sec_per_km": null,
+      "avg_hr": 112.0,
+      "max_hr": 172.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 1.2999999523162842,
+      "anaerobic_effect": 1.5,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
+      "date": "2026-05-27",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 4114,
+      "pace_sec_per_km": null,
+      "avg_hr": 117.0,
+      "max_hr": 159.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 1.2999999523162842,
+      "anaerobic_effect": 0.699999988079071,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
+      "date": "2026-05-28",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 1958,
+      "pace_sec_per_km": null,
+      "avg_hr": 112.0,
+      "max_hr": 143.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 0.8999999761581421,
+      "anaerobic_effect": 0.0,
+      "training_stress_score": null,
+      "gps": []
+    },
+    {
       "date": "2026-05-30",
+      "activity_type": "running",
+      "category": "quality_run",
       "distance_km": 7.0,
       "duration_sec": 2579,
       "pace_sec_per_km": 368,
@@ -7710,6 +8215,9 @@
       "max_hr": 176.0,
       "cadence_spm": 162,
       "gct_ms": null,
+      "aerobic_effect": 3.200000047683716,
+      "anaerobic_effect": 0.4000000059604645,
+      "training_stress_score": null,
       "gps": [
         {
           "lat": 32.83497151918709,
@@ -8751,6 +9259,8 @@
     },
     {
       "date": "2026-06-01",
+      "activity_type": "running",
+      "category": "base_run",
       "distance_km": 4.01,
       "duration_sec": 1541,
       "pace_sec_per_km": 384,
@@ -8758,6 +9268,9 @@
       "max_hr": 165.0,
       "cadence_spm": 160,
       "gct_ms": null,
+      "aerobic_effect": 2.5,
+      "anaerobic_effect": 0.0,
+      "training_stress_score": null,
       "gps": [
         {
           "lat": 32.81134125776589,
@@ -9376,6 +9889,164 @@
           "lon": 34.956288216635585
         }
       ]
+    },
+    {
+      "date": "2026-06-02",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 2523,
+      "pace_sec_per_km": null,
+      "avg_hr": 118.0,
+      "max_hr": 164.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 1.2000000476837158,
+      "anaerobic_effect": 1.7999999523162842,
+      "training_stress_score": null,
+      "gps": []
     }
-  ]
+  ],
+  "daily": {
+    "2026-04-02": {
+      "sleep_score": null,
+      "body_battery_morning": 3
+    },
+    "2026-04-08": {
+      "sleep_score": 87,
+      "body_battery_morning": 81
+    },
+    "2026-04-10": {
+      "sleep_score": 90,
+      "body_battery_morning": 84
+    },
+    "2026-04-12": {
+      "sleep_score": 89,
+      "body_battery_morning": 79
+    },
+    "2026-04-13": {
+      "sleep_score": 94,
+      "body_battery_morning": 78
+    },
+    "2026-04-14": {
+      "sleep_score": 95,
+      "body_battery_morning": 65
+    },
+    "2026-04-16": {
+      "sleep_score": null,
+      "body_battery_morning": 0
+    },
+    "2026-04-17": {
+      "sleep_score": 86,
+      "body_battery_morning": 91
+    },
+    "2026-04-18": {
+      "sleep_score": 84,
+      "body_battery_morning": 68
+    },
+    "2026-04-20": {
+      "sleep_score": 88,
+      "body_battery_morning": 83
+    },
+    "2026-04-21": {
+      "sleep_score": 87,
+      "body_battery_morning": 77
+    },
+    "2026-04-22": {
+      "sleep_score": 37,
+      "body_battery_morning": 40
+    },
+    "2026-04-24": {
+      "sleep_score": 86,
+      "body_battery_morning": 76
+    },
+    "2026-04-29": {
+      "sleep_score": 70,
+      "body_battery_morning": 66
+    },
+    "2026-04-30": {
+      "sleep_score": 96,
+      "body_battery_morning": 84
+    },
+    "2026-05-02": {
+      "sleep_score": 92,
+      "body_battery_morning": 64
+    },
+    "2026-05-09": {
+      "sleep_score": 94,
+      "body_battery_morning": 66
+    },
+    "2026-05-11": {
+      "sleep_score": 83,
+      "body_battery_morning": 64
+    },
+    "2026-05-12": {
+      "sleep_score": 84,
+      "body_battery_morning": 82
+    },
+    "2026-05-14": {
+      "sleep_score": 98,
+      "body_battery_morning": 73
+    },
+    "2026-05-16": {
+      "sleep_score": 96,
+      "body_battery_morning": 68
+    },
+    "2026-05-17": {
+      "sleep_score": 69,
+      "body_battery_morning": 73
+    },
+    "2026-05-18": {
+      "sleep_score": 86,
+      "body_battery_morning": 80
+    },
+    "2026-05-19": {
+      "sleep_score": 90,
+      "body_battery_morning": 79
+    },
+    "2026-05-20": {
+      "sleep_score": 78,
+      "body_battery_morning": 79
+    },
+    "2026-05-22": {
+      "sleep_score": null,
+      "body_battery_morning": 0
+    },
+    "2026-05-23": {
+      "sleep_score": 76,
+      "body_battery_morning": 73
+    },
+    "2026-05-24": {
+      "sleep_score": 87,
+      "body_battery_morning": 74
+    },
+    "2026-05-25": {
+      "sleep_score": 91,
+      "body_battery_morning": 68
+    },
+    "2026-05-26": {
+      "sleep_score": 72,
+      "body_battery_morning": 66
+    },
+    "2026-05-27": {
+      "sleep_score": 87,
+      "body_battery_morning": 85
+    },
+    "2026-05-28": {
+      "sleep_score": 95,
+      "body_battery_morning": 83
+    },
+    "2026-05-30": {
+      "sleep_score": 95,
+      "body_battery_morning": 57
+    },
+    "2026-06-01": {
+      "sleep_score": 87,
+      "body_battery_morning": 83
+    },
+    "2026-06-02": {
+      "sleep_score": 84,
+      "body_battery_morning": 70
+    }
+  }
 }
