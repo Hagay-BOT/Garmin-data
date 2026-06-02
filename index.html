@@ -390,11 +390,20 @@ function showError(msg){
 let allActivities=[], dailyData={}, metricChart=null, weekMap={};
 
 // ── main ──────────────────────────────────────────────────────
+const STRENGTH_TYPES=new Set(['strength_training','weightlifting','fitness_equipment','gym','indoor_cardio']);
+function inferCategory(a){
+  if(a.category) return a.category;
+  const t=a.activity_type||'';
+  if(STRENGTH_TYPES.has(t)) return 'strength';
+  if(t==='running') return (a.aerobic_effect||0)>2.5?'quality_run':'base_run';
+  return 'other';
+}
+
 function buildDashboard(acts, daily){
-  allActivities=acts;
+  allActivities=acts.map(a=>({...a, category:inferCategory(a)}));
   dailyData=daily;
-  const runs=acts.filter(a=>a.category==='base_run'||a.category==='quality_run');
-  buildHero(acts, runs);
+  const runs=allActivities.filter(a=>a.category==='base_run'||a.category==='quality_run');
+  buildHero(allActivities, runs);
   buildHeatmap(acts);
   buildWeekly(acts);
   buildGPS(runs);
@@ -812,7 +821,12 @@ fetch('data.json')
   .then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
   .then(data=>{
     // Support both old (data.runs) and new (data.activities) formats
-    const acts=data.activities||data.runs||[];
+    // Old format: data.runs — all entries are running activities
+    const isOldFormat=!data.activities&&Array.isArray(data.runs);
+    const rawActs=data.activities||data.runs||[];
+    // Inject activity_type for old-format runs that lack it
+    const acts=rawActs.map(a=>isOldFormat&&!a.activity_type
+      ? {...a, activity_type:'running'} : a);
     const daily=data.daily||{};
     if(data.last_updated){
       const d=new Date(data.last_updated);
