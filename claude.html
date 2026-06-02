@@ -376,7 +376,8 @@
   fetch('data.json')
     .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
     .then(data => {
-      allRuns = data.runs || [];
+      const activities = data.activities || data.runs || [];
+      allRuns = activities.filter(r => r.activity_type === 'running' || r.category === 'base_run' || r.category === 'quality_run');
       refresh();
     })
     .catch(err => {
