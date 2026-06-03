@@ -285,17 +285,6 @@
     <div class="gps-grid" id="gps-grid"></div>
   </div>
 
-  <!-- Tabbed metric chart -->
-  <div class="chart-sec glass">
-    <div class="sec-title">מדדי ריצה לאורך זמן</div>
-    <div class="tabs" id="metric-tabs">
-      <button class="tab-btn active" onclick="switchMetric('hr',this)">דופק ממוצע</button>
-      <button class="tab-btn" onclick="switchMetric('cadence',this)">קדנס</button>
-      <button class="tab-btn" onclick="switchMetric('gct',this)">GCT</button>
-    </div>
-    <div class="chart-wrap"><canvas id="metric-chart"></canvas></div>
-  </div>
-
   <!-- Sleep / Body Battery / Intensity -->
   <div class="chart-sec glass">
     <div class="sec-title">שינה × מוכנות × עצימות</div>
@@ -371,7 +360,7 @@ function showError(msg){
 }
 
 // ── state ──────────────────────────────────────────────────────
-let allActivities=[], dailyData={}, metricChart=null, weekMap={};
+let allActivities=[], dailyData={}, weekMap={};
 
 // ── main ──────────────────────────────────────────────────────
 const STRENGTH_TYPES=new Set(['strength_training','weightlifting','fitness_equipment','gym','indoor_cardio']);
@@ -391,7 +380,6 @@ function buildDashboard(acts, daily){
   buildHeatmap(acts);
   buildWeekly(acts);
   buildGPS(runs);
-  buildMetricChart(runs);
   buildSleepChart(runs, daily);
   buildPR(runs);
   buildTable('runs');
@@ -639,48 +627,6 @@ function buildGPS(runs){
   });
 }
 
-// ── tabbed metric chart ──────────────────────────────────────────
-let metricRuns=[];
-function buildMetricChart(runs){
-  metricRuns=runs;
-  const ctx=document.getElementById('metric-chart').getContext('2d');
-  metricChart=new Chart(ctx, makeMetricConfig('hr'));
-}
-function makeMetricConfig(tab){
-  const lbl=metricRuns.map(r=>fmtDate(r.date));
-  let data, color, label;
-  if(tab==='hr'){ data=metricRuns.map(r=>r.avg_hr??null); color='#f87171'; label='דופק ממוצע'; }
-  else if(tab==='cadence'){ data=metricRuns.map(r=>r.cadence_spm?Math.round(r.cadence_spm):null); color='#00d4e8'; label='קדנס (spm)'; }
-  else{ data=metricRuns.map(r=>r.gct_ms??null); color='#a855f7'; label='GCT (ms)'; }
-  return {
-    type:'line',
-    data:{labels:lbl, datasets:[{
-      label, data,
-      borderColor:color, backgroundColor:hex2rgba(color,.1),
-      tension:.35, pointRadius:3, pointHoverRadius:6, spanGaps:false, fill:true
-    }]},
-    options:{
-      responsive:true, maintainAspectRatio:false, animation:{duration:350},
-      plugins:{
-        legend:{display:false},
-        tooltip:{callbacks:{label:c=>c.raw!=null?` ${label}: ${c.raw}`:null}}
-      },
-      scales:{
-        x:{ticks:{color:'rgba(255,255,255,.4)',maxRotation:45,font:{size:10}},
-           grid:{color:'rgba(255,255,255,.05)'}},
-        y:{ticks:{color:'rgba(255,255,255,.4)',font:{size:10}},
-           grid:{color:'rgba(255,255,255,.05)'}}
-      }
-    }
-  };
-}
-function switchMetric(tab, btn){
-  document.querySelectorAll('#metric-tabs .tab-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  if(metricChart) metricChart.destroy();
-  const ctx=document.getElementById('metric-chart').getContext('2d');
-  metricChart=new Chart(ctx, makeMetricConfig(tab));
-}
 
 // ── sleep / body battery / intensity chart ───────────────────────
 function buildSleepChart(runs, daily){
