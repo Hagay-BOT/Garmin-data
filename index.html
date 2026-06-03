@@ -87,26 +87,9 @@
       border-radius:50%; margin-left:4px; vertical-align:middle;
     }
 
-    /* ── HEATMAP ── */
+    /* ── WEEKLY CHART ── */
     .heatmap-wrap { padding:1.5rem; margin-bottom:1.5rem; }
-    #heatmap { direction:ltr; overflow-x:auto; }
-    .heatmap-months {
-      direction:ltr; display:flex; gap:3px;
-      margin-bottom:4px; font-size:.62rem; color:var(--muted);
-    }
-    .hm-mlbl { width:12px; text-align:center; }
-    .heatmap-inner { direction:ltr; display:flex; gap:3px; }
-    .hm-col { display:flex; flex-direction:column; gap:3px; }
-    .hm-day {
-      width:12px; height:12px; border-radius:2px;
-      background:rgba(255,255,255,0.06);
-      cursor:default; transition:transform .15s;
-    }
-    .hm-day:hover { transform:scale(1.5); }
-    .hm-lv1 { background:#14532d; }
-    .hm-lv2 { background:#166534; }
-    .hm-lv3 { background:#16a34a; }
-    .hm-lv4 { background:#22c55e; }
+    .weekly-chart-wrap { position:relative; height:200px; }
 
     /* ── WEEKLY BARS ── */
     .weekly-wrap { padding:1.5rem; margin-bottom:1.5rem; }
@@ -274,13 +257,10 @@
     </div>
   </div>
 
-  <!-- Heatmap -->
+  <!-- Weekly km chart -->
   <div class="heatmap-wrap glass">
-    <div class="sec-title">12 שבועות אחרונים</div>
-    <div id="heatmap">
-      <div class="heatmap-months" id="hm-months"></div>
-      <div class="heatmap-inner" id="hm-inner"></div>
-    </div>
+    <div class="sec-title">ק"מ שבועי — 12 שבועות אחרונים</div>
+    <div class="weekly-chart-wrap"><canvas id="weekly-km-chart"></canvas></div>
   </div>
 
   <!-- Weekly stacked bars -->
@@ -466,45 +446,65 @@ function buildHero(acts, runs){
   ).join('');
 }
 
-// ── heatmap ──────────────────────────────────────────────────────
+// ── 12-week km bar+line chart ──────────────────────────────────────
 function buildHeatmap(acts){
-  const byDate={};
-  acts.forEach(a=>{ if(a.date) byDate[a.date]=(byDate[a.date]||0)+(a.distance_km||0); });
-
   const today=new Date();
-  const start=new Date(today);
-  start.setDate(today.getDate()-7*12+1);
-  start.setDate(start.getDate()-start.getDay()); // align Sunday
-
-  const inner=document.getElementById('hm-inner');
-  const monthsEl=document.getElementById('hm-months');
-  inner.innerHTML=''; monthsEl.innerHTML='';
-
-  let d=new Date(start), colIdx=0;
-  while(d<=today){
-    const col=document.createElement('div'); col.className='hm-col';
-    const colDate=new Date(d);
-
-    for(let dow=0;dow<7;dow++){
-      const cell=document.createElement('div'); cell.className='hm-day';
-      const iso=d.toISOString().slice(0,10);
-      const km=byDate[iso]||0;
-      if(km>=12) cell.classList.add('hm-lv4');
-      else if(km>=8) cell.classList.add('hm-lv3');
-      else if(km>=4) cell.classList.add('hm-lv2');
-      else if(km>0) cell.classList.add('hm-lv1');
-      cell.title=km>0?`${fmtDate(iso)} — ${km.toFixed(1)} ק"מ`:fmtDate(iso);
-      col.appendChild(cell);
-      d.setDate(d.getDate()+1);
-    }
-
-    inner.appendChild(col);
-    const lbl=document.createElement('span'); lbl.className='hm-mlbl';
-    lbl.textContent=(colIdx===0||colDate.getDate()<=7)
-      ? colDate.toLocaleString('he-IL',{month:'short'}) : '';
-    monthsEl.appendChild(lbl);
-    colIdx++;
+  const weeks=[];
+  for(let i=11;i>=0;i--){
+    const mon=new Date(today);
+    mon.setDate(today.getDate()-((today.getDay()+6)%7)-i*7);
+    const sun=new Date(mon); sun.setDate(mon.getDate()+6);
+    const start=mon.toISOString().slice(0,10);
+    const end=sun.toISOString().slice(0,10);
+    const label=mon.toLocaleDateString('he-IL',{day:'numeric',month:'numeric'});
+    const km=acts.filter(a=>a.date>=start&&a.date<=end&&(a.category==='base_run'||a.category==='quality_run'))
+               .reduce((s,a)=>s+(a.distance_km||0),0);
+    weeks.push({label, km:+km.toFixed(1)});
   }
+
+  new Chart(document.getElementById('weekly-km-chart').getContext('2d'),{
+    type:'bar',
+    data:{
+      labels:weeks.map(w=>w.label),
+      datasets:[
+        {
+          type:'bar',
+          label:'ק"מ',
+          data:weeks.map(w=>w.km),
+          backgroundColor:'rgba(0,212,232,0.25)',
+          borderColor:'rgba(0,212,232,0.6)',
+          borderWidth:1,
+          borderRadius:4,
+          order:2,
+        },
+        {
+          type:'line',
+          label:'מגמה',
+          data:weeks.map(w=>w.km),
+          borderColor:'#00d4e8',
+          backgroundColor:'rgba(0,212,232,0.05)',
+          tension:.4,
+          pointRadius:4,
+          pointHoverRadius:7,
+          fill:true,
+          spanGaps:false,
+          order:1,
+        }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>` ${c.raw} ק"מ`}}
+      },
+      scales:{
+        x:{ticks:{color:'rgba(255,255,255,.45)',font:{size:10}}, grid:{color:'rgba(255,255,255,.04)'}},
+        y:{min:0, ticks:{color:'rgba(255,255,255,.45)',font:{size:10}}, grid:{color:'rgba(255,255,255,.06)'},
+           title:{display:true,text:'ק"מ',color:'rgba(255,255,255,.3)',font:{size:9}}}
+      }
+    }
+  });
 }
 
 // ── weekly stacked bars ──────────────────────────────────────────

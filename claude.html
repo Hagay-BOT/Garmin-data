@@ -212,13 +212,26 @@
   <div id="error-banner" class="hidden"></div>
 
   <div class="controls">
-    <label for="run-count">מספר ריצות לייצוא:</label>
+    <label for="export-mode">מצב ייצוא:</label>
+    <select id="export-mode" onchange="onModeChange()">
+      <option value="multi">מספר ריצות</option>
+      <option value="single">ריצה בודדת</option>
+    </select>
+  </div>
+
+  <div id="multi-controls" class="controls">
+    <label for="run-count">כמות:</label>
     <select id="run-count" onchange="refresh()">
       <option value="3">3 אחרונות</option>
       <option value="5" selected>5 אחרונות</option>
       <option value="10">10 אחרונות</option>
       <option value="all">כל הריצות</option>
     </select>
+  </div>
+
+  <div id="single-controls" class="controls" style="display:none">
+    <label for="single-run">בחר ריצה:</label>
+    <select id="single-run" onchange="refresh()"></select>
   </div>
 
   <div id="run-cards"></div>
@@ -274,11 +287,31 @@
     return `${m}:${String(s).padStart(2,'0')}`;
   }
 
+  function onModeChange() {
+    const mode = document.getElementById('export-mode').value;
+    document.getElementById('multi-controls').style.display = mode === 'multi' ? 'flex' : 'none';
+    document.getElementById('single-controls').style.display = mode === 'single' ? 'flex' : 'none';
+    refresh();
+  }
+
   function getSelectedRuns() {
+    const mode = document.getElementById('export-mode').value;
+    const sorted = [...allRuns].reverse();
+    if (mode === 'single') {
+      const idx = parseInt(document.getElementById('single-run').value);
+      return isNaN(idx) ? [] : [sorted[idx]];
+    }
     const val = document.getElementById('run-count').value;
-    const sorted = [...allRuns].reverse(); // newest first
     if (val === 'all') return sorted;
     return sorted.slice(0, parseInt(val));
+  }
+
+  function populateSingleSelect() {
+    const sorted = [...allRuns].reverse();
+    const sel = document.getElementById('single-run');
+    sel.innerHTML = sorted.map((r, i) =>
+      `<option value="${i}">${fmtDate(r.date)} — ${r.distance_km ? r.distance_km + ' ק"מ' : ''} ${fmtPace(r.pace_sec_per_km)}</option>`
+    ).join('');
   }
 
   function buildRunCards(runs) {
@@ -378,6 +411,7 @@
     .then(data => {
       const activities = data.activities || data.runs || [];
       allRuns = activities.filter(r => r.activity_type === 'running' || r.category === 'base_run' || r.category === 'quality_run');
+      populateSingleSelect();
       refresh();
     })
     .catch(err => {

@@ -21,7 +21,7 @@ except GarminConnectConnectionError as e:
     print(f"ERROR: Connection failed — {e}", file=sys.stderr)
     sys.exit(1)
 
-START_DATE = "2026-04-01"
+START_DATE = "2024-01-01"
 end_date = date.today().isoformat()
 
 STRENGTH_TYPES = {"strength_training", "weightlifting", "fitness_equipment", "gym", "indoor_cardio"}
