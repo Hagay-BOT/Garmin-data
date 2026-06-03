@@ -194,7 +194,12 @@
       background:rgba(0,212,232,0.07); color:var(--cyan);
       font-size:.77rem; font-weight:700;
       padding:.38rem .75rem; border-bottom:none;
+      cursor:pointer; user-select:none;
     }
+    tr.month-row td:hover { background:rgba(0,212,232,0.12); }
+    .month-arrow { display:inline-block; transition:transform .2s; margin-left:.5rem; font-size:.8rem; }
+    .month-arrow.closed { transform:rotate(-90deg); }
+    tr.month-hidden { display:none; }
     .cbadge { font-size:.68rem; padding:.1rem .4rem; border-radius:5px; }
     .cbase { background:rgba(14,165,233,.2); color:#38bdf8; }
     .cqual { background:rgba(0,212,232,.2); color:var(--cyan); }
@@ -297,17 +302,17 @@
     <div class="chart-wrap"><canvas id="sleep-chart"></canvas></div>
   </div>
 
-  <!-- PR -->
-  <div class="pr-grid">
+  <!-- This month summary -->
+  <div class="pr-grid" style="grid-template-columns:1fr;">
     <div class="pr-card glass">
-      <div class="pr-lbl">ריצה ארוכה ביותר</div>
-      <div class="pr-val" id="pr-long">—</div>
-      <div class="pr-sub" id="pr-long-d"></div>
-    </div>
-    <div class="pr-card glass">
-      <div class="pr-lbl">שבוע הכי חזק</div>
-      <div class="pr-val" id="pr-week">—</div>
-      <div class="pr-sub" id="pr-week-d"></div>
+      <div class="pr-lbl">החודש</div>
+      <div style="display:flex;gap:2rem;flex-wrap:wrap;margin-top:.4rem">
+        <div><div style="font-size:.72rem;color:var(--muted)">ריצות</div><div class="pr-val" id="pm-runs" style="font-size:1.4rem">—</div></div>
+        <div><div style="font-size:.72rem;color:var(--muted)">ק"מ</div><div class="pr-val" id="pm-km" style="font-size:1.4rem">—</div></div>
+        <div><div style="font-size:.72rem;color:var(--muted)">קצב ממוצע</div><div class="pr-val" id="pm-pace" style="font-size:1.4rem">—</div></div>
+        <div><div style="font-size:.72rem;color:var(--muted)">דופק ממוצע</div><div class="pr-val" id="pm-hr" style="font-size:1.4rem">—</div></div>
+        <div><div style="font-size:.72rem;color:var(--muted)">TSS שבועי ממוצע</div><div class="pr-val" id="pm-tss" style="font-size:1.4rem">—</div></div>
+      </div>
     </div>
   </div>
 
@@ -725,31 +730,35 @@ function buildSleepChart(runs, daily){
   });
 }
 
-// ── PR ──────────────────────────────────────────────────────────
+// ── This month summary ────────────────────────────────────────────
 function buildPR(runs){
   if(!runs.length) return;
+  const now=new Date();
+  const thisM=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const mRuns=runs.filter(r=>r.date&&r.date.startsWith(thisM));
 
-  const longest=runs.reduce((b,r)=>(r.distance_km||0)>(b.distance_km||0)?r:b, runs[0]);
-  document.getElementById('pr-long').textContent=`${longest.distance_km??'—'} ק"מ`;
-  document.getElementById('pr-long-d').textContent=fmtDate(longest.date);
+  document.getElementById('pm-runs').textContent=mRuns.length||'0';
+  const km=mRuns.reduce((s,r)=>s+(r.distance_km||0),0);
+  document.getElementById('pm-km').textContent=km.toFixed(1);
 
-  const last=[...runs].sort((a,b)=>b.date.localeCompare(a.date))[0];
-  if(last&&last.date===longest.date)
-    document.getElementById('pr-long').insertAdjacentHTML('beforeend','<span class="pr-badge">שיא!</span>');
+  const ap=avg(mRuns.map(r=>r.pace_sec_per_km));
+  document.getElementById('pm-pace').textContent=ap?fmtPace(ap):'—';
 
-  const wkKm={};
-  runs.forEach(r=>{
+  const ah=avg(mRuns.map(r=>r.avg_hr));
+  document.getElementById('pm-hr').textContent=ah||'—';
+
+  // TSS שבועי ממוצע החודש
+  const wkTss={};
+  mRuns.forEach(r=>{
     if(!r.date) return;
     const d=new Date(r.date), mon=new Date(d);
     mon.setDate(d.getDate()-((d.getDay()+6)%7));
     const k=mon.toISOString().slice(0,10);
-    wkKm[k]=(wkKm[k]||0)+(r.distance_km||0);
+    wkTss[k]=(wkTss[k]||0)+calcLoad(r);
   });
-  const best=Object.entries(wkKm).sort((a,b)=>b[1]-a[1])[0];
-  if(best){
-    document.getElementById('pr-week').textContent=`${best[1].toFixed(1)} ק"מ`;
-    document.getElementById('pr-week-d').textContent=`שבוע של ${fmtDate(best[0])}`;
-  }
+  const wkVals=Object.values(wkTss);
+  const avgTss=wkVals.length?Math.round(wkVals.reduce((s,v)=>s+v,0)/wkVals.length):null;
+  document.getElementById('pm-tss').textContent=avgTss||'—';
 }
 
 // ── table (tabs + monthly separators) ───────────────────────────
@@ -758,14 +767,26 @@ function switchTable(tab, btn){
   btn.classList.add('active');
   buildTable(tab);
 }
+function toggleMonth(monthKey){
+  document.querySelectorAll(`tr[data-month="${monthKey}"]`).forEach(r=>{
+    r.classList.toggle('month-hidden');
+  });
+  const arrow=document.querySelector(`.month-arrow[data-mkey="${monthKey}"]`);
+  if(arrow) arrow.classList.toggle('closed');
+}
+
 function buildTable(tab){
   const head=document.getElementById('tbl-head'), body=document.getElementById('tbl-body');
+
+  // רק 3 חודשים אחרונים
+  const now=new Date();
+  const cutoff=new Date(now.getFullYear(), now.getMonth()-2, 1).toISOString().slice(0,10);
 
   let filtered;
   if(tab==='runs') filtered=allActivities.filter(a=>a.category==='base_run'||a.category==='quality_run');
   else if(tab==='strength') filtered=allActivities.filter(a=>a.category==='strength');
   else filtered=allActivities.filter(a=>a.category==='other');
-  filtered=[...filtered].sort((a,b)=>b.date.localeCompare(a.date));
+  filtered=[...filtered].filter(a=>a.date>=cutoff).sort((a,b)=>b.date.localeCompare(a.date));
 
   const colCount=tab==='runs'?8:4;
 
@@ -785,19 +806,23 @@ function buildTable(tab){
       curMonth=m;
       const mActs=filtered.filter(x=>x.date&&x.date.startsWith(m));
       const tr=document.createElement('tr'); tr.className='month-row';
+      tr.onclick=()=>toggleMonth(m);
+      let summary='';
       if(tab==='runs'){
         const ap=avg(mActs.map(x=>x.pace_sec_per_km)), ah=avg(mActs.map(x=>x.avg_hr));
         const ac=avg(mActs.map(x=>x.cadence_spm?Math.round(x.cadence_spm):null));
         const tk=mActs.reduce((s,x)=>s+(x.distance_km||0),0);
-        tr.innerHTML=`<td colspan="8">${fmtMonthHe(m)} | ${mActs.length} ריצות, ${tk.toFixed(1)} ק"מ`
-          +(ap?` | קצב ${fmtPace(ap)}`:'')+(ah?` | דופק ${ah}`:'')+(ac?` | קדנס ${ac}`:'')+'</td>';
+        summary=`${fmtMonthHe(m)} | ${mActs.length} ריצות, ${tk.toFixed(1)} ק"מ`
+          +(ap?` | קצב ${fmtPace(ap)}`:'')+(ah?` | דופק ${ah}`:'')+(ac?` | קדנס ${ac}`:'');
+        tr.innerHTML=`<td colspan="8"><span class="month-arrow" data-mkey="${m}">▼</span> ${summary}</td>`;
       } else {
-        tr.innerHTML=`<td colspan="4">${fmtMonthHe(m)} | ${mActs.length} אימונים</td>`;
+        tr.innerHTML=`<td colspan="4"><span class="month-arrow" data-mkey="${m}">▼</span> ${fmtMonthHe(m)} | ${mActs.length} אימונים</td>`;
       }
       body.appendChild(tr);
     }
 
     const tr=document.createElement('tr');
+    tr.dataset.month=m;
     const cCls={base_run:'cbase',quality_run:'cqual',strength:'cstr',other:'coth'};
     const c=a.category||'other';
 
