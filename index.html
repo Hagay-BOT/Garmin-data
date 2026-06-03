@@ -209,6 +209,71 @@
     ::-webkit-scrollbar { width:5px; height:5px; }
     ::-webkit-scrollbar-track { background:transparent; }
     ::-webkit-scrollbar-thumb { background:rgba(255,255,255,.15); border-radius:3px; }
+
+    /* ── ANNUAL GOAL ── */
+    .goal-bar-wrap {
+      margin-top:.9rem; padding:.75rem 1.25rem;
+      background:rgba(0,212,232,.05); border-radius:12px;
+      border:1px solid rgba(0,212,232,.12);
+      display:flex; align-items:center; gap:.75rem; flex-wrap:wrap;
+    }
+    .goal-lbl { font-size:.78rem; color:var(--muted); white-space:nowrap; }
+    .goal-bar-bg {
+      flex:1; min-width:100px; height:8px;
+      background:rgba(255,255,255,.08); border-radius:4px; overflow:hidden;
+    }
+    .goal-bar-fill { height:100%; border-radius:4px; transition:width .6s ease; background:var(--cyan); }
+    .goal-bar-fill.warn { background:#fbbf24; }
+    .goal-bar-fill.done { background:#4ade80; }
+    .goal-text { font-size:.82rem; color:var(--text); white-space:nowrap; }
+    .goal-input {
+      width:68px; background:rgba(255,255,255,.08); border:1px solid var(--border);
+      border-radius:6px; color:var(--text); padding:.15rem .4rem; font-size:.82rem;
+      text-align:center;
+    }
+    .goal-input:focus { outline:none; border-color:var(--cyan); }
+
+    /* ── RAMP RATE BADGE ── */
+    .heatmap-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; }
+    .ramp-badge {
+      font-size:.74rem; padding:.3rem .65rem; border-radius:8px;
+      border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.05);
+      display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;
+    }
+    .ramp-green { color:#4ade80; } .ramp-yellow { color:#fbbf24; } .ramp-red { color:#f87171; }
+
+    /* ── PRs per Distance ── */
+    .prs-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:.75rem; }
+    @media(max-width:700px){ .prs-grid{grid-template-columns:1fr 1fr;} }
+    .pr-dist-card {
+      background:rgba(255,255,255,.04); border:1px solid var(--border);
+      border-radius:14px; padding:1rem 1.1rem;
+    }
+    .pr-dist-label { font-size:.72rem; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.06em; margin-bottom:.5rem; }
+    .pr-dist-top { font-size:1.6rem; font-weight:800; color:var(--cyan); line-height:1.1; }
+    .pr-dist-date { font-size:.7rem; color:var(--muted); margin-top:.15rem; margin-bottom:.5rem; }
+    .pr-dist-sub { font-size:.76rem; color:rgba(255,255,255,.35); }
+    .pr-dist-sub span { color:rgba(255,255,255,.55); margin-left:.35rem; }
+    .pr-none { color:var(--muted); font-size:.82rem; padding:.5rem 0; }
+
+    /* ── HR ZONE DISTRIBUTION ── */
+    .zone-chart-wrap { position:relative; height:200px; }
+    .zone-legend { display:flex; gap:.75rem; margin-top:.6rem; flex-wrap:wrap; }
+    .zone-lbl { font-size:.72rem; display:flex; align-items:center; gap:.3rem; color:var(--muted); }
+    .zone-dot { width:10px; height:10px; border-radius:2px; }
+
+    /* ── SHOE TRACKER ── */
+    .shoe-list { display:flex; flex-direction:column; gap:.75rem; margin-top:.5rem; }
+    .shoe-item { display:grid; grid-template-columns:1fr auto; gap:.3rem .75rem; align-items:center; }
+    .shoe-name { font-size:.88rem; color:var(--text); }
+    .shoe-km { font-size:.8rem; color:var(--muted); text-align:left; }
+    .shoe-bar-bg {
+      grid-column:1/-1; height:6px;
+      background:rgba(255,255,255,.08); border-radius:3px; overflow:hidden;
+    }
+    .shoe-bar-fill { height:100%; border-radius:3px; transition:width .6s ease; }
+    .shoe-alert { font-size:.72rem; color:#f87171; margin-top:.1rem; grid-column:1/-1; }
+    .shoe-empty { color:var(--muted); font-size:.84rem; }
   </style>
 </head>
 <body>
@@ -262,10 +327,25 @@
     </div>
   </div>
 
+  <!-- Annual Goal -->
+  <div class="glass" style="padding:.85rem 1.25rem;margin-bottom:1.5rem">
+    <div class="goal-bar-wrap" style="background:none;border:none;padding:0;margin:0">
+      <span class="goal-lbl">🎯 יעד שנתי</span>
+      <div class="goal-bar-bg"><div class="goal-bar-fill" id="goal-fill" style="width:0%"></div></div>
+      <span class="goal-text" id="goal-text">0 ק"מ</span>
+      <span class="goal-lbl">מתוך</span>
+      <input class="goal-input" id="goal-input" type="number" min="100" max="9999" placeholder="1000">
+      <span class="goal-lbl">ק"מ</span>
+    </div>
+  </div>
+
   <!-- Weekly km chart -->
   <div class="heatmap-wrap glass">
-    <div class="sec-title">ק"מ שבועי — 12 שבועות אחרונים</div>
-    <div class="weekly-chart-wrap"><canvas id="weekly-km-chart"></canvas></div>
+    <div class="heatmap-header">
+      <div class="sec-title" style="margin-bottom:0">ק"מ שבועי — 12 שבועות אחרונים</div>
+      <div class="ramp-badge" id="ramp-badge"></div>
+    </div>
+    <div class="weekly-chart-wrap" style="margin-top:1rem"><canvas id="weekly-km-chart"></canvas></div>
   </div>
 
   <!-- Weekly stacked bars -->
@@ -289,6 +369,31 @@
   <div class="chart-sec glass">
     <div class="sec-title">שינה × מוכנות × עצימות</div>
     <div class="chart-wrap"><canvas id="sleep-chart"></canvas></div>
+  </div>
+
+  <!-- PRs per Distance -->
+  <div class="chart-sec glass" id="prs-sec">
+    <div class="sec-title">שיאים אישיים לפי מרחק</div>
+    <div class="prs-grid" id="prs-grid"></div>
+  </div>
+
+  <!-- HR Zone Distribution -->
+  <div class="chart-sec glass" id="zones-sec">
+    <div class="sec-title">התפלגות HR Zones — 12 שבועות</div>
+    <div class="zone-chart-wrap"><canvas id="zone-chart"></canvas></div>
+    <div class="zone-legend">
+      <div class="zone-lbl"><div class="zone-dot" style="background:#6b7280"></div>Z1 קל מאוד</div>
+      <div class="zone-lbl"><div class="zone-dot" style="background:#4ade80"></div>Z2 בסיס</div>
+      <div class="zone-lbl"><div class="zone-dot" style="background:#fbbf24"></div>Z3 אירובי</div>
+      <div class="zone-lbl"><div class="zone-dot" style="background:#f97316"></div>Z4 סף</div>
+      <div class="zone-lbl"><div class="zone-dot" style="background:#f87171"></div>Z5 מקסימום</div>
+    </div>
+  </div>
+
+  <!-- Shoe Mileage Tracker -->
+  <div class="chart-sec glass" id="shoes-sec" style="display:none">
+    <div class="sec-title">קילומטרז' נעליים</div>
+    <div class="shoe-list" id="shoe-list"></div>
   </div>
 
   <!-- This month summary -->
@@ -372,15 +477,20 @@ function inferCategory(a){
   return 'other';
 }
 
-function buildDashboard(acts, daily){
+function buildDashboard(acts, daily, shoes, globalMaxHR){
   allActivities=acts.map(a=>({...a, category:inferCategory(a)}));
   dailyData=daily;
   const runs=allActivities.filter(a=>a.category==='base_run'||a.category==='quality_run');
   buildHero(allActivities, runs);
+  buildGoal(runs);
   buildHeatmap(acts);
+  renderRampBadge(allActivities);
   buildWeekly(acts);
   buildGPS(runs);
   buildSleepChart(runs, daily);
+  buildPRs(runs);
+  buildZoneChart(runs, globalMaxHR);
+  buildShoes(shoes);
   buildPR(runs);
   buildTable('runs');
 }
@@ -734,10 +844,10 @@ function buildTable(tab){
   else filtered=allActivities.filter(a=>a.category==='other');
   filtered=[...filtered].filter(a=>a.date>=cutoff).sort((a,b)=>b.date.localeCompare(a.date));
 
-  const colCount=tab==='runs'?8:4;
+  const colCount=tab==='runs'?9:4;
 
   if(tab==='runs'){
-    head.innerHTML=`<tr><th>תאריך</th><th>מרחק</th><th>זמן</th><th>קצב</th><th>דופק</th><th>קדנס</th><th>GCT</th><th>עצימות</th></tr>`;
+    head.innerHTML=`<tr><th>תאריך</th><th>מרחק</th><th>זמן</th><th>קצב</th><th>דופק</th><th>קדנס</th><th>GCT</th><th>עצימות</th><th title="Cardiac Drift — עלייה בדופק ללא עלייה בקצב, מדד לעייפות aerobic">דריפט</th></tr>`;
   } else if(tab==='strength'){
     head.innerHTML=`<tr><th>תאריך</th><th>זמן</th><th>דופק</th><th>עצימות</th></tr>`;
   } else {
@@ -760,7 +870,7 @@ function buildTable(tab){
         const tk=mActs.reduce((s,x)=>s+(x.distance_km||0),0);
         summary=`${fmtMonthHe(m)} | ${mActs.length} ריצות, ${tk.toFixed(1)} ק"מ`
           +(ap?` | קצב ${fmtPace(ap)}`:'')+(ah?` | דופק ${ah}`:'')+(ac?` | קדנס ${ac}`:'');
-        tr.innerHTML=`<td colspan="8"><span class="month-arrow" data-mkey="${m}">▼</span> ${summary}</td>`;
+        tr.innerHTML=`<td colspan="9"><span class="month-arrow" data-mkey="${m}">▼</span> ${summary}</td>`;
       } else {
         tr.innerHTML=`<td colspan="4"><span class="month-arrow" data-mkey="${m}">▼</span> ${fmtMonthHe(m)} | ${mActs.length} אימונים</td>`;
       }
@@ -773,6 +883,8 @@ function buildTable(tab){
     const c=a.category||'other';
 
     if(tab==='runs'){
+      const drift=a.hr_drift_bpm!=null?`${a.hr_drift_bpm>0?'+':''}${a.hr_drift_bpm}`:'—';
+      const driftColor=a.hr_drift_bpm>10?'#f87171':a.hr_drift_bpm>5?'#fbbf24':'rgba(255,255,255,.45)';
       tr.innerHTML=`<td>${fmtDate(a.date)}</td>
         <td>${a.distance_km!=null?a.distance_km+' ק"מ':'—'}</td>
         <td>${fmtDur(a.duration_sec)}</td>
@@ -780,7 +892,8 @@ function buildTable(tab){
         <td>${a.avg_hr??'—'}</td>
         <td>${a.cadence_spm?Math.round(a.cadence_spm):'—'}</td>
         <td>${a.gct_ms!=null?a.gct_ms+'ms':'—'}</td>
-        <td>${a.aerobic_effect!=null?`<span class="cbadge ${cCls[c]||'coth'}">${a.aerobic_effect.toFixed(1)}</span>`:'—'}</td>`;
+        <td>${a.aerobic_effect!=null?`<span class="cbadge ${cCls[c]||'coth'}">${a.aerobic_effect.toFixed(1)}</span>`:'—'}</td>
+        <td style="color:${driftColor};font-size:.8rem">${drift}</td>`;
     } else if(tab==='strength'){
       tr.innerHTML=`<td>${fmtDate(a.date)}</td>
         <td>${fmtDur(a.duration_sec)}</td>
@@ -800,6 +913,188 @@ function buildTable(tab){
   }
 }
 
+// ── Annual Goal ────────────────────────────────────────────────
+const GOAL_KEY='garmin_annual_goal';
+function buildGoal(runs){
+  const year=new Date().getFullYear().toString();
+  const ytd=runs.filter(r=>r.date&&r.date.startsWith(year))
+               .reduce((s,r)=>s+(r.distance_km||0),0);
+  const saved=parseInt(localStorage.getItem(GOAL_KEY));
+  const goal=saved&&saved>0?saved:1000;
+  const input=document.getElementById('goal-input');
+  input.value=goal;
+  updateGoalBar(ytd, goal);
+  input.addEventListener('change',()=>{
+    const v=parseInt(input.value);
+    if(v>0){ localStorage.setItem(GOAL_KEY,v); updateGoalBar(ytd,v); }
+  });
+}
+function updateGoalBar(ytd, goal){
+  const pct=Math.min(100, ytd/goal*100);
+  const fill=document.getElementById('goal-fill');
+  fill.style.width=pct+'%';
+  fill.className='goal-bar-fill'+(pct>=100?' done':pct>=75?' warn':'');
+  document.getElementById('goal-text').textContent=`${Math.round(ytd)} ק"מ`;
+}
+
+// ── Ramp Rate (CTL) ─────────────────────────────────────────────
+function calcRampRate(acts){
+  if(!acts.length) return null;
+  // Build daily TSS map
+  const tssMap={};
+  acts.forEach(a=>{
+    if(!a.date) return;
+    tssMap[a.date]=(tssMap[a.date]||0)+calcLoad(a);
+  });
+  const sorted=Object.keys(tssMap).sort();
+  if(!sorted.length) return null;
+  const start=new Date(sorted[0]), end=new Date();
+  let ctl=0, ctlPrev=null;
+  const pivot28=new Date(end); pivot28.setDate(end.getDate()-28);
+  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+    const key=d.toISOString().slice(0,10);
+    const tss=tssMap[key]||0;
+    ctl=ctl+(tss-ctl)*(1/42);
+    if(d.toISOString().slice(0,10)===pivot28.toISOString().slice(0,10)) ctlPrev=ctl;
+  }
+  if(ctlPrev===null) ctlPrev=0;
+  const rampPerWeek=((ctl-ctlPrev)/28)*7;
+  return { ctl:Math.round(ctl), rampPerWeek:+rampPerWeek.toFixed(1) };
+}
+function renderRampBadge(acts){
+  const badge=document.getElementById('ramp-badge');
+  if(!badge) return;
+  const r=calcRampRate(acts);
+  if(!r){ badge.style.display='none'; return; }
+  const rampCls=Math.abs(r.rampPerWeek)>10?'ramp-red':Math.abs(r.rampPerWeek)>7?'ramp-yellow':'ramp-green';
+  const sign=r.rampPerWeek>=0?'+':'';
+  badge.innerHTML=`<span style="color:var(--muted)">CTL:</span> <strong>${r.ctl}</strong>
+    &nbsp;|&nbsp; <span style="color:var(--muted)">Ramp:</span>
+    <span class="${rampCls}">${sign}${r.rampPerWeek}/שבוע</span>`;
+}
+
+// ── PRs per Distance ────────────────────────────────────────────
+const DIST_TARGETS=[
+  {label:'5K',  min:4.5, max:5.5},
+  {label:'10K', min:9.5, max:10.5},
+  {label:'חצי מרתון', min:20.5, max:21.5},
+  {label:'מרתון', min:41.5, max:42.9},
+];
+function buildPRs(runs){
+  const grid=document.getElementById('prs-grid');
+  if(!grid) return;
+  grid.innerHTML='';
+  DIST_TARGETS.forEach(({label,min,max})=>{
+    const candidates=runs
+      .filter(r=>r.distance_km>=min&&r.distance_km<=max&&r.pace_sec_per_km)
+      .sort((a,b)=>a.pace_sec_per_km-b.pace_sec_per_km);
+    const card=document.createElement('div'); card.className='pr-dist-card';
+    if(!candidates.length){
+      card.innerHTML=`<div class="pr-dist-label">${label}</div><div class="pr-none">אין ריצות</div>`;
+    } else {
+      const top=candidates[0];
+      const sub2=candidates[1]?`<span>#2</span> ${fmtPace(candidates[1].pace_sec_per_km)}`:'';
+      const sub3=candidates[2]?`&nbsp;&nbsp;<span>#3</span> ${fmtPace(candidates[2].pace_sec_per_km)}`:'';
+      card.innerHTML=`
+        <div class="pr-dist-label">${label}</div>
+        <div class="pr-dist-top">${fmtPace(top.pace_sec_per_km)}</div>
+        <div class="pr-dist-date">${fmtDate(top.date)} · ${top.distance_km} ק"מ</div>
+        <div class="pr-dist-sub">${sub2}${sub3}</div>`;
+    }
+    grid.appendChild(card);
+  });
+}
+
+// ── HR Zone Distribution ────────────────────────────────────────
+function buildZoneChart(runs, globalMaxHR){
+  const recent=[...runs].slice(-60); // max 60 runs
+  if(!recent.length){ document.getElementById('zones-sec').style.display='none'; return; }
+
+  // Group into 12-week buckets
+  const today=new Date();
+  const weeks=[];
+  for(let i=11;i>=0;i--){
+    const mon=new Date(today);
+    mon.setDate(today.getDate()-((today.getDay()+6)%7)-i*7);
+    const sun=new Date(mon); sun.setDate(mon.getDate()+6);
+    weeks.push({
+      label:mon.toLocaleDateString('he-IL',{day:'numeric',month:'numeric'}),
+      start:mon.toISOString().slice(0,10),
+      end:sun.toISOString().slice(0,10),
+      zones:[0,0,0,0,0]
+    });
+  }
+
+  const maxHR=globalMaxHR||180;
+  runs.forEach(r=>{
+    if(!r.date) return;
+    const w=weeks.find(w=>r.date>=w.start&&r.date<=w.end);
+    if(!w) return;
+    // Use hr_zones_sec if available, else approximate from avg_hr
+    if(r.hr_zones_sec&&r.hr_zones_sec.some(v=>v>0)){
+      r.hr_zones_sec.forEach((v,i)=>{ w.zones[i]+=v; });
+    } else if(r.avg_hr&&r.duration_sec){
+      const pct=r.avg_hr/maxHR;
+      const z=pct<0.60?0:pct<0.70?1:pct<0.80?2:pct<0.90?3:4;
+      w.zones[z]+=r.duration_sec;
+    }
+  });
+
+  // Convert to percentages
+  const zColors=['#6b7280','#4ade80','#fbbf24','#f97316','#f87171'];
+  const zLabels=['Z1','Z2','Z3','Z4','Z5'];
+  const datasets=zLabels.map((lbl,zi)=>({
+    label:lbl,
+    data:weeks.map(w=>{
+      const total=w.zones.reduce((s,v)=>s+v,0);
+      return total>0?+((w.zones[zi]/total*100).toFixed(1)):0;
+    }),
+    backgroundColor:zColors[zi],
+    stack:'zones',
+  }));
+
+  new Chart(document.getElementById('zone-chart').getContext('2d'),{
+    type:'bar',
+    data:{labels:weeks.map(w=>w.label), datasets},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw}%`}}
+      },
+      scales:{
+        x:{stacked:true, ticks:{color:'rgba(255,255,255,.45)',font:{size:10}}, grid:{color:'rgba(255,255,255,.04)'}},
+        y:{stacked:true, min:0, max:100, ticks:{color:'rgba(255,255,255,.45)',font:{size:10},callback:v=>v+'%'},
+           grid:{color:'rgba(255,255,255,.06)'}}
+      }
+    }
+  });
+}
+
+// ── Shoe Mileage Tracker ────────────────────────────────────────
+function buildShoes(shoes){
+  if(!shoes||!shoes.length) return;
+  const sec=document.getElementById('shoes-sec');
+  const list=document.getElementById('shoe-list');
+  if(!sec||!list) return;
+  sec.style.display='block';
+  list.innerHTML='';
+  shoes.forEach(s=>{
+    const pct=Math.min(100,s.total_km/s.max_km*100);
+    const color=pct>85?'#f87171':pct>65?'#fbbf24':'#4ade80';
+    const alert=pct>85?`<div class="shoe-alert">⚠️ קרוב לסוף חיים (${s.max_km} ק"מ) — שקול להחליף</div>`:'';
+    const item=document.createElement('div'); item.className='shoe-item';
+    item.innerHTML=`
+      <div class="shoe-name">${s.name||'נעל ללא שם'}</div>
+      <div class="shoe-km">${s.total_km} / ${s.max_km} ק"מ</div>
+      <div class="shoe-bar-bg">
+        <div class="shoe-bar-fill" style="width:${pct}%;background:${color}"></div>
+      </div>
+      ${alert}`;
+    list.appendChild(item);
+  });
+}
+
 // ── load data ──────────────────────────────────────────────────
 fetch('data.json')
   .then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
@@ -812,12 +1107,14 @@ fetch('data.json')
     const acts=rawActs.map(a=>isOldFormat&&!a.activity_type
       ? {...a, activity_type:'running'} : a);
     const daily=data.daily||{};
+    const shoes=data.shoes||[];
+    const globalMaxHR=data.global_max_hr||180;
     if(data.last_updated){
       const d=new Date(data.last_updated);
       document.getElementById('nav-upd').textContent=
         ` — עדכון: ${d.toLocaleDateString('he-IL')} ${d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}`;
     }
-    buildDashboard(acts, daily);
+    buildDashboard(acts, daily, shoes, globalMaxHR);
   })
   .catch(err=>showError(err.message));
 </script>

@@ -39,6 +39,8 @@ except Exception as e:
     print(f"ERROR: Failed to fetch activities — {e}", file=sys.stderr)
     sys.exit(1)
 
+global_max_hr = max((a.get("maxHR") or 0 for a in activities), default=180)
+
 if not activities:
     print("WARNING: No activities found in range", file=sys.stderr)
 
@@ -61,6 +63,8 @@ for activity in activities:
 
     gct_ms = None
     gps_points = []
+    hr_zones_sec = [0, 0, 0, 0, 0]
+    hr_drift_bpm = None
 
     if type_key == "running":
         try:
@@ -77,6 +81,27 @@ for activity in activities:
                 for p in geo[::10]
                 if "lat" in p and "lon" in p
             ]
+            # HR zones & cardiac drift from per-second metrics
+            descriptors = details.get("metricDescriptors", [])
+            metrics_data = details.get("activityDetailMetrics", [])
+            hr_idx = next((d["metricsIndex"] for d in descriptors
+                          if d.get("metricsType") == "directHeartRate"), None)
+            if hr_idx is not None and metrics_data and global_max_hr > 0:
+                hr_vals = []
+                for m_entry in metrics_data:
+                    vals = m_entry.get("metrics", [])
+                    if hr_idx < len(vals) and vals[hr_idx] is not None:
+                        hr_vals.append(float(vals[hr_idx]))
+                if hr_vals:
+                    third = max(1, len(hr_vals) // 3)
+                    hr_drift_bpm = round(
+                        sum(hr_vals[-third:]) / third - sum(hr_vals[:third]) / third, 1
+                    )
+                    zone_thresholds = [0.60, 0.70, 0.80, 0.90, 1.01]
+                    for hr in hr_vals:
+                        pct = hr / global_max_hr
+                        z = next((i for i, t in enumerate(zone_thresholds) if pct < t), 4)
+                        hr_zones_sec[z] += 1
         except Exception:
             pass
         time.sleep(0.5)
@@ -96,7 +121,27 @@ for activity in activities:
         "anaerobic_effect": anaerobic_effect,
         "training_stress_score": tss,
         "gps": gps_points,
+        "hr_zones_sec": hr_zones_sec,
+        "hr_drift_bpm": hr_drift_bpm,
     })
+
+# נעליים / ציוד מגרמין קונקט
+shoes_output = []
+try:
+    profile = client.get_user_profile()
+    user_id = str(profile.get("id") or profile.get("userId") or "")
+    if user_id:
+        gear_list = client.get_gear(user_id)
+        for g in (gear_list or []):
+            if str(g.get("gearTypeName", "")).lower() in ("shoes", "running shoes", "shoe"):
+                shoes_output.append({
+                    "name": g.get("displayName", ""),
+                    "total_km": round((g.get("totalDistance") or 0) / 1000, 1),
+                    "activity_count": g.get("totalActivities", 0),
+                    "max_km": 700,
+                })
+except Exception:
+    pass
 
 # שינה + Body Battery לכל יום אימון
 unique_dates = sorted(set(r["date"] for r in records))
@@ -127,6 +172,8 @@ output = {
     "last_updated": datetime.now(timezone.utc).isoformat(),
     "activities": sorted(records, key=lambda r: r["date"]),
     "daily": daily,
+    "shoes": shoes_output,
+    "global_max_hr": global_max_hr,
 }
 
 with open("data.json", "w", encoding="utf-8") as f:
