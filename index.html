@@ -270,8 +270,7 @@
     <div class="wk-legend">
       <div class="wl-item"><div class="wl-dot" style="background:#0ea5e9"></div>ריצת בסיס</div>
       <div class="wl-item"><div class="wl-dot" style="background:var(--cyan)"></div>ריצת איכות</div>
-      <div class="wl-item"><div class="wl-dot" style="background:var(--purple)"></div>כוח</div>
-      <div class="wl-item"><div class="wl-dot" style="background:rgba(255,255,255,.2)"></div>אחר</div>
+      <div class="wl-item" style="color:rgba(255,255,255,.3);font-size:.67rem">גובה = TSS (עומס אימון)</div>
     </div>
   </div>
 
@@ -507,7 +506,16 @@ function buildHeatmap(acts){
   });
 }
 
-// ── weekly stacked bars ──────────────────────────────────────────
+// ── weekly stacked bars (ריצות בלבד, עומס = TSS) ──────────────────
+// עומס מחושב לפי Training Stress Score (TSS) של גרמין — מבוסס EPOC
+// כשאין TSS: aerobic_effect × (משך בדקות / 60) × 20 כ-proxy
+function calcLoad(a){
+  if(a.training_stress_score) return a.training_stress_score;
+  if(a.aerobic_effect && a.duration_sec)
+    return a.aerobic_effect * (a.duration_sec/3600) * 20;
+  return (a.duration_sec||0)/60 * 0.8; // fallback: דקות × 0.8
+}
+
 function buildWeekly(acts){
   const today=new Date();
   const weeks=[];
@@ -525,31 +533,36 @@ function buildWeekly(acts){
   weekMap={};
   weeks.forEach(w=>{ weekMap[w.start]=w.acts; });
 
-  const maxMins=Math.max(...weeks.map(w=>w.acts.reduce((s,a)=>s+(a.duration_sec||0)/60,0)),60);
+  // רק ריצות (ללא כוח)
+  const runCats=new Set(['base_run','quality_run']);
+  const maxLoad=Math.max(...weeks.map(w=>
+    w.acts.filter(a=>runCats.has(a.category)).reduce((s,a)=>s+calcLoad(a),0)
+  ),1);
+
   const H=110, container=document.getElementById('weekly-bars');
   container.innerHTML='';
 
   weeks.forEach(w=>{
-    const mins={base:0,quality:0,strength:0,other:0};
-    w.acts.forEach(a=>{
-      const m=(a.duration_sec||0)/60;
-      if(a.category==='base_run') mins.base+=m;
-      else if(a.category==='quality_run') mins.quality+=m;
-      else if(a.category==='strength') mins.strength+=m;
-      else mins.other+=m;
+    const runActs=w.acts.filter(a=>runCats.has(a.category));
+    const load={base:0,quality:0};
+    runActs.forEach(a=>{
+      const l=calcLoad(a);
+      if(a.category==='base_run') load.base+=l;
+      else load.quality+=l;
     });
-    const total=mins.base+mins.quality+mins.strength+mins.other;
-    const scale=total>0?(total/maxMins)*H:0;
+    const total=load.base+load.quality;
+    const scale=total>0?(total/maxLoad)*H:0;
 
-    const seg=(k,cls)=>mins[k]>0
-      ?`<div class="${cls}" style="height:${(mins[k]/total)*scale}px"></div>`:'';
+    const seg=(k,cls)=>load[k]>0
+      ?`<div class="${cls}" style="height:${(load[k]/total)*scale}px"></div>`:'';
 
     const lbl=new Date(w.start).toLocaleDateString('he-IL',{day:'numeric',month:'numeric'});
+    const tssLabel=total>0?`TSS ${Math.round(total)}`:'';
     const col=document.createElement('div'); col.className='wk-col';
     col.onclick=()=>openModal(w.start);
+    col.title=tssLabel;
     col.innerHTML=`
       <div class="wk-stack" style="height:${scale}px;min-height:${total>0?'4px':'0'}">
-        ${seg('other','wb-other')}${seg('strength','wb-strength')}
         ${seg('quality','wb-quality')}${seg('base','wb-base')}
       </div>
       <div class="wk-lbl">${lbl}</div>`;
