@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-06-04T09:53:22.028382+00:00",
+  "last_updated": "2026-06-05T09:41:52.289043+00:00",
   "activities": [
     {
       "date": "2024-01-03",
@@ -86405,6 +86405,78 @@
         0
       ],
       "hr_drift_bpm": null
+    },
+    {
+      "date": "2026-06-04",
+      "activity_type": "stair_climbing",
+      "category": "other",
+      "distance_km": null,
+      "duration_sec": 728,
+      "pace_sec_per_km": null,
+      "avg_hr": 149.0,
+      "max_hr": 174.0,
+      "cadence_spm": 11,
+      "gct_ms": null,
+      "aerobic_effect": 2.200000047683716,
+      "anaerobic_effect": 0.699999988079071,
+      "training_stress_score": null,
+      "gps": [],
+      "hr_zones_sec": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "hr_drift_bpm": null
+    },
+    {
+      "date": "2026-06-04",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 3691,
+      "pace_sec_per_km": null,
+      "avg_hr": 104.0,
+      "max_hr": 151.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 0.5,
+      "anaerobic_effect": 0.5,
+      "training_stress_score": null,
+      "gps": [],
+      "hr_zones_sec": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "hr_drift_bpm": null
+    },
+    {
+      "date": "2026-06-05",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 1963,
+      "pace_sec_per_km": null,
+      "avg_hr": 116.0,
+      "max_hr": 157.0,
+      "cadence_spm": null,
+      "gct_ms": null,
+      "aerobic_effect": 1.0,
+      "anaerobic_effect": 0.5,
+      "training_stress_score": null,
+      "gps": [],
+      "hr_zones_sec": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "hr_drift_bpm": null
     }
   ],
   "daily": {
@@ -87951,17 +88023,25 @@
     "2026-06-02": {
       "sleep_score": 84,
       "body_battery_morning": 70
+    },
+    "2026-06-04": {
+      "sleep_score": 53,
+      "body_battery_morning": 50
+    },
+    "2026-06-05": {
+      "sleep_score": 58,
+      "body_battery_morning": 46
     }
   },
   "shoes": [
     {
-      "name": "",
+      "name": null,
       "total_km": 0.0,
       "activity_count": 0,
       "max_km": 700
     },
     {
-      "name": null,
+      "name": "",
       "total_km": 0.0,
       "activity_count": 0,
       "max_km": 700
