@@ -510,7 +510,7 @@
       if(r.sweat_loss_ml) md += `- הזעה: ~${r.sweat_loss_ml}ml\n`;
       if(r.moderate_intensity_min||r.vigorous_intensity_min)
         md += `- דקות עצימות: מתון ${r.moderate_intensity_min||0} | עז ${r.vigorous_intensity_min||0}\n`;
-      if(r.body_battery_impact) md += `- השפעה על Body Battery: -${r.body_battery_impact}\n`;
+      if(r.body_battery_impact!=null) md += `- השפעה על Body Battery: ${r.body_battery_impact} נקודות\n`;
 
       if(day.sleep_score||day.body_battery_morning) {
         md += `\n**מצב לפני הריצה**\n`;
@@ -567,8 +567,7 @@
       const activities = data.activities || data.runs || [];
       allRuns = activities.filter(r =>
         r.activity_type==='running' ||
-        r.category==='base_run' ||
-        r.category==='quality_run'
+        (r.category && (r.category==='base_run' || r.category.startsWith('quality')))
       );
       populateSingleSelect();
       refresh();
