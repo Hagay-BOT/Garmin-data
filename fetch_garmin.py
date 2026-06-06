@@ -96,7 +96,6 @@ for activity in activities:
     anaerobic_effect = activity.get("anaerobicTrainingEffect")
     tss = activity.get("trainingStressScore")
 
-    gct_ms = None
     gps_points = []
     hr_drift_bpm = None
     temperature = None
@@ -107,6 +106,9 @@ for activity in activities:
     best_pace_sec_per_km = round(1000 / max_speed) if max_speed and max_speed > 0 else None
     max_cadence_raw = activity.get("maxRunningCadenceInStepsPerMinute")
     max_cadence_spm = round(max_cadence_raw) if max_cadence_raw else None
+    # GCT from batch summary (avgGroundContactTime is in miliseconds)
+    gct_raw = activity.get("avgGroundContactTime")
+    gct_ms = round(gct_raw) if gct_raw else None
     stride_raw = activity.get("avgStrideLength")
     stride_length_m = round(stride_raw / 100, 2) if stride_raw else None
     vert_osc = activity.get("avgVerticalOscillation")
@@ -155,12 +157,6 @@ for activity in activities:
 
         try:
             details = client.get_activity_details(activity_id)
-            gct_ms = details.get("avgGroundContactTime")
-            if gct_ms is None:
-                for m in details.get("connectIQMeasurements", []):
-                    if "groundContact" in str(m.get("key", "")).lower():
-                        gct_ms = m.get("value")
-                        break
             geo = details.get("geoPolylineDTO", {}).get("polyline", [])
             gps_points = [
                 {"lat": p["lat"], "lon": p["lon"]}
