@@ -289,30 +289,31 @@
   <!-- Config card -->
   <div class="config-card glass" style="margin-bottom:1.2rem">
 
-    <!-- Mode + count selectors -->
+    <!-- Run selector -->
     <div>
-      <div class="sec-label">בחר ריצות</div>
+      <div class="sec-label">בחר ריצה</div>
       <div class="controls">
-        <label for="export-mode">מצב:</label>
-        <select id="export-mode" onchange="onModeChange()">
-          <option value="multi">מספר ריצות</option>
-          <option value="single">ריצה בודדת</option>
-        </select>
+        <label for="single-run">ריצה:</label>
+        <select id="single-run" onchange="onRunChange()"></select>
+      </div>
+    </div>
 
-        <div id="multi-controls" class="controls">
-          <label for="run-count">כמות:</label>
-          <select id="run-count" onchange="refresh()">
-            <option value="3">3 אחרונות</option>
-            <option value="5" selected>5 אחרונות</option>
-            <option value="10">10 אחרונות</option>
-            <option value="all">כל הריצות</option>
+    <!-- Category override -->
+    <div id="category-override-wrap">
+      <div class="sec-label">סיווג אימון</div>
+      <div class="controls" style="align-items:center;gap:1.2rem">
+        <div id="algo-category-display" style="font-size:0.85rem;color:rgba(255,255,255,0.5)"></div>
+        <div style="display:flex;align-items:center;gap:0.5rem">
+          <label for="category-override" style="font-size:0.85rem;color:rgba(255,255,255,0.5)">שנה ל:</label>
+          <select id="category-override" onchange="refresh()">
+            <option value="">— ללא שינוי —</option>
+            <option value="base_run">ריצת בסיס</option>
+            <option value="quality_run">ריצת איכות</option>
           </select>
         </div>
-
-        <div id="single-controls" class="controls" style="display:none">
-          <label for="single-run">ריצה:</label>
-          <select id="single-run" onchange="refresh()"></select>
-        </div>
+      </div>
+      <div id="conflict-hint" class="prompt-hint" style="display:none;color:rgba(251,191,36,0.7);margin-top:0.4rem">
+        ⚠️ שינוי הסיווג יצוין בייצוא — קלוד יקבל את שני הגרסאות ויבין את ההתנגשות
       </div>
     </div>
 
@@ -393,30 +394,37 @@
     return unit ? `${num}${unit}` : `${num}`;
   }
 
-  function onModeChange() {
-    const mode = document.getElementById('export-mode').value;
-    document.getElementById('multi-controls').style.display = mode==='multi'?'flex':'none';
-    document.getElementById('single-controls').style.display = mode==='single'?'flex':'none';
+  function getSelectedRun() {
+    const sorted = [...allRuns].reverse();
+    const idx = parseInt(document.getElementById('single-run').value);
+    return isNaN(idx) ? null : sorted[idx];
+  }
+
+  function onRunChange() {
+    // Reset category override when switching runs
+    document.getElementById('category-override').value = '';
+    updateCategoryUI();
     refresh();
   }
 
-  function getSelectedRuns() {
-    const mode = document.getElementById('export-mode').value;
-    const sorted = [...allRuns].reverse();
-    if(mode==='single') {
-      const idx = parseInt(document.getElementById('single-run').value);
-      return isNaN(idx)?[]:[sorted[idx]];
-    }
-    const val = document.getElementById('run-count').value;
-    return val==='all' ? sorted : sorted.slice(0, parseInt(val));
+  function updateCategoryUI() {
+    const run = getSelectedRun();
+    if (!run) return;
+    const algoLabel = catLabel(run.category);
+    document.getElementById('algo-category-display').textContent =
+      `אלגוריתם: ${algoLabel} (aerobic effect: ${run.aerobic_effect ?? '—'})`;
+    const override = document.getElementById('category-override').value;
+    const hint = document.getElementById('conflict-hint');
+    hint.style.display = (override && override !== run.category) ? 'block' : 'none';
   }
 
   function populateSingleSelect() {
     const sorted = [...allRuns].reverse();
     const sel = document.getElementById('single-run');
-    sel.innerHTML = sorted.map((r,i) =>
-      `<option value="${i}">${fmtDate(r.date)} — ${r.distance_km?r.distance_km+' ק"מ':''} ${fmtPace(r.pace_sec_per_km)}</option>`
-    ).join('');
+    sel.innerHTML = sorted.map((r,i) => {
+      const catShort = r.category==='quality_run'?'⚡':r.category==='base_run'?'🟦':'';
+      return `<option value="${i}">${catShort} ${fmtDate(r.date)} — ${r.distance_km?r.distance_km+' ק"מ':''} — ${fmtPace(r.pace_sec_per_km)}</option>`;
+    }).join('');
   }
 
   function catClass(cat) {
@@ -432,7 +440,9 @@
 
   function buildRunCards(runs) {
     const container = document.getElementById('run-cards');
+    const override = document.getElementById('category-override').value;
     container.innerHTML = runs.map(r => {
+      const effectiveCat = (override && runs.length===1) ? override : r.category;
       const day = dailyData[r.date] || {};
       const chips = [
         r.distance_km!=null ? `<div class="mchip">מרחק <b>${r.distance_km} ק"מ</b></div>` : '',
@@ -472,7 +482,8 @@
         <div class="run-card-header">
           <div class="run-date">${fmtDate(r.date)}</div>
           ${r.start_time ? `<div style="font-size:0.78rem;color:rgba(255,255,255,0.35)">${r.start_time.slice(11,16)}</div>` : ''}
-          <div class="run-category ${catClass(r.category)}">${catLabel(r.category)}</div>
+          <div class="run-category ${catClass(effectiveCat)}">${catLabel(effectiveCat)}</div>
+          ${override && override !== r.category && runs.length===1 ? `<div style="font-size:0.72rem;color:rgba(251,191,36,0.8);padding:0.1rem 0.5rem;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);border-radius:6px;">שונה ידנית</div>` : ''}
         </div>
         <div class="run-metrics">${chips}</div>
         ${lapTable}
@@ -482,6 +493,7 @@
 
   function buildMarkdown(runs) {
     const promptText = document.getElementById('prompt-template').value.trim();
+    const override = document.getElementById('category-override').value;
     const now = new Date().toLocaleDateString('he-IL');
     let md = '';
 
@@ -490,10 +502,21 @@
 
     runs.forEach((r, idx) => {
       const day = dailyData[r.date] || {};
-      md += `### ריצה ${idx+1} — ${fmtDate(r.date)}`;
+      const effectiveCat = (override && runs.length===1) ? override : r.category;
+      const hasConflict = override && runs.length===1 && override !== r.category;
+
+      md += `### ריצה — ${fmtDate(r.date)}`;
       if(r.start_time) md += ` (${r.start_time.slice(11,16)})`;
       md += `\n`;
-      if(r.category) md += `סוג: ${catLabel(r.category)}\n`;
+
+      if(hasConflict) {
+        md += `\n> ⚠️ **התנגשות בסיווג:**\n`;
+        md += `> - האלגוריתם סיווג: **${catLabel(r.category)}** (aerobic effect: ${r.aerobic_effect ?? '—'})\n`;
+        md += `> - הרץ שינה ל: **${catLabel(override)}**\n`;
+        md += `> - הסבר אפשרי: הנתונים מצביעים על עצימות גבוהה אך הרץ הרגיש שהריצה הייתה קלה — שים לב לגורמים חיצוניים (שינה, עייפות, תנאים).\n\n`;
+      } else if(effectiveCat) {
+        md += `סוג: ${catLabel(effectiveCat)}\n`;
+      }
 
       md += `\n**מרחק ומהירות**\n`;
       if(r.distance_km!=null) md += `- מרחק: ${r.distance_km} ק"מ\n`;
@@ -552,25 +575,13 @@
       md += `\n---\n\n`;
     });
 
-    // Summary averages
-    if(runs.length > 1) {
-      const avg = arr => { const v=arr.filter(x=>x!=null&&!isNaN(x)); return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):null; };
-      const totalKm = runs.reduce((s,r)=>s+(r.distance_km||0),0);
-      md += `## סיכום (${runs.length} ריצות)\n`;
-      md += `- סה"כ ק"מ: ${totalKm.toFixed(1)}\n`;
-      const avgPace = avg(runs.map(r=>r.pace_sec_per_km).filter(Boolean));
-      if(avgPace) md += `- קצב ממוצע: ${fmtPace(avgPace)} דק'/ק"מ\n`;
-      const avgHR = avg(runs.map(r=>r.avg_hr).filter(Boolean));
-      if(avgHR) md += `- דופק ממוצע: ${avgHR}\n`;
-      const avgTSS = avg(runs.map(r=>r.training_stress_score).filter(Boolean));
-      if(avgTSS) md += `- TSS ממוצע: ${avgTSS}\n`;
-    }
-
     return md;
   }
 
   function refresh() {
-    const runs = getSelectedRuns();
+    updateCategoryUI();
+    const run = getSelectedRun();
+    const runs = run ? [run] : [];
     buildRunCards(runs);
     document.getElementById('preview-box').textContent = buildMarkdown(runs);
   }
