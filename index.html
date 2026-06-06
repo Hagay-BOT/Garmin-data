@@ -582,7 +582,7 @@ function buildHeatmap(acts){
     const start=mon.toISOString().slice(0,10);
     const end=sun.toISOString().slice(0,10);
     const label=mon.toLocaleDateString('he-IL',{day:'numeric',month:'numeric'});
-    const km=acts.filter(a=>a.date>=start&&a.date<=end&&(a.category==='base_run'||a.category==='quality_run'))
+    const km=acts.filter(a=>a.date>=start&&a.date<=end&&(a.category==='base_run'||isQuality(a.category)))
                .reduce((s,a)=>s+(a.distance_km||0),0);
     weeks.push({label, km:+km.toFixed(1)});
   }
@@ -679,7 +679,7 @@ function buildWeekly(acts){
       else if(a.category==='quality_segments')  load.segments+=l;
       else load.tempo+=l; // quality_tempo + quality_run legacy
     });
-    const total=load.base+load.quality;
+    const total=load.base+load.tempo+load.intervals+load.hills+load.segments;
     const scale=total>0?(total/maxLoad)*H:0;
 
     const seg=(k,cls)=>load[k]>0
@@ -865,7 +865,7 @@ function buildTable(tab){
   const cutoff=new Date(now.getFullYear(), now.getMonth()-2, 1).toISOString().slice(0,10);
 
   let filtered;
-  if(tab==='runs') filtered=allActivities.filter(a=>a.category==='base_run'||a.category==='quality_run');
+  if(tab==='runs') filtered=allActivities.filter(a=>a.category==='base_run'||isQuality(a.category));
   else if(tab==='strength') filtered=allActivities.filter(a=>a.category==='strength');
   else filtered=allActivities.filter(a=>a.category==='other');
   filtered=[...filtered].filter(a=>a.date>=cutoff).sort((a,b)=>b.date.localeCompare(a.date));
