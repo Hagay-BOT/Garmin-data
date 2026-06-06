@@ -305,8 +305,13 @@
       <div class="controls">
         <select id="category-override" onchange="refresh()">
           <option value="">— ללא שינוי —</option>
-          <option value="base_run">ריצת בסיס</option>
-          <option value="quality_run">ריצת איכות</option>
+          <option value="base_run">🟦 ריצת בסיס</option>
+          <optgroup label="⚡ ריצת איכות">
+            <option value="quality_tempo">שינוי קצבים</option>
+            <option value="quality_intervals">אינטרוואלים</option>
+            <option value="quality_hills">עליות</option>
+            <option value="quality_segments">מקטעים</option>
+          </optgroup>
         </select>
       </div>
     </div>
@@ -378,15 +383,20 @@
     }).join('');
   }
 
+  const CAT_LABELS = {
+    base_run:          'ריצת בסיס',
+    quality_tempo:     'שינוי קצבים',
+    quality_intervals: 'אינטרוואלים',
+    quality_hills:     'עליות',
+    quality_segments:  'מקטעים',
+    quality_run:       'ריצת איכות',  // backward compat
+    strength:          'כוח',
+  };
+  function catLabel(cat) { return CAT_LABELS[cat] || cat || ''; }
   function catClass(cat) {
-    if(cat==='quality_run') return 'cat-quality';
-    if(cat==='base_run') return 'cat-base';
+    if(cat === 'base_run') return 'cat-base';
+    if(cat && cat.startsWith('quality')) return 'cat-quality';
     return 'cat-other';
-  }
-  function catLabel(cat) {
-    if(cat==='quality_run') return 'ריצת איכות';
-    if(cat==='base_run') return 'ריצת בסיס';
-    return cat||'';
   }
 
   function buildRunCards(runs) {

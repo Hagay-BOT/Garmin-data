@@ -101,10 +101,14 @@
       border-radius:4px 4px 0 0; overflow:hidden; transition:filter .2s;
     }
     .wk-lbl { font-size:.62rem; color:var(--muted); }
-    .wb-base { background:#0ea5e9; }
-    .wb-quality { background:var(--cyan); }
-    .wb-strength { background:var(--purple); }
-    .wb-other { background:rgba(255,255,255,0.2); }
+    .wb-base      { background:#0ea5e9; }
+    .wb-quality   { background:var(--cyan); }
+    .wb-intervals { background:#f472b6; }
+    .wb-hills     { background:#4ade80; }
+    .wb-segments  { background:#fb923c; }
+    .wb-tempo     { background:var(--cyan); }
+    .wb-strength  { background:var(--purple); }
+    .wb-other     { background:rgba(255,255,255,0.2); }
     .wk-legend { display:flex; gap:1rem; margin-top:.75rem; flex-wrap:wrap; }
     .wl-item { display:flex; align-items:center; gap:.35rem; font-size:.73rem; color:var(--muted); }
     .wl-dot { width:10px; height:10px; border-radius:2px; }
@@ -353,9 +357,12 @@
     <div class="sec-title">עומס שבועי — 8 שבועות <span style="font-size:.68rem;opacity:.6">(לחץ לפירוט)</span></div>
     <div class="weekly-bars" id="weekly-bars"></div>
     <div class="wk-legend">
-      <div class="wl-item"><div class="wl-dot" style="background:#0ea5e9"></div>ריצת בסיס</div>
-      <div class="wl-item"><div class="wl-dot" style="background:var(--cyan)"></div>ריצת איכות</div>
-      <div class="wl-item" style="color:rgba(255,255,255,.3);font-size:.67rem">גובה = TSS (עומס אימון)</div>
+      <div class="wl-item"><div class="wl-dot" style="background:#0ea5e9"></div>בסיס</div>
+      <div class="wl-item"><div class="wl-dot" style="background:var(--cyan)"></div>שינוי קצבים</div>
+      <div class="wl-item"><div class="wl-dot" style="background:#f472b6"></div>אינטרוואלים</div>
+      <div class="wl-item"><div class="wl-dot" style="background:#4ade80"></div>עליות</div>
+      <div class="wl-item"><div class="wl-dot" style="background:#fb923c"></div>מקטעים</div>
+      <div class="wl-item" style="color:rgba(255,255,255,.3);font-size:.67rem">גובה = TSS</div>
     </div>
   </div>
 
@@ -469,6 +476,16 @@ let allActivities=[], dailyData={}, weekMap={};
 
 // ── main ──────────────────────────────────────────────────────
 const STRENGTH_TYPES=new Set(['strength_training','weightlifting','fitness_equipment','gym','indoor_cardio']);
+// תת-קטגוריות ריצת איכות
+const CAT_LABELS={
+  base_run:'ריצת בסיס', quality_tempo:'שינוי קצבים',
+  quality_intervals:'אינטרוואלים', quality_hills:'עליות',
+  quality_segments:'מקטעים', quality_run:'ריצת איכות',
+  strength:'כוח', other:'אחר'
+};
+function isQuality(cat){ return cat&&cat.startsWith('quality'); }
+function catLabel(cat){ return CAT_LABELS[cat]||cat||''; }
+
 function inferCategory(a){
   if(a.category) return a.category;
   const t=a.activity_type||'';
@@ -480,7 +497,7 @@ function inferCategory(a){
 function buildDashboard(acts, daily, shoes, globalMaxHR){
   allActivities=acts.map(a=>({...a, category:inferCategory(a)}));
   dailyData=daily;
-  const runs=allActivities.filter(a=>a.category==='base_run'||a.category==='quality_run');
+  const runs=allActivities.filter(a=>a.category==='base_run'||isQuality(a.category));
   buildHero(allActivities, runs);
   buildGoal(runs);
   buildHeatmap(acts);
@@ -517,20 +534,26 @@ function buildHero(acts, runs){
     document.getElementById('h-arrow').innerHTML=`<span class="${cls}">${arrow} ${pct}% לעומת חודש קודם</span>`;
   }
 
-  // Doughnut
-  const cats={base_run:0,quality_run:0,strength:0,other:0};
+  // Doughnut — כולל תת-קטגוריות
+  const PIE_ORDER=['base_run','quality_tempo','quality_intervals','quality_hills','quality_segments','quality_run','strength','other'];
+  const PIE_COLORS={
+    base_run:'#0ea5e9',
+    quality_tempo:'#00d4e8', quality_intervals:'#f472b6',
+    quality_hills:'#4ade80',  quality_segments:'#fb923c',
+    quality_run:'#00d4e8',    // backward compat
+    strength:'#a855f7',       other:'rgba(255,255,255,0.2)'
+  };
+  const cats={};
   acts.forEach(a=>{ const c=a.category||'other'; cats[c]=(cats[c]||0)+1; });
-  const colors={base_run:'#0ea5e9',quality_run:'#00d4e8',strength:'#a855f7',other:'rgba(255,255,255,0.22)'};
-  const labels={base_run:'ריצת בסיס',quality_run:'ריצת איכות',strength:'כוח',other:'אחר'};
-  const entries=Object.entries(cats).filter(([,v])=>v>0);
+  const entries=PIE_ORDER.map(k=>[k,cats[k]||0]).filter(([,v])=>v>0);
 
   new Chart(document.getElementById('pie-chart'),{
     type:'doughnut',
     data:{
-      labels:entries.map(([k])=>labels[k]),
+      labels:entries.map(([k])=>catLabel(k)),
       datasets:[{
         data:entries.map(([,v])=>v),
-        backgroundColor:entries.map(([k])=>colors[k]),
+        backgroundColor:entries.map(([k])=>PIE_COLORS[k]||'#888'),
         borderWidth:0, hoverOffset:6
       }]
     },
@@ -544,7 +567,7 @@ function buildHero(acts, runs){
   });
 
   document.getElementById('pie-legend').innerHTML=entries.map(([k,v])=>
-    `<div><span class="pie-dot" style="background:${colors[k]}"></span>${labels[k]}: ${v}</div>`
+    `<div><span class="pie-dot" style="background:${PIE_COLORS[k]||'#888'}"></span>${catLabel(k)}: ${v}</div>`
   ).join('');
 }
 
@@ -637,21 +660,24 @@ function buildWeekly(acts){
   weeks.forEach(w=>{ weekMap[w.start]=w.acts; });
 
   // רק ריצות (ללא כוח)
-  const runCats=new Set(['base_run','quality_run']);
+  const isRun=a=>a.category==='base_run'||isQuality(a.category);
   const maxLoad=Math.max(...weeks.map(w=>
-    w.acts.filter(a=>runCats.has(a.category)).reduce((s,a)=>s+calcLoad(a),0)
+    w.acts.filter(isRun).reduce((s,a)=>s+calcLoad(a),0)
   ),1);
 
   const H=110, container=document.getElementById('weekly-bars');
   container.innerHTML='';
 
   weeks.forEach(w=>{
-    const runActs=w.acts.filter(a=>runCats.has(a.category));
-    const load={base:0,quality:0};
+    const runActs=w.acts.filter(isRun);
+    const load={base:0,tempo:0,intervals:0,hills:0,segments:0};
     runActs.forEach(a=>{
       const l=calcLoad(a);
       if(a.category==='base_run') load.base+=l;
-      else load.quality+=l;
+      else if(a.category==='quality_intervals') load.intervals+=l;
+      else if(a.category==='quality_hills')     load.hills+=l;
+      else if(a.category==='quality_segments')  load.segments+=l;
+      else load.tempo+=l; // quality_tempo + quality_run legacy
     });
     const total=load.base+load.quality;
     const scale=total>0?(total/maxLoad)*H:0;
@@ -666,7 +692,7 @@ function buildWeekly(acts){
     col.title=tssLabel;
     col.innerHTML=`
       <div class="wk-stack" style="height:${scale}px;min-height:${total>0?'4px':'0'}">
-        ${seg('quality','wb-quality')}${seg('base','wb-base')}
+        ${seg('intervals','wb-intervals')}${seg('hills','wb-hills')}${seg('segments','wb-segments')}${seg('tempo','wb-tempo')}${seg('base','wb-base')}
       </div>
       <div class="wk-lbl">${lbl}</div>`;
     container.appendChild(col);
@@ -678,14 +704,14 @@ function openModal(weekStart){
   const end=new Date(weekStart); end.setDate(end.getDate()+6);
   document.getElementById('modal-ttl').textContent=
     `${fmtDate(weekStart)} — ${fmtDate(end.toISOString().slice(0,10))}`;
-  const cCls={base_run:'cbase',quality_run:'cqual',strength:'cstr',other:'coth'};
-  const cLbl={base_run:'בסיס',quality_run:'איכות',strength:'כוח',other:'אחר'};
+  const cCls={base_run:'cbase',quality_run:'cqual',quality_tempo:'cqual',quality_intervals:'cqual',quality_hills:'cqual',quality_segments:'cqual',strength:'cstr',other:'coth'};
+  const cLbl=k=>CAT_LABELS[k]||k;
   document.getElementById('modal-body').innerHTML=wa.length===0
     ?'<div style="color:var(--muted);font-size:.85rem">אין אימונים בשבוע זה</div>'
     :wa.map(a=>{
         const c=a.category||'other';
         return `<div class="modal-act">
-          <div class="modal-act-dt">${fmtDate(a.date)} <span class="cbadge ${cCls[c]||'coth'}">${cLbl[c]||c}</span></div>
+          <div class="modal-act-dt">${fmtDate(a.date)} <span class="cbadge ${cCls[c]||'coth'}">${cLbl(c)}</span></div>
           <div class="modal-chips">
             ${a.distance_km!=null?`<span class="mchip">${a.distance_km} ק"מ</span>`:''}
             ${a.duration_sec?`<span class="mchip">${fmtDur(a.duration_sec)}</span>`:''}
@@ -879,7 +905,7 @@ function buildTable(tab){
 
     const tr=document.createElement('tr');
     tr.dataset.month=m;
-    const cCls={base_run:'cbase',quality_run:'cqual',strength:'cstr',other:'coth'};
+    const cCls={base_run:'cbase',quality_run:'cqual',quality_tempo:'cqual',quality_intervals:'cqual',quality_hills:'cqual',quality_segments:'cqual',strength:'cstr',other:'coth'};
     const c=a.category||'other';
 
     if(tab==='runs'){

@@ -26,11 +26,46 @@ end_date = date.today().isoformat()
 
 STRENGTH_TYPES = {"strength_training", "weightlifting", "fitness_equipment", "gym", "indoor_cardio"}
 
-def classify(type_key, aerobic_effect):
+def classify_quality_subtype(anaerobic_eff, max_hr, avg_hr, ascent_m, dist_km):
+    """
+    זיהוי תת-קטגוריה של ריצת איכות:
+      quality_intervals — אינטרוואלים   (anaerobic גבוה / HR spike חד)
+      quality_hills     — עליות          (עלייה גבוהה לק"מ)
+      quality_segments  — מקטעים        (מאמץ מעורב, fartlek-style)
+      quality_tempo     — שינוי קצבים   (ברירת מחדל — מאמץ sustained)
+    """
+    anaerobic_eff = anaerobic_eff or 0
+    max_hr  = max_hr  or 0
+    avg_hr  = avg_hr  or 0
+    ascent_m = ascent_m or 0
+    dist_km  = max(dist_km or 1, 0.1)
+
+    hr_spike      = max_hr / avg_hr if avg_hr > 0 else 1.0
+    ascent_per_km = ascent_m / dist_km
+
+    # אינטרוואלים: anaerobic גבוה או HR spike בולט
+    if anaerobic_eff >= 2.5 or hr_spike >= 1.28:
+        return "quality_intervals"
+
+    # עליות: >25m/km או >120m כולל
+    if ascent_per_km >= 25 or ascent_m >= 120:
+        return "quality_hills"
+
+    # מקטעים: anaerobic בינוני — מאמץ מעורב לא מובנה
+    if anaerobic_eff >= 1.5:
+        return "quality_segments"
+
+    # שינוי קצבים: ברירת מחדל לריצת איכות
+    return "quality_tempo"
+
+def classify(type_key, aerobic_effect, anaerobic_effect=None,
+             max_hr=None, avg_hr=None, ascent_m=None, dist_km=None):
     if type_key in STRENGTH_TYPES:
         return "strength"
     if type_key == "running":
-        return "quality_run" if (aerobic_effect or 0) > 2.5 else "base_run"
+        if (aerobic_effect or 0) > 2.5:
+            return classify_quality_subtype(anaerobic_effect, max_hr, avg_hr, ascent_m, dist_km)
+        return "base_run"
     return "other"
 
 try:
@@ -167,7 +202,12 @@ for activity in activities:
         "date": activity.get("startTimeLocal", "")[:10],
         "start_time": activity.get("startTimeLocal", ""),
         "activity_type": type_key,
-        "category": classify(type_key, aerobic_effect),
+        "category": classify(type_key, aerobic_effect,
+                             anaerobic_effect,
+                             activity.get("maxHR"),
+                             activity.get("averageHR"),
+                             activity.get("elevationGain"),
+                             distance_km),
         "distance_km": distance_km,
         "duration_sec": int(activity.get("duration", 0)),
         "pace_sec_per_km": pace_sec_per_km,
