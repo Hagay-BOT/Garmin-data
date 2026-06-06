@@ -272,7 +272,7 @@
 <body>
 
 <nav>
-  <span class="nav-title">📤 שלח לקלוד</span>
+  <span class="nav-title">שלח לקלוד</span>
   <div style="display:flex;gap:1.5rem">
     <a href="index.html">← דשבורד</a>
     <a href="claude.html" style="color:#00d4e8">שלח לקלוד</a>
@@ -305,8 +305,8 @@
       <div class="controls">
         <select id="category-override" onchange="refresh()">
           <option value="">— ללא שינוי —</option>
-          <option value="base_run">🟦 ריצת בסיס</option>
-          <optgroup label="⚡ ריצת איכות">
+          <option value="base_run">ריצת בסיס</option>
+          <optgroup label="ריצת איכות">
             <option value="quality_tempo">שינוי קצבים</option>
             <option value="quality_intervals">אינטרוואלים</option>
             <option value="quality_hills">עליות</option>
@@ -328,7 +328,7 @@
     <div id="preview-box"></div>
   </div>
 
-  <button id="copy-btn" onclick="copyToClipboard()">📋 העתק לקלוד</button>
+  <button id="copy-btn" onclick="copyToClipboard()">העתק לקלוד</button>
 </main>
 
 <script>
@@ -378,8 +378,7 @@
     const sorted = [...allRuns].reverse();
     const sel = document.getElementById('single-run');
     sel.innerHTML = sorted.map((r,i) => {
-      const catShort = r.category==='quality_run'?'⚡':r.category==='base_run'?'🟦':'';
-      return `<option value="${i}">${catShort} ${fmtDate(r.date)} — ${r.distance_km?r.distance_km+' ק"מ':''} — ${fmtPace(r.pace_sec_per_km)}</option>`;
+      return `<option value="${i}">${fmtDate(r.date)} — ${r.distance_km?r.distance_km+' ק"מ':''} — ${fmtPace(r.pace_sec_per_km)}</option>`;
     }).join('');
   }
 
@@ -543,12 +542,13 @@
   }
 
   function copyToClipboard() {
-    const text = buildMarkdown(getSelectedRuns());
+    const run = getSelectedRun();
+    const text = buildMarkdown(run ? [run] : []);
     navigator.clipboard.writeText(text).then(() => {
       const btn = document.getElementById('copy-btn');
-      btn.textContent = '✓ הועתק! עבור לקלוד';
+      btn.textContent = '✓ הועתק!';
       btn.classList.add('copied');
-      setTimeout(() => { btn.textContent = '📋 העתק לקלוד'; btn.classList.remove('copied'); }, 2500);
+      setTimeout(() => { btn.textContent = 'העתק לקלוד'; btn.classList.remove('copied'); }, 2500);
     }).catch(() => {
       const ta = document.createElement('textarea');
       ta.value = text; ta.style.cssText='position:fixed;opacity:0';
@@ -556,7 +556,7 @@
       document.body.removeChild(ta);
       const btn = document.getElementById('copy-btn');
       btn.textContent = '✓ הועתק!'; btn.classList.add('copied');
-      setTimeout(() => { btn.textContent = '📋 העתק לקלוד'; btn.classList.remove('copied'); }, 2500);
+      setTimeout(() => { btn.textContent = 'העתק לקלוד'; btn.classList.remove('copied'); }, 2500);
     });
   }
 
