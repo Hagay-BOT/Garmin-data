@@ -637,6 +637,7 @@ function buildHeatmap(acts){
 // כשאין TSS: aerobic_effect × (משך בדקות / 60) × 20 כ-proxy
 function calcLoad(a){
   if(a.training_stress_score) return a.training_stress_score;
+  if(a.exercise_load) return a.exercise_load;  // Garmin activityTrainingLoad (EPOC-based)
   if(a.aerobic_effect && a.duration_sec)
     return a.aerobic_effect * (a.duration_sec/3600) * 20;
   return (a.duration_sec||0)/60 * 0.8; // fallback: דקות × 0.8
