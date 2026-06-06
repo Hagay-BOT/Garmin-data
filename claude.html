@@ -94,15 +94,16 @@
     }
     .controls label { font-size: 0.88rem; color: rgba(255,255,255,0.55); white-space: nowrap; }
     .controls select {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
-      color: white;
+      background: #1a1040;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.9);
       border-radius: 8px;
       padding: 0.45rem 0.85rem;
       font-size: 0.88rem;
       cursor: pointer;
     }
     .controls select:focus { outline: none; border-color: rgba(0,212,232,0.5); }
+    .controls select option { background: #1a1040; color: rgba(255,255,255,0.9); }
 
     /* ── Config card ── */
     .config-card {
@@ -300,20 +301,13 @@
 
     <!-- Category override -->
     <div id="category-override-wrap">
-      <div class="sec-label">סיווג אימון</div>
-      <div class="controls" style="align-items:center;gap:1.2rem">
-        <div id="algo-category-display" style="font-size:0.85rem;color:rgba(255,255,255,0.5)"></div>
-        <div style="display:flex;align-items:center;gap:0.5rem">
-          <label for="category-override" style="font-size:0.85rem;color:rgba(255,255,255,0.5)">שנה ל:</label>
-          <select id="category-override" onchange="refresh()">
-            <option value="">— ללא שינוי —</option>
-            <option value="base_run">ריצת בסיס</option>
-            <option value="quality_run">ריצת איכות</option>
-          </select>
-        </div>
-      </div>
-      <div id="conflict-hint" class="prompt-hint" style="display:none;color:rgba(251,191,36,0.7);margin-top:0.4rem">
-        ⚠️ שינוי הסיווג יצוין בייצוא — קלוד יקבל את שני הגרסאות ויבין את ההתנגשות
+      <div class="sec-label">שנה סיווג אימון</div>
+      <div class="controls">
+        <select id="category-override" onchange="refresh()">
+          <option value="">— ללא שינוי —</option>
+          <option value="base_run">ריצת בסיס</option>
+          <option value="quality_run">ריצת איכות</option>
+        </select>
       </div>
     </div>
 
@@ -408,14 +402,7 @@
   }
 
   function updateCategoryUI() {
-    const run = getSelectedRun();
-    if (!run) return;
-    const algoLabel = catLabel(run.category);
-    document.getElementById('algo-category-display').textContent =
-      `אלגוריתם: ${algoLabel} (aerobic effect: ${run.aerobic_effect ?? '—'})`;
-    const override = document.getElementById('category-override').value;
-    const hint = document.getElementById('conflict-hint');
-    hint.style.display = (override && override !== run.category) ? 'block' : 'none';
+    // no visual display needed
   }
 
   function populateSingleSelect() {
@@ -483,7 +470,6 @@
           <div class="run-date">${fmtDate(r.date)}</div>
           ${r.start_time ? `<div style="font-size:0.78rem;color:rgba(255,255,255,0.35)">${r.start_time.slice(11,16)}</div>` : ''}
           <div class="run-category ${catClass(effectiveCat)}">${catLabel(effectiveCat)}</div>
-          ${override && override !== r.category && runs.length===1 ? `<div style="font-size:0.72rem;color:rgba(251,191,36,0.8);padding:0.1rem 0.5rem;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);border-radius:6px;">שונה ידנית</div>` : ''}
         </div>
         <div class="run-metrics">${chips}</div>
         ${lapTable}
