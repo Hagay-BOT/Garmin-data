@@ -8,7 +8,7 @@
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      background: linear-gradient(135deg, #06041a 0%, #160f3b 50%, #0a0820 100%);
       background-attachment: fixed;
       min-height: 100vh;
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -17,9 +17,9 @@
     }
 
     nav {
-      background: rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.04);
       backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
       padding: 0 1.5rem;
       height: 56px;
       display: flex;
@@ -29,345 +29,542 @@
       top: 0;
       z-index: 100;
     }
-    .nav-title { font-weight: 700; font-size: 1.1rem; color: #00f5ff; }
+    .nav-title { font-weight: 700; font-size: 1.05rem; color: #00d4e8; }
     nav a {
-      color: rgba(255,255,255,0.7);
+      color: rgba(255,255,255,0.55);
       text-decoration: none;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       transition: color 0.2s;
     }
-    nav a:hover { color: #00f5ff; }
+    nav a:hover { color: #00d4e8; }
 
-    main {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 2rem 1rem;
-    }
+    main { max-width: 860px; margin: 0 auto; padding: 2rem 1rem 4rem; }
 
     .glass {
-      background: rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.05);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 18px;
     }
 
+    /* ── Page header ── */
     .page-header {
       text-align: center;
       margin-bottom: 2rem;
+      padding: 2rem 1rem 1.5rem;
     }
-    .page-header h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; }
-    .page-header p { color: rgba(255,255,255,0.55); font-size: 0.95rem; }
+    .page-header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #00d4e8, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.4rem;
+    }
+    .page-header p { color: rgba(255,255,255,0.45); font-size: 0.92rem; }
 
     #error-banner {
-      background: rgba(239,68,68,0.15);
-      border: 1px solid rgba(239,68,68,0.4);
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.35);
       color: #fca5a5;
       border-radius: 12px;
       padding: 0.9rem 1.2rem;
       margin-bottom: 1.5rem;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
     }
     #error-banner.hidden { display: none; }
 
-    /* run count selector */
+    /* ── Section label ── */
+    .sec-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 0.6rem;
+    }
+
+    /* ── Controls row ── */
     .controls {
       display: flex;
       align-items: center;
       gap: 1rem;
-      margin-bottom: 1.5rem;
       flex-wrap: wrap;
     }
-    .controls label { font-size: 0.9rem; color: rgba(255,255,255,0.6); }
+    .controls label { font-size: 0.88rem; color: rgba(255,255,255,0.55); white-space: nowrap; }
     .controls select {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
       color: white;
       border-radius: 8px;
-      padding: 0.4rem 0.8rem;
-      font-size: 0.9rem;
+      padding: 0.45rem 0.85rem;
+      font-size: 0.88rem;
+      cursor: pointer;
+    }
+    .controls select:focus { outline: none; border-color: rgba(0,212,232,0.5); }
+
+    /* ── Config card ── */
+    .config-card {
+      padding: 1.4rem 1.6rem;
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
     }
 
-    /* recent run cards */
-    #run-cards { display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1.5rem; }
+    /* ── Prompt template ── */
+    .prompt-wrap { display: flex; flex-direction: column; gap: 0.5rem; }
+    #prompt-template {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      color: rgba(255,255,255,0.85);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 0.88rem;
+      line-height: 1.55;
+      padding: 0.85rem 1rem;
+      resize: vertical;
+      min-height: 90px;
+      width: 100%;
+      direction: rtl;
+      transition: border-color 0.2s;
+    }
+    #prompt-template:focus { outline: none; border-color: rgba(168,85,247,0.5); }
+    .prompt-hint { font-size: 0.75rem; color: rgba(255,255,255,0.3); }
+
+    /* ── Run cards ── */
+    #run-cards { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.2rem; }
 
     .run-card {
-      padding: 1rem 1.25rem;
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 0.6rem 1.2rem;
+      padding: 1.1rem 1.4rem;
+      cursor: default;
+    }
+    .run-card-header {
+      display: flex;
       align-items: center;
+      gap: 0.9rem;
+      margin-bottom: 0.7rem;
     }
     .run-date {
       font-size: 1rem;
-      font-weight: 600;
-      color: #00f5ff;
-      white-space: nowrap;
+      font-weight: 700;
+      color: #00d4e8;
     }
+    .run-category {
+      font-size: 0.72rem;
+      padding: 0.18rem 0.55rem;
+      border-radius: 20px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .cat-base { background: rgba(59,130,246,0.2); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
+    .cat-quality { background: rgba(0,212,232,0.15); color: #00d4e8; border: 1px solid rgba(0,212,232,0.3); }
+    .cat-other { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.1); }
+
     .run-metrics {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem;
+      gap: 0.4rem;
     }
-    .metric-chip {
-      background: rgba(255,255,255,0.1);
-      border-radius: 8px;
-      padding: 0.2rem 0.6rem;
-      font-size: 0.8rem;
-      color: rgba(255,255,255,0.75);
+    .mchip {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 7px;
+      padding: 0.22rem 0.6rem;
+      font-size: 0.77rem;
+      color: rgba(255,255,255,0.6);
     }
-    .metric-chip span { color: white; font-weight: 600; }
+    .mchip b { color: rgba(255,255,255,0.9); font-weight: 600; }
 
-    /* preview box */
-    .preview-section { margin-bottom: 1.5rem; }
-    .preview-section h2 {
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: rgba(255,255,255,0.4);
-      margin-bottom: 0.75rem;
+    /* lap mini table */
+    .lap-table {
+      margin-top: 0.75rem;
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.76rem;
+    }
+    .lap-table th {
+      color: rgba(255,255,255,0.35);
+      font-weight: 500;
+      padding: 0.25rem 0.5rem;
+      text-align: right;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .lap-table td {
+      padding: 0.25rem 0.5rem;
+      color: rgba(255,255,255,0.7);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .lap-table tr:last-child td { border-bottom: none; }
+
+    /* ── Preview ── */
+    .preview-card {
+      padding: 1.2rem 1.5rem;
+      margin-bottom: 1rem;
     }
     #preview-box {
-      padding: 1.2rem;
-      font-family: 'Courier New', monospace;
-      font-size: 0.78rem;
-      color: rgba(255,255,255,0.75);
+      margin-top: 0.6rem;
+      padding: 1rem 1.1rem;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 0.76rem;
+      color: rgba(255,255,255,0.65);
       white-space: pre-wrap;
       line-height: 1.6;
-      max-height: 280px;
+      max-height: 260px;
       overflow-y: auto;
       scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.2) transparent;
+      scrollbar-color: rgba(255,255,255,0.15) transparent;
+      direction: ltr;
+      text-align: left;
     }
 
-    /* copy button */
+    /* ── Copy button ── */
     #copy-btn {
       width: 100%;
-      padding: 1rem;
-      background: linear-gradient(135deg, #00f5ff22, #c084fc22);
-      border: 1px solid rgba(0,245,255,0.4);
+      padding: 1.05rem;
+      background: linear-gradient(135deg, rgba(0,212,232,0.15), rgba(168,85,247,0.15));
+      border: 1px solid rgba(0,212,232,0.35);
       color: white;
       font-size: 1rem;
-      font-weight: 600;
+      font-weight: 700;
       border-radius: 14px;
       cursor: pointer;
       transition: all 0.2s;
       margin-bottom: 1rem;
+      letter-spacing: 0.02em;
     }
     #copy-btn:hover {
-      background: linear-gradient(135deg, #00f5ff40, #c084fc40);
-      border-color: rgba(0,245,255,0.7);
+      background: linear-gradient(135deg, rgba(0,212,232,0.28), rgba(168,85,247,0.28));
+      border-color: rgba(0,212,232,0.65);
       transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(0,212,232,0.15);
     }
     #copy-btn.copied {
-      background: linear-gradient(135deg, #4ade8040, #22c55e40);
-      border-color: rgba(74,222,128,0.7);
+      background: linear-gradient(135deg, rgba(74,222,128,0.2), rgba(34,197,94,0.2));
+      border-color: rgba(74,222,128,0.6);
     }
 
-    /* instructions */
-    .instructions {
-      padding: 1.2rem 1.5rem;
-    }
-    .instructions h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem; color: rgba(255,255,255,0.7); }
-    .step {
-      display: flex;
-      align-items: flex-start;
-      gap: 0.75rem;
-      margin-bottom: 0.6rem;
-    }
+    /* ── Instructions ── */
+    .instructions { padding: 1.2rem 1.6rem; }
+    .instructions h3 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.9rem; color: rgba(255,255,255,0.55); }
+    .steps { display: flex; flex-direction: column; gap: 0.55rem; }
+    .step { display: flex; align-items: flex-start; gap: 0.8rem; }
     .step-num {
-      min-width: 24px;
-      height: 24px;
-      background: rgba(0,245,255,0.2);
-      border: 1px solid rgba(0,245,255,0.4);
+      min-width: 22px; height: 22px;
+      background: rgba(0,212,232,0.15);
+      border: 1px solid rgba(0,212,232,0.35);
       border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: #00f5ff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 700; color: #00d4e8;
+      flex-shrink: 0;
     }
-    .step-text { font-size: 0.88rem; color: rgba(255,255,255,0.65); padding-top: 2px; }
-    .step-text a { color: #00f5ff; text-decoration: none; }
+    .step-text { font-size: 0.85rem; color: rgba(255,255,255,0.55); padding-top: 1px; }
+    .step-text a { color: #00d4e8; text-decoration: none; }
     .step-text a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
 
 <nav>
-  <span class="nav-title">ריצות</span>
+  <span class="nav-title">📤 שלח לקלוד</span>
   <div style="display:flex;gap:1.5rem">
     <a href="index.html">← דשבורד</a>
-    <a href="claude.html" style="color:#00f5ff">שלח לקלוד</a>
+    <a href="claude.html" style="color:#00d4e8">שלח לקלוד</a>
   </div>
 </nav>
 
 <main>
   <div class="page-header">
     <h1>שלח נתונים לקלוד</h1>
-    <p>העתק את הריצות האחרונות שלך והדבק בפרויקט Claude</p>
+    <p>ייצוא ריצות מפורט עם פרומפט מובנה — העתק והדבק בפרויקט Claude</p>
   </div>
 
   <div id="error-banner" class="hidden"></div>
 
-  <div class="controls">
-    <label for="export-mode">מצב ייצוא:</label>
-    <select id="export-mode" onchange="onModeChange()">
-      <option value="multi">מספר ריצות</option>
-      <option value="single">ריצה בודדת</option>
-    </select>
+  <!-- Config card -->
+  <div class="config-card glass" style="margin-bottom:1.2rem">
+
+    <!-- Mode + count selectors -->
+    <div>
+      <div class="sec-label">בחר ריצות</div>
+      <div class="controls">
+        <label for="export-mode">מצב:</label>
+        <select id="export-mode" onchange="onModeChange()">
+          <option value="multi">מספר ריצות</option>
+          <option value="single">ריצה בודדת</option>
+        </select>
+
+        <div id="multi-controls" class="controls">
+          <label for="run-count">כמות:</label>
+          <select id="run-count" onchange="refresh()">
+            <option value="3">3 אחרונות</option>
+            <option value="5" selected>5 אחרונות</option>
+            <option value="10">10 אחרונות</option>
+            <option value="all">כל הריצות</option>
+          </select>
+        </div>
+
+        <div id="single-controls" class="controls" style="display:none">
+          <label for="single-run">ריצה:</label>
+          <select id="single-run" onchange="refresh()"></select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prompt template -->
+    <div class="prompt-wrap">
+      <div class="sec-label">הוראות לקלוד (ניתן לעריכה)</div>
+      <textarea id="prompt-template" oninput="refresh()"></textarea>
+      <div class="prompt-hint">הטקסט הזה יופיע לפני הנתונים כשתעתיק לקלוד</div>
+    </div>
+
   </div>
 
-  <div id="multi-controls" class="controls">
-    <label for="run-count">כמות:</label>
-    <select id="run-count" onchange="refresh()">
-      <option value="3">3 אחרונות</option>
-      <option value="5" selected>5 אחרונות</option>
-      <option value="10">10 אחרונות</option>
-      <option value="all">כל הריצות</option>
-    </select>
-  </div>
-
-  <div id="single-controls" class="controls" style="display:none">
-    <label for="single-run">בחר ריצה:</label>
-    <select id="single-run" onchange="refresh()"></select>
-  </div>
-
+  <!-- Run cards -->
   <div id="run-cards"></div>
 
-  <div class="preview-section">
-    <h2>תצוגה מקדימה — מה שייועתק</h2>
-    <div id="preview-box" class="glass"></div>
+  <!-- Preview -->
+  <div class="preview-card glass">
+    <div class="sec-label">תצוגה מקדימה — מה שייועתק</div>
+    <div id="preview-box"></div>
   </div>
 
-  <button id="copy-btn" onclick="copyToClipboard()">העתק לקלוד</button>
+  <button id="copy-btn" onclick="copyToClipboard()">📋 העתק לקלוד</button>
 
   <div class="instructions glass">
     <h3>איך להשתמש</h3>
-    <div class="step">
-      <div class="step-num">1</div>
-      <div class="step-text">לחץ <strong>העתק לקלוד</strong> למעלה</div>
-    </div>
-    <div class="step">
-      <div class="step-num">2</div>
-      <div class="step-text">כנס ל<a href="https://claude.ai/projects" target="_blank">פרויקט Claude שלך</a></div>
-    </div>
-    <div class="step">
-      <div class="step-num">3</div>
-      <div class="step-text">הדבק את הטקסט (Ctrl+V) ושלח</div>
-    </div>
-    <div class="step">
-      <div class="step-num">4</div>
-      <div class="step-text">קבל פידבק מותאם אישית על האימונים שלך</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">בחר ריצות + ערוך את ההוראות לקלוד אם רצוי</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">לחץ <strong>העתק לקלוד</strong> למעלה</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">כנס ל<a href="https://claude.ai/projects" target="_blank">פרויקט Claude שלך</a></div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-text">הדבק (Ctrl+V) ושלח — קבל פידבק מותאם אישית</div>
+      </div>
     </div>
   </div>
 </main>
 
 <script>
   let allRuns = [];
+  let dailyData = {};
+
+  const DEFAULT_PROMPT = `אתה מאמן ריצה מקצועי. נתח את הריצות הבאות:
+
+1. **ניתוח כללי** — סקירת הביצועים (קצב, דופק, עומס)
+2. **עומס אימון** — האם העומס מתאים? סימני עייפות?
+3. **השוואה לאימון הקודם** — שיפור / ירידה בביצועים
+4. **2 נקודות לשיפור** — המלצות ספציפיות לריצה הבאה`;
+
+  document.getElementById('prompt-template').value = DEFAULT_PROMPT;
 
   function fmtPace(sec) {
     if (!sec) return '—';
-    return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+    return `${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`;
   }
-
   function fmtDate(iso) {
     if (!iso) return '—';
-    const [y, m, d] = iso.split('-');
+    const [y,m,d] = iso.split('-');
     return `${d}/${m}/${String(y).slice(2)}`;
   }
-
-  function fmtDuration(sec) {
+  function fmtDur(sec) {
     if (!sec) return '—';
-    const h = Math.floor(sec / 3600);
-    const m = Math.floor((sec % 3600) / 60);
-    const s = sec % 60;
-    if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s=sec%60;
+    if(h>0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
     return `${m}:${String(s).padStart(2,'0')}`;
+  }
+  function n(v, unit='', dec=0) {
+    if(v==null||v===undefined) return '—';
+    const num = dec>0 ? parseFloat(v).toFixed(dec) : Math.round(v);
+    return unit ? `${num}${unit}` : `${num}`;
   }
 
   function onModeChange() {
     const mode = document.getElementById('export-mode').value;
-    document.getElementById('multi-controls').style.display = mode === 'multi' ? 'flex' : 'none';
-    document.getElementById('single-controls').style.display = mode === 'single' ? 'flex' : 'none';
+    document.getElementById('multi-controls').style.display = mode==='multi'?'flex':'none';
+    document.getElementById('single-controls').style.display = mode==='single'?'flex':'none';
     refresh();
   }
 
   function getSelectedRuns() {
     const mode = document.getElementById('export-mode').value;
     const sorted = [...allRuns].reverse();
-    if (mode === 'single') {
+    if(mode==='single') {
       const idx = parseInt(document.getElementById('single-run').value);
-      return isNaN(idx) ? [] : [sorted[idx]];
+      return isNaN(idx)?[]:[sorted[idx]];
     }
     const val = document.getElementById('run-count').value;
-    if (val === 'all') return sorted;
-    return sorted.slice(0, parseInt(val));
+    return val==='all' ? sorted : sorted.slice(0, parseInt(val));
   }
 
   function populateSingleSelect() {
     const sorted = [...allRuns].reverse();
     const sel = document.getElementById('single-run');
-    sel.innerHTML = sorted.map((r, i) =>
-      `<option value="${i}">${fmtDate(r.date)} — ${r.distance_km ? r.distance_km + ' ק"מ' : ''} ${fmtPace(r.pace_sec_per_km)}</option>`
+    sel.innerHTML = sorted.map((r,i) =>
+      `<option value="${i}">${fmtDate(r.date)} — ${r.distance_km?r.distance_km+' ק"מ':''} ${fmtPace(r.pace_sec_per_km)}</option>`
     ).join('');
+  }
+
+  function catClass(cat) {
+    if(cat==='quality_run') return 'cat-quality';
+    if(cat==='base_run') return 'cat-base';
+    return 'cat-other';
+  }
+  function catLabel(cat) {
+    if(cat==='quality_run') return 'ריצת איכות';
+    if(cat==='base_run') return 'ריצת בסיס';
+    return cat||'';
   }
 
   function buildRunCards(runs) {
     const container = document.getElementById('run-cards');
-    container.innerHTML = runs.map(r => `
-      <div class="run-card glass">
-        <div class="run-date">${fmtDate(r.date)}</div>
-        <div class="run-metrics">
-          ${r.distance_km != null ? `<div class="metric-chip">מרחק <span>${r.distance_km} ק"מ</span></div>` : ''}
-          ${r.pace_sec_per_km ? `<div class="metric-chip">קצב <span>${fmtPace(r.pace_sec_per_km)}</span></div>` : ''}
-          ${r.duration_sec ? `<div class="metric-chip">זמן <span>${fmtDuration(r.duration_sec)}</span></div>` : ''}
-          ${r.avg_hr ? `<div class="metric-chip">דופק ממוצע <span>${r.avg_hr}</span></div>` : ''}
-          ${r.max_hr ? `<div class="metric-chip">דופק מקס <span>${r.max_hr}</span></div>` : ''}
-          ${r.cadence_spm ? `<div class="metric-chip">קדנס <span>${r.cadence_spm}</span></div>` : ''}
-          ${r.gct_ms != null ? `<div class="metric-chip">GCT <span>${r.gct_ms}ms</span></div>` : ''}
+    container.innerHTML = runs.map(r => {
+      const day = dailyData[r.date] || {};
+      const chips = [
+        r.distance_km!=null ? `<div class="mchip">מרחק <b>${r.distance_km} ק"מ</b></div>` : '',
+        r.pace_sec_per_km    ? `<div class="mchip">קצב <b>${fmtPace(r.pace_sec_per_km)}</b></div>` : '',
+        r.best_pace_sec_per_km ? `<div class="mchip">מהיר ביותר <b>${fmtPace(r.best_pace_sec_per_km)}</b></div>` : '',
+        r.duration_sec       ? `<div class="mchip">זמן <b>${fmtDur(r.duration_sec)}</b></div>` : '',
+        r.avg_hr             ? `<div class="mchip">דופק <b>${r.avg_hr}</b></div>` : '',
+        r.max_hr             ? `<div class="mchip">מקס <b>${r.max_hr}</b></div>` : '',
+        r.recovery_hr        ? `<div class="mchip">ריקוברי <b>${r.recovery_hr}</b></div>` : '',
+        r.cadence_spm        ? `<div class="mchip">קדנס <b>${r.cadence_spm}</b></div>` : '',
+        r.gct_ms!=null       ? `<div class="mchip">GCT <b>${r.gct_ms}ms</b></div>` : '',
+        r.stride_length_m    ? `<div class="mchip">סטריד <b>${r.stride_length_m}m</b></div>` : '',
+        r.aerobic_effect     ? `<div class="mchip">אירובי <b>${r.aerobic_effect}</b></div>` : '',
+        r.vo2max             ? `<div class="mchip">VO₂max <b>${r.vo2max}</b></div>` : '',
+        r.total_ascent_m     ? `<div class="mchip">עלייה <b>${r.total_ascent_m}m</b></div>` : '',
+        r.temperature!=null  ? `<div class="mchip">טמפ׳ <b>${r.temperature}°</b></div>` : '',
+        r.active_calories    ? `<div class="mchip">קלוריות <b>${r.active_calories}</b></div>` : '',
+        day.sleep_score      ? `<div class="mchip">שינה <b>${day.sleep_score}</b></div>` : '',
+        day.body_battery_morning ? `<div class="mchip">BB <b>${day.body_battery_morning}</b></div>` : '',
+      ].filter(Boolean).join('');
+
+      const lapTable = r.laps && r.laps.length > 0 ? `
+        <table class="lap-table">
+          <thead><tr>
+            <th>קמ</th><th>מרחק</th><th>קצב</th><th>דופק</th><th>קדנס</th>
+          </tr></thead>
+          <tbody>${r.laps.map(l=>`<tr>
+            <td>${l.lap}</td>
+            <td>${l.distance_km?l.distance_km+' ק"מ':'—'}</td>
+            <td>${fmtPace(l.pace_sec_per_km)}</td>
+            <td>${l.avg_hr||'—'}</td>
+            <td>${l.cadence_spm||'—'}</td>
+          </tr>`).join('')}</tbody>
+        </table>` : '';
+
+      return `<div class="run-card glass">
+        <div class="run-card-header">
+          <div class="run-date">${fmtDate(r.date)}</div>
+          ${r.start_time ? `<div style="font-size:0.78rem;color:rgba(255,255,255,0.35)">${r.start_time.slice(11,16)}</div>` : ''}
+          <div class="run-category ${catClass(r.category)}">${catLabel(r.category)}</div>
         </div>
-      </div>
-    `).join('');
+        <div class="run-metrics">${chips}</div>
+        ${lapTable}
+      </div>`;
+    }).join('');
   }
 
   function buildMarkdown(runs) {
+    const promptText = document.getElementById('prompt-template').value.trim();
     const now = new Date().toLocaleDateString('he-IL');
-    let md = `## נתוני ריצה — ${now}\n\n`;
+    let md = '';
 
-    md += `| תאריך | מרחק | זמן | קצב | דופק ממוצע | דופק מקס | קדנס | GCT |\n`;
-    md += `|-------|------|-----|-----|------------|----------|------|-----|\n`;
+    if(promptText) md += promptText + '\n\n---\n\n';
+    md += `## 🏃 נתוני ריצה — ${now}\n\n`;
 
-    runs.forEach(r => {
-      md += `| ${fmtDate(r.date)} `;
-      md += `| ${r.distance_km != null ? r.distance_km + ' ק"מ' : '—'} `;
-      md += `| ${fmtDuration(r.duration_sec)} `;
-      md += `| ${fmtPace(r.pace_sec_per_km)} `;
-      md += `| ${r.avg_hr ?? '—'} `;
-      md += `| ${r.max_hr ?? '—'} `;
-      md += `| ${r.cadence_spm ?? '—'} `;
-      md += `| ${r.gct_ms != null ? r.gct_ms + 'ms' : '—'} |\n`;
+    runs.forEach((r, idx) => {
+      const day = dailyData[r.date] || {};
+      md += `### ריצה ${idx+1} — ${fmtDate(r.date)}`;
+      if(r.start_time) md += ` (${r.start_time.slice(11,16)})`;
+      md += `\n`;
+      if(r.category) md += `סוג: ${catLabel(r.category)}\n`;
+
+      md += `\n**מרחק ומהירות**\n`;
+      if(r.distance_km!=null) md += `- מרחק: ${r.distance_km} ק"מ\n`;
+      if(r.duration_sec) md += `- זמן: ${fmtDur(r.duration_sec)}\n`;
+      if(r.pace_sec_per_km) md += `- קצב ממוצע: ${fmtPace(r.pace_sec_per_km)} דק'/ק"מ\n`;
+      if(r.best_pace_sec_per_km) md += `- קצב מהיר ביותר: ${fmtPace(r.best_pace_sec_per_km)} דק'/ק"מ\n`;
+      if(r.total_ascent_m!=null) md += `- עלייה: ${r.total_ascent_m}m | ירידה: ${r.total_descent_m||0}m\n`;
+      if(r.temperature!=null) md += `- טמפרטורה: ${r.temperature}°C\n`;
+
+      md += `\n**דופק**\n`;
+      if(r.avg_hr) md += `- דופק ממוצע: ${r.avg_hr}\n`;
+      if(r.max_hr) md += `- דופק מקסימום: ${r.max_hr}\n`;
+      if(r.recovery_hr) md += `- דופק ריקוברי: ${r.recovery_hr}\n`;
+      if(r.avg_respiration) md += `- נשימה ממוצעת: ${r.avg_respiration}\n`;
+
+      md += `\n**דינמיקה**\n`;
+      if(r.cadence_spm) md += `- קדנס ממוצע: ${r.cadence_spm} spm\n`;
+      if(r.max_cadence_spm) md += `- קדנס מקסימום: ${r.max_cadence_spm} spm\n`;
+      if(r.gct_ms!=null) md += `- Ground Contact Time: ${r.gct_ms}ms\n`;
+      if(r.stride_length_m) md += `- אורך פסיעה: ${r.stride_length_m}m\n`;
+      if(r.vertical_oscillation_cm) md += `- תנודה אנכית: ${r.vertical_oscillation_cm}cm\n`;
+      if(r.vertical_ratio_pct) md += `- יחס אנכי: ${r.vertical_ratio_pct}%\n`;
+      if(r.hr_drift_bpm!=null) md += `- Cardiac Drift: ${r.hr_drift_bpm>0?'+':''}${r.hr_drift_bpm} bpm\n`;
+
+      md += `\n**עומס ואיכות**\n`;
+      if(r.aerobic_effect) md += `- אפקט אירובי: ${r.aerobic_effect}${r.training_effect_label?' ('+r.training_effect_label+')':''}\n`;
+      if(r.anaerobic_effect) md += `- אפקט אנאירובי: ${r.anaerobic_effect}\n`;
+      if(r.training_stress_score) md += `- TSS: ${r.training_stress_score}\n`;
+      if(r.exercise_load) md += `- עומס פעילות: ${r.exercise_load}\n`;
+      if(r.vo2max) md += `- VO₂max מוערך: ${r.vo2max}\n`;
+      if(r.stamina_start_pct!=null) md += `- סיבולת תחילה: ${r.stamina_start_pct}% | סיום: ${r.stamina_end_pct}%\n`;
+
+      md += `\n**אנרגיה**\n`;
+      if(r.active_calories) md += `- קלוריות פעילות: ${r.active_calories} kcal\n`;
+      if(r.total_calories) md += `- סה"כ קלוריות: ${r.total_calories} kcal\n`;
+      if(r.sweat_loss_ml) md += `- הזעה: ~${r.sweat_loss_ml}ml\n`;
+      if(r.moderate_intensity_min||r.vigorous_intensity_min)
+        md += `- דקות עצימות: מתון ${r.moderate_intensity_min||0} | עז ${r.vigorous_intensity_min||0}\n`;
+      if(r.body_battery_impact) md += `- השפעה על Body Battery: -${r.body_battery_impact}\n`;
+
+      if(day.sleep_score||day.body_battery_morning) {
+        md += `\n**מצב לפני הריצה**\n`;
+        if(day.sleep_score) md += `- ציון שינה: ${day.sleep_score}/100\n`;
+        if(day.body_battery_morning) md += `- Body Battery בוקר: ${day.body_battery_morning}/100\n`;
+      }
+
+      if(r.laps && r.laps.length>0) {
+        md += `\n**Laps**\n`;
+        md += `| ק"מ | מרחק | קצב | דופק | קדנס |\n`;
+        md += `|---|---|---|---|---|\n`;
+        r.laps.forEach(l => {
+          md += `| ${l.lap} | ${l.distance_km?l.distance_km+' ק"מ':'—'} | ${fmtPace(l.pace_sec_per_km)} | ${l.avg_hr||'—'} | ${l.cadence_spm||'—'} |\n`;
+        });
+      }
+
+      md += `\n---\n\n`;
     });
 
-    // averages
-    const withPace = runs.filter(r => r.pace_sec_per_km);
-    const withHR = runs.filter(r => r.avg_hr);
-    const withCadence = runs.filter(r => r.cadence_spm);
-    const withGCT = runs.filter(r => r.gct_ms != null);
-
-    md += `\n**ממוצעים (${runs.length} ריצות):**\n`;
-    if (withPace.length)
-      md += `- קצב ממוצע: ${fmtPace(Math.round(withPace.reduce((s,r) => s + r.pace_sec_per_km, 0) / withPace.length))} דק'/ק"מ\n`;
-    if (withHR.length)
-      md += `- דופק ממוצע: ${Math.round(withHR.reduce((s,r) => s + r.avg_hr, 0) / withHR.length)}\n`;
-    if (withCadence.length)
-      md += `- קדנס ממוצע: ${Math.round(withCadence.reduce((s,r) => s + r.cadence_spm, 0) / withCadence.length)} spm\n`;
-    if (withGCT.length)
-      md += `- GCT ממוצע: ${Math.round(withGCT.reduce((s,r) => s + r.gct_ms, 0) / withGCT.length)}ms\n`;
-
-    const totalKm = runs.reduce((s,r) => s + (r.distance_km || 0), 0);
-    md += `- סה"כ ק"מ בתקופה: ${totalKm.toFixed(1)}\n`;
+    // Summary averages
+    if(runs.length > 1) {
+      const avg = arr => { const v=arr.filter(x=>x!=null&&!isNaN(x)); return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):null; };
+      const totalKm = runs.reduce((s,r)=>s+(r.distance_km||0),0);
+      md += `## סיכום (${runs.length} ריצות)\n`;
+      md += `- סה"כ ק"מ: ${totalKm.toFixed(1)}\n`;
+      const avgPace = avg(runs.map(r=>r.pace_sec_per_km).filter(Boolean));
+      if(avgPace) md += `- קצב ממוצע: ${fmtPace(avgPace)} דק'/ק"מ\n`;
+      const avgHR = avg(runs.map(r=>r.avg_hr).filter(Boolean));
+      if(avgHR) md += `- דופק ממוצע: ${avgHR}\n`;
+      const avgTSS = avg(runs.map(r=>r.training_stress_score).filter(Boolean));
+      if(avgTSS) md += `- TSS ממוצע: ${avgTSS}\n`;
+    }
 
     return md;
   }
@@ -379,45 +576,40 @@
   }
 
   function copyToClipboard() {
-    const runs = getSelectedRuns();
-    const text = buildMarkdown(runs);
+    const text = buildMarkdown(getSelectedRuns());
     navigator.clipboard.writeText(text).then(() => {
       const btn = document.getElementById('copy-btn');
-      btn.textContent = '✓ הועתק!';
+      btn.textContent = '✓ הועתק! עבור לקלוד';
       btn.classList.add('copied');
-      setTimeout(() => {
-        btn.textContent = 'העתק לקלוד';
-        btn.classList.remove('copied');
-      }, 2500);
+      setTimeout(() => { btn.textContent = '📋 העתק לקלוד'; btn.classList.remove('copied'); }, 2500);
     }).catch(() => {
-      // fallback
       const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
+      ta.value = text; ta.style.cssText='position:fixed;opacity:0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy');
       document.body.removeChild(ta);
       const btn = document.getElementById('copy-btn');
-      btn.textContent = '✓ הועתק!';
-      btn.classList.add('copied');
-      setTimeout(() => { btn.textContent = 'העתק לקלוד'; btn.classList.remove('copied'); }, 2500);
+      btn.textContent = '✓ הועתק!'; btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = '📋 העתק לקלוד'; btn.classList.remove('copied'); }, 2500);
     });
   }
 
   fetch('data.json')
-    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+    .then(r => { if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
     .then(data => {
+      dailyData = data.daily || {};
       const activities = data.activities || data.runs || [];
-      allRuns = activities.filter(r => r.activity_type === 'running' || r.category === 'base_run' || r.category === 'quality_run');
+      allRuns = activities.filter(r =>
+        r.activity_type==='running' ||
+        r.category==='base_run' ||
+        r.category==='quality_run'
+      );
       populateSingleSelect();
       refresh();
     })
     .catch(err => {
-      const banner = document.getElementById('error-banner');
-      banner.textContent = `שגיאה בטעינת נתונים: ${err.message}`;
-      banner.classList.remove('hidden');
+      const b = document.getElementById('error-banner');
+      b.textContent = `שגיאה בטעינת נתונים: ${err.message}`;
+      b.classList.remove('hidden');
     });
 </script>
 </body>

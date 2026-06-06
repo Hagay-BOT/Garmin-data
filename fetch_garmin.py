@@ -65,6 +65,37 @@ for activity in activities:
     gps_points = []
     hr_zones_sec = [0, 0, 0, 0, 0]
     hr_drift_bpm = None
+    temperature = None
+    laps = []
+
+    # Extra fields from activity summary
+    max_speed = activity.get("maxSpeed", 0)
+    best_pace_sec_per_km = round(1000 / max_speed) if max_speed and max_speed > 0 else None
+    max_cadence_raw = activity.get("maxRunningCadenceInStepsPerMinute")
+    max_cadence_spm = round(max_cadence_raw) if max_cadence_raw else None
+    stride_raw = activity.get("avgStrideLength")
+    stride_length_m = round(stride_raw / 100, 2) if stride_raw else None
+    vert_osc = activity.get("avgVerticalOscillation")
+    vert_ratio = activity.get("avgVerticalRatio")
+    vo2max = activity.get("vO2MaxValue")
+    stamina_start = activity.get("beginningStamina")
+    stamina_end = activity.get("endingStamina")
+    exercise_load = activity.get("activityTrainingLoad") or activity.get("exerciseLoad")
+    active_cal = activity.get("activeKilocalories")
+    total_cal = activity.get("calories")
+    sweat_raw = activity.get("waterEstimated")
+    sweat_ml = round(sweat_raw) if sweat_raw else None
+    bb_impact = activity.get("bodyBatteryDrainedDuringActivity")
+    avg_resp = activity.get("avgRespirationRate")
+    max_resp = activity.get("maxRespirationRate")
+    mod_min = activity.get("moderateIntensityMinutes")
+    vig_min = activity.get("vigorousIntensityMinutes")
+    ascent_raw = activity.get("elevationGain")
+    descent_raw = activity.get("elevationLoss")
+    total_ascent_m = round(ascent_raw) if ascent_raw else None
+    total_descent_m = round(descent_raw) if descent_raw else None
+    training_effect_label = activity.get("trainingEffectLabel")
+    recovery_hr = activity.get("recoveryHeartRate")
 
     if type_key == "running":
         try:
@@ -81,6 +112,10 @@ for activity in activities:
                 for p in geo[::10]
                 if "lat" in p and "lon" in p
             ]
+            # Temperature from details
+            weather = details.get("weatherDTO") or {}
+            temperature = weather.get("temperature") or details.get("avgTemperature")
+
             # HR zones & cardiac drift from per-second metrics
             descriptors = details.get("metricDescriptors", [])
             metrics_data = details.get("activityDetailMetrics", [])
@@ -104,25 +139,71 @@ for activity in activities:
                         hr_zones_sec[z] += 1
         except Exception:
             pass
+
+        # Lap data
+        try:
+            lap_data = client.get_activity_laps(activity_id)
+            if isinstance(lap_data, dict):
+                lap_list = lap_data.get("lapDTOs") or lap_data.get("laps") or []
+            else:
+                lap_list = lap_data or []
+            for i, lap in enumerate(lap_list):
+                lap_spd = lap.get("averageSpeed", 0)
+                laps.append({
+                    "lap": i + 1,
+                    "distance_km": round((lap.get("distance") or 0) / 1000, 2),
+                    "duration_sec": int(lap.get("duration") or 0),
+                    "pace_sec_per_km": round(1000 / lap_spd) if lap_spd and lap_spd > 0 else None,
+                    "avg_hr": lap.get("averageHR"),
+                    "cadence_spm": round(lap.get("averageRunningCadenceInStepsPerMinute")) if lap.get("averageRunningCadenceInStepsPerMinute") else None,
+                })
+        except Exception:
+            pass
+
         time.sleep(0.5)
 
     records.append({
+        "activity_id": activity_id,
         "date": activity.get("startTimeLocal", "")[:10],
+        "start_time": activity.get("startTimeLocal", ""),
         "activity_type": type_key,
         "category": classify(type_key, aerobic_effect),
         "distance_km": distance_km,
         "duration_sec": int(activity.get("duration", 0)),
         "pace_sec_per_km": pace_sec_per_km,
+        "best_pace_sec_per_km": best_pace_sec_per_km,
         "avg_hr": activity.get("averageHR"),
         "max_hr": activity.get("maxHR"),
+        "recovery_hr": recovery_hr,
         "cadence_spm": cadence_spm,
+        "max_cadence_spm": max_cadence_spm,
         "gct_ms": gct_ms,
+        "stride_length_m": stride_length_m,
+        "vertical_oscillation_cm": vert_osc,
+        "vertical_ratio_pct": vert_ratio,
         "aerobic_effect": aerobic_effect,
         "anaerobic_effect": anaerobic_effect,
+        "training_effect_label": training_effect_label,
         "training_stress_score": tss,
+        "exercise_load": exercise_load,
+        "vo2max": vo2max,
+        "stamina_start_pct": stamina_start,
+        "stamina_end_pct": stamina_end,
+        "active_calories": active_cal,
+        "total_calories": total_cal,
+        "sweat_loss_ml": sweat_ml,
+        "body_battery_impact": bb_impact,
+        "avg_respiration": avg_resp,
+        "max_respiration": max_resp,
+        "moderate_intensity_min": mod_min,
+        "vigorous_intensity_min": vig_min,
+        "total_ascent_m": total_ascent_m,
+        "total_descent_m": total_descent_m,
+        "temperature": temperature,
         "gps": gps_points,
         "hr_zones_sec": hr_zones_sec,
         "hr_drift_bpm": hr_drift_bpm,
+        "laps": laps,
     })
 
 # נעליים / ציוד מגרמין קונקט
