@@ -311,12 +311,6 @@
       </div>
     </div>
 
-    <!-- Prompt template -->
-    <div class="prompt-wrap">
-      <div class="sec-label">הוראות לקלוד (ניתן לעריכה)</div>
-      <textarea id="prompt-template" oninput="refresh()"></textarea>
-      <div class="prompt-hint">הטקסט הזה יופיע לפני הנתונים כשתעתיק לקלוד</div>
-    </div>
 
   </div>
 
@@ -330,42 +324,12 @@
   </div>
 
   <button id="copy-btn" onclick="copyToClipboard()">📋 העתק לקלוד</button>
-
-  <div class="instructions glass">
-    <h3>איך להשתמש</h3>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-text">בחר ריצות + ערוך את ההוראות לקלוד אם רצוי</div>
-      </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-text">לחץ <strong>העתק לקלוד</strong> למעלה</div>
-      </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-text">כנס ל<a href="https://claude.ai/projects" target="_blank">פרויקט Claude שלך</a></div>
-      </div>
-      <div class="step">
-        <div class="step-num">4</div>
-        <div class="step-text">הדבק (Ctrl+V) ושלח — קבל פידבק מותאם אישית</div>
-      </div>
-    </div>
-  </div>
 </main>
 
 <script>
   let allRuns = [];
   let dailyData = {};
 
-  const DEFAULT_PROMPT = `אתה מאמן ריצה מקצועי. נתח את הריצות הבאות:
-
-1. **ניתוח כללי** — סקירת הביצועים (קצב, דופק, עומס)
-2. **עומס אימון** — האם העומס מתאים? סימני עייפות?
-3. **השוואה לאימון הקודם** — שיפור / ירידה בביצועים
-4. **2 נקודות לשיפור** — המלצות ספציפיות לריצה הבאה`;
-
-  document.getElementById('prompt-template').value = DEFAULT_PROMPT;
 
   function fmtPace(sec) {
     if (!sec) return '—';
@@ -478,13 +442,9 @@
   }
 
   function buildMarkdown(runs) {
-    const promptText = document.getElementById('prompt-template').value.trim();
     const override = document.getElementById('category-override').value;
     const now = new Date().toLocaleDateString('he-IL');
-    let md = '';
-
-    if(promptText) md += promptText + '\n\n---\n\n';
-    md += `## 🏃 נתוני ריצה — ${now}\n\n`;
+    let md = `הנה הנתונים של הריצה מ-${now}:\n\n`;
 
     runs.forEach((r, idx) => {
       const day = dailyData[r.date] || {};
