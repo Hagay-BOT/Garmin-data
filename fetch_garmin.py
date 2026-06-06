@@ -98,7 +98,6 @@ for activity in activities:
 
     gct_ms = None
     gps_points = []
-    hr_zones_sec = [0, 0, 0, 0, 0]
     hr_drift_bpm = None
     temperature = None
     laps = []
@@ -113,14 +112,12 @@ for activity in activities:
     vert_osc = activity.get("avgVerticalOscillation")
     vert_ratio = activity.get("avgVerticalRatio")
     vo2max = activity.get("vO2MaxValue")
-    stamina_start = activity.get("beginningStamina")
-    stamina_end = activity.get("endingStamina")
     exercise_load = activity.get("activityTrainingLoad") or activity.get("exerciseLoad")
     active_cal = activity.get("activeKilocalories")
     total_cal = activity.get("calories")
     sweat_raw = activity.get("waterEstimated")
     sweat_ml = round(sweat_raw) if sweat_raw else None
-    bb_impact = activity.get("bodyBatteryDrainedDuringActivity")
+    bb_impact = activity.get("differenceBodyBattery")          # correct field name
     avg_resp = activity.get("avgRespirationRate")
     max_resp = activity.get("maxRespirationRate")
     mod_min = activity.get("moderateIntensityMinutes")
@@ -130,9 +127,32 @@ for activity in activities:
     total_ascent_m = round(ascent_raw) if ascent_raw else None
     total_descent_m = round(descent_raw) if descent_raw else None
     training_effect_label = activity.get("trainingEffectLabel")
-    recovery_hr = activity.get("recoveryHeartRate")
+
+    # HR zones from batch summary fields (seconds per zone, direct from Garmin)
+    hr_zones_sec = [
+        round(activity.get("hrTimeInZone_1") or 0),
+        round(activity.get("hrTimeInZone_2") or 0),
+        round(activity.get("hrTimeInZone_3") or 0),
+        round(activity.get("hrTimeInZone_4") or 0),
+        round(activity.get("hrTimeInZone_5") or 0),
+    ]
+
+    # Recovery HR and stamina come from summaryDTO of get_activity()
+    recovery_hr = None
+    stamina_start = None
+    stamina_end = None
 
     if type_key == "running":
+        # Single-activity summary for recovery HR + stamina
+        try:
+            act_summary = client.get_activity(activity_id)
+            summary_dto = act_summary.get("summaryDTO", {}) if isinstance(act_summary, dict) else {}
+            recovery_hr = summary_dto.get("recoveryHeartRate")
+            stamina_start = summary_dto.get("beginPotentialStamina")
+            stamina_end = summary_dto.get("endPotentialStamina")
+        except Exception:
+            pass
+
         try:
             details = client.get_activity_details(activity_id)
             gct_ms = details.get("avgGroundContactTime")
@@ -151,11 +171,14 @@ for activity in activities:
             weather = details.get("weatherDTO") or {}
             temperature = weather.get("temperature") or details.get("avgTemperature")
 
-            # HR zones & cardiac drift from per-second metrics
+            # Cardiac drift from per-second HR metrics
             descriptors = details.get("metricDescriptors", [])
             metrics_data = details.get("activityDetailMetrics", [])
-            hr_idx = next((d["metricsIndex"] for d in descriptors
-                          if d.get("metricsType") == "directHeartRate"), None)
+            hr_idx = next(
+                (d["metricsIndex"] for d in descriptors
+                 if d.get("metricsType") in ("directHeartRate", "heartRate")),
+                None
+            )
             if hr_idx is not None and metrics_data and global_max_hr > 0:
                 hr_vals = []
                 for m_entry in metrics_data:
@@ -167,30 +190,23 @@ for activity in activities:
                     hr_drift_bpm = round(
                         sum(hr_vals[-third:]) / third - sum(hr_vals[:third]) / third, 1
                     )
-                    zone_thresholds = [0.60, 0.70, 0.80, 0.90, 1.01]
-                    for hr in hr_vals:
-                        pct = hr / global_max_hr
-                        z = next((i for i, t in enumerate(zone_thresholds) if pct < t), 4)
-                        hr_zones_sec[z] += 1
         except Exception:
             pass
 
-        # Lap data
+        # Lap data via get_activity_splits (lapDTOs with averageRunCadence)
         try:
-            lap_data = client.get_activity_laps(activity_id)
-            if isinstance(lap_data, dict):
-                lap_list = lap_data.get("lapDTOs") or lap_data.get("laps") or []
-            else:
-                lap_list = lap_data or []
+            lap_data = client.get_activity_splits(activity_id)
+            lap_list = lap_data.get("lapDTOs") or [] if isinstance(lap_data, dict) else []
             for i, lap in enumerate(lap_list):
                 lap_spd = lap.get("averageSpeed", 0)
+                cad_raw = lap.get("averageRunCadence")
                 laps.append({
                     "lap": i + 1,
                     "distance_km": round((lap.get("distance") or 0) / 1000, 2),
                     "duration_sec": int(lap.get("duration") or 0),
                     "pace_sec_per_km": round(1000 / lap_spd) if lap_spd and lap_spd > 0 else None,
                     "avg_hr": lap.get("averageHR"),
-                    "cadence_spm": round(lap.get("averageRunningCadenceInStepsPerMinute")) if lap.get("averageRunningCadenceInStepsPerMinute") else None,
+                    "cadence_spm": round(cad_raw) if cad_raw else None,
                 })
         except Exception:
             pass
@@ -227,8 +243,8 @@ for activity in activities:
         "training_stress_score": tss,
         "exercise_load": exercise_load,
         "vo2max": vo2max,
-        "stamina_start_pct": stamina_start,
-        "stamina_end_pct": stamina_end,
+        "stamina_start_pct": round(stamina_start) if stamina_start is not None else None,
+        "stamina_end_pct": round(stamina_end) if stamina_end is not None else None,
         "active_calories": active_cal,
         "total_calories": total_cal,
         "sweat_loss_ml": sweat_ml,
