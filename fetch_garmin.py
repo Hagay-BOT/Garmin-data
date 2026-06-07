@@ -28,15 +28,15 @@ STRENGTH_TYPES = {"strength_training", "weightlifting", "fitness_equipment", "gy
 
 def classify_quality_subtype(anaerobic_eff, max_hr, avg_hr, ascent_m, dist_km):
     """
-    זיהוי תת-קטגוריה של ריצת איכות:
+    תת-קטגוריה של ריצת איכות (נקרא רק כשיודעים שזו ריצת איכות):
       quality_intervals — אינטרוואלים   (anaerobic גבוה / HR spike חד)
       quality_hills     — עליות          (עלייה גבוהה לק"מ)
       quality_segments  — מקטעים        (מאמץ מעורב, fartlek-style)
-      quality_tempo     — שינוי קצבים   (ברירת מחדל — מאמץ sustained)
+      quality_tempo     — קצב/טמפו      (ברירת מחדל — מאמץ sustained)
     """
     anaerobic_eff = anaerobic_eff or 0
-    max_hr  = max_hr  or 0
-    avg_hr  = avg_hr  or 0
+    max_hr   = max_hr  or 0
+    avg_hr   = avg_hr  or 0
     ascent_m = ascent_m or 0
     dist_km  = max(dist_km or 1, 0.1)
 
@@ -55,18 +55,54 @@ def classify_quality_subtype(anaerobic_eff, max_hr, avg_hr, ascent_m, dist_km):
     if anaerobic_eff >= 1.5:
         return "quality_segments"
 
-    # שינוי קצבים: ברירת מחדל לריצת איכות
+    # קצב/טמפו: ברירת מחדל לריצת איכות
     return "quality_tempo"
 
+
+# תוויות Garmin שמעידות על בסיס (ריצה קלה/שחזור)
+_BASE_LABELS   = {"RECOVERY", "AEROBIC_BASE", "NO_BENEFIT", "MINOR"}
+# תוויות Garmin שמעידות בוודאות על ריצת עצימות (אינטרוואלים / VO2max)
+_HIIT_LABELS   = {"ANAEROBIC_CAPACITY", "SPEED", "VO2MAX"}
+# תוויות Garmin שמעידות על ריצת איכות (טמפו / LT)
+_QUALITY_LABELS = {"TEMPO", "LACTATE_THRESHOLD", "OVERREACHING", "MAINTAINING"}
+
+
 def classify(type_key, aerobic_effect, anaerobic_effect=None,
-             max_hr=None, avg_hr=None, ascent_m=None, dist_km=None):
+             max_hr=None, avg_hr=None, ascent_m=None, dist_km=None,
+             training_effect_label=None):
+    """
+    סיווג פעילות לקטגוריה.
+
+    היררכיה:
+      1. לא ריצה → strength / other
+      2. תווית Garmin ידועה → BASE / HIIT → סיווג ישיר
+      3. תווית TEMPO/LT → classify_quality_subtype
+      4. Fallback (אין תווית): aerobic_effect > 3.5 → quality, אחרת base
+    """
     if type_key in STRENGTH_TYPES:
         return "strength"
-    if type_key == "running":
-        if (aerobic_effect or 0) > 2.5:
-            return classify_quality_subtype(anaerobic_effect, max_hr, avg_hr, ascent_m, dist_km)
+    if type_key != "running":
+        return "other"
+
+    label = (training_effect_label or "").upper().strip()
+
+    # --- שכבה 1: תוויות בסיס ← base_run ישיר ---
+    if label in _BASE_LABELS:
         return "base_run"
-    return "other"
+
+    # --- שכבה 2: HIIT / VO2max ← quality_intervals ישיר ---
+    if label in _HIIT_LABELS:
+        return "quality_intervals"
+
+    # --- שכבה 3: TEMPO / LT ← תת-קטגוריה של איכות ---
+    if label in _QUALITY_LABELS:
+        return classify_quality_subtype(anaerobic_effect, max_hr, avg_hr, ascent_m, dist_km)
+
+    # --- שכבה 4: Fallback (אין תווית או תווית לא מוכרת) ---
+    # סף גבוה יותר (3.5 במקום 2.5) כדי להקטין false-positives
+    if (aerobic_effect or 0) > 3.5:
+        return classify_quality_subtype(anaerobic_effect, max_hr, avg_hr, ascent_m, dist_km)
+    return "base_run"
 
 try:
     activities = client.get_activities_by_date(START_DATE, end_date)
@@ -219,7 +255,8 @@ for activity in activities:
                              activity.get("maxHR"),
                              activity.get("averageHR"),
                              activity.get("elevationGain"),
-                             distance_km),
+                             distance_km,
+                             training_effect_label),
         "distance_km": distance_km,
         "duration_sec": int(activity.get("duration", 0)),
         "pace_sec_per_km": pace_sec_per_km,
