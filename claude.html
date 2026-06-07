@@ -452,8 +452,7 @@
 
   function buildMarkdown(runs) {
     const override = document.getElementById('category-override').value;
-    const now = new Date().toLocaleDateString('he-IL');
-    let md = `הנה הנתונים של הריצה מ-${now}:\n\n`;
+    let md = runs.length ? `הנה הנתונים של הריצה מ-${fmtDate(runs[0].date)}:\n\n` : '';
 
     runs.forEach((r, idx) => {
       const day = dailyData[r.date] || {};
