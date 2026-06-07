@@ -424,19 +424,8 @@
         day.body_battery_morning ? `<div class="mchip">BB <b>${day.body_battery_morning}</b></div>` : '',
       ].filter(Boolean).join('');
 
-      const lapTable = r.laps && r.laps.length > 0 ? `
-        <table class="lap-table">
-          <thead><tr>
-            <th>קמ</th><th>מרחק</th><th>קצב</th><th>דופק</th><th>קדנס</th>
-          </tr></thead>
-          <tbody>${r.laps.map(l=>`<tr>
-            <td>${l.lap}</td>
-            <td>${l.distance_km?l.distance_km+' ק"מ':'—'}</td>
-            <td>${fmtPace(l.pace_sec_per_km)}</td>
-            <td>${l.avg_hr||'—'}</td>
-            <td>${l.cadence_spm||'—'}</td>
-          </tr>`).join('')}</tbody>
-        </table>` : '';
+      // Laps appear only in the markdown export, not visually here
+      const lapTable = '';
 
       return `<div class="run-card glass">
         <div class="run-card-header">
