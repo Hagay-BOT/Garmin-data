@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-06-07T10:51:34.420659+00:00",
+  "last_updated": "2026-06-08T10:30:51.081457+00:00",
   "activities": [
     {
       "activity_id": 13381622386,
@@ -55,7 +55,7 @@
       "date": "2024-01-03",
       "start_time": "2024-01-03 07:46:22",
       "activity_type": "running",
-      "category": "base_run",
+      "category": "quality_intervals",
       "distance_km": 0.31,
       "duration_sec": 52,
       "pace_sec_per_km": 168,
@@ -138,7 +138,7 @@
       "date": "2024-01-03",
       "start_time": "2024-01-03 06:48:57",
       "activity_type": "running",
-      "category": "base_run",
+      "category": "quality_segments",
       "distance_km": 2.95,
       "duration_sec": 713,
       "pace_sec_per_km": 242,
@@ -525,7 +525,7 @@
       "date": "2024-01-06",
       "start_time": "2024-01-06 11:17:11",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "quality_intervals",
       "distance_km": 8.47,
       "duration_sec": 2697,
       "pace_sec_per_km": 319,
@@ -1903,7 +1903,7 @@
       "date": "2024-01-19",
       "start_time": "2024-01-19 07:38:43",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 4.46,
       "duration_sec": 1287,
       "pace_sec_per_km": 288,
@@ -2591,7 +2591,7 @@
       "date": "2024-01-22",
       "start_time": "2024-01-22 17:14:55",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 4.63,
       "duration_sec": 1585,
       "pace_sec_per_km": 343,
@@ -3448,7 +3448,7 @@
       "date": "2024-01-29",
       "start_time": "2024-01-29 21:31:45",
       "activity_type": "running",
-      "category": "base_run",
+      "category": "quality_tempo",
       "distance_km": 1.9,
       "duration_sec": 562,
       "pace_sec_per_km": 295,
@@ -4167,7 +4167,7 @@
       "date": "2024-02-10",
       "start_time": "2024-02-10 09:25:08",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 6.61,
       "duration_sec": 2097,
       "pace_sec_per_km": 317,
@@ -5647,7 +5647,7 @@
       "date": "2024-02-14",
       "start_time": "2024-02-14 15:26:43",
       "activity_type": "running",
-      "category": "base_run",
+      "category": "quality_tempo",
       "distance_km": 2.03,
       "duration_sec": 591,
       "pace_sec_per_km": 292,
@@ -6865,7 +6865,7 @@
       "date": "2024-03-18",
       "start_time": "2024-03-18 06:39:40",
       "activity_type": "running",
-      "category": "base_run",
+      "category": "quality_tempo",
       "distance_km": 1.88,
       "duration_sec": 563,
       "pace_sec_per_km": 299,
@@ -7176,7 +7176,7 @@
       "date": "2024-03-20",
       "start_time": "2024-03-20 07:12:52",
       "activity_type": "running",
-      "category": "base_run",
+      "category": "quality_intervals",
       "distance_km": 2.87,
       "duration_sec": 969,
       "pace_sec_per_km": 337,
@@ -7875,7 +7875,7 @@
       "date": "2024-03-23",
       "start_time": "2024-03-23 08:55:44",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 3.01,
       "duration_sec": 953,
       "pace_sec_per_km": 317,
@@ -10609,7 +10609,7 @@
       "date": "2024-05-29",
       "start_time": "2024-05-29 20:56:53",
       "activity_type": "running",
-      "category": "base_run",
+      "category": "quality_tempo",
       "distance_km": 3.01,
       "duration_sec": 840,
       "pace_sec_per_km": 279,
@@ -11081,7 +11081,7 @@
       "date": "2024-06-19",
       "start_time": "2024-06-19 08:17:03",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 3.01,
       "duration_sec": 861,
       "pace_sec_per_km": 286,
@@ -11464,7 +11464,7 @@
       "date": "2024-06-21",
       "start_time": "2024-06-21 06:07:22",
       "activity_type": "running",
-      "category": "base_run",
+      "category": "quality_tempo",
       "distance_km": 3.01,
       "duration_sec": 730,
       "pace_sec_per_km": 243,
@@ -15979,7 +15979,7 @@
       "date": "2024-09-03",
       "start_time": "2024-09-03 07:57:02",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "quality_intervals",
       "distance_km": 5.76,
       "duration_sec": 2029,
       "pace_sec_per_km": 352,
@@ -20351,7 +20351,7 @@
       "date": "2024-09-23",
       "start_time": "2024-09-23 19:09:38",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 5.34,
       "duration_sec": 1804,
       "pace_sec_per_km": 338,
@@ -22687,7 +22687,7 @@
       "date": "2024-10-18",
       "start_time": "2024-10-18 08:08:48",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 4.79,
       "duration_sec": 1603,
       "pace_sec_per_km": 335,
@@ -23893,7 +23893,7 @@
       "date": "2024-10-30",
       "start_time": "2024-10-30 16:59:52",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 4.0,
       "duration_sec": 1428,
       "pace_sec_per_km": 357,
@@ -26167,7 +26167,7 @@
       "date": "2025-01-13",
       "start_time": "2025-01-13 07:04:06",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 3.78,
       "duration_sec": 1648,
       "pace_sec_per_km": 436,
@@ -29549,7 +29549,7 @@
       "date": "2025-02-01",
       "start_time": "2025-02-01 15:34:17",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 7.41,
       "duration_sec": 2402,
       "pace_sec_per_km": 324,
@@ -33613,7 +33613,7 @@
       "date": "2025-02-16",
       "start_time": "2025-02-16 13:21:20",
       "activity_type": "running",
-      "category": "quality_hills",
+      "category": "base_run",
       "distance_km": 6.0,
       "duration_sec": 2223,
       "pace_sec_per_km": 371,
@@ -34839,7 +34839,7 @@
       "date": "2025-02-23",
       "start_time": "2025-02-23 13:38:24",
       "activity_type": "running",
-      "category": "quality_hills",
+      "category": "base_run",
       "distance_km": 7.2,
       "duration_sec": 2567,
       "pace_sec_per_km": 357,
@@ -36207,7 +36207,7 @@
       "date": "2025-02-25",
       "start_time": "2025-02-25 11:46:48",
       "activity_type": "running",
-      "category": "quality_hills",
+      "category": "base_run",
       "distance_km": 3.69,
       "duration_sec": 1749,
       "pace_sec_per_km": 474,
@@ -37272,7 +37272,7 @@
       "date": "2025-02-28",
       "start_time": "2025-02-28 09:48:24",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 8.0,
       "duration_sec": 2558,
       "pace_sec_per_km": 320,
@@ -42013,7 +42013,7 @@
       "date": "2025-03-09",
       "start_time": "2025-03-09 09:42:40",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 5.01,
       "duration_sec": 1841,
       "pace_sec_per_km": 367,
@@ -43021,7 +43021,7 @@
       "date": "2025-03-11",
       "start_time": "2025-03-11 07:02:13",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 9.0,
       "duration_sec": 2969,
       "pace_sec_per_km": 330,
@@ -46814,7 +46814,7 @@
       "date": "2025-03-26",
       "start_time": "2025-03-26 17:28:10",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "quality_intervals",
       "distance_km": 7.5,
       "duration_sec": 1928,
       "pace_sec_per_km": 257,
@@ -48068,7 +48068,7 @@
       "date": "2025-03-29",
       "start_time": "2025-03-29 09:38:15",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 12.01,
       "duration_sec": 4048,
       "pace_sec_per_km": 337,
@@ -48789,7 +48789,7 @@
       "date": "2025-04-05",
       "start_time": "2025-04-05 10:03:04",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "quality_intervals",
       "distance_km": 10.0,
       "duration_sec": 2791,
       "pace_sec_per_km": 279,
@@ -50565,7 +50565,7 @@
       "date": "2025-04-07",
       "start_time": "2025-04-07 06:30:25",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 6.0,
       "duration_sec": 2082,
       "pace_sec_per_km": 347,
@@ -53708,7 +53708,7 @@
       "date": "2025-04-14",
       "start_time": "2025-04-14 19:19:04",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 6.0,
       "duration_sec": 2175,
       "pace_sec_per_km": 363,
@@ -57053,7 +57053,7 @@
       "date": "2025-04-22",
       "start_time": "2025-04-22 07:03:12",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 5.12,
       "duration_sec": 1710,
       "pace_sec_per_km": 334,
@@ -57995,7 +57995,7 @@
       "date": "2025-04-26",
       "start_time": "2025-04-26 11:52:27",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 13.29,
       "duration_sec": 4838,
       "pace_sec_per_km": 364,
@@ -58896,7 +58896,7 @@
       "date": "2025-05-01",
       "start_time": "2025-05-01 10:03:04",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 12.0,
       "duration_sec": 4126,
       "pace_sec_per_km": 344,
@@ -60264,7 +60264,7 @@
       "date": "2025-05-19",
       "start_time": "2025-05-19 16:49:41",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 5.0,
       "duration_sec": 1730,
       "pace_sec_per_km": 346,
@@ -61141,7 +61141,7 @@
       "date": "2025-05-22",
       "start_time": "2025-05-22 09:40:03",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 5.01,
       "duration_sec": 1723,
       "pace_sec_per_km": 344,
@@ -66508,7 +66508,7 @@
       "date": "2025-08-09",
       "start_time": "2025-08-09 10:03:35",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 2.81,
       "duration_sec": 1027,
       "pace_sec_per_km": 366,
@@ -67044,7 +67044,7 @@
       "date": "2025-08-11",
       "start_time": "2025-08-11 10:03:19",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 3.0,
       "duration_sec": 1081,
       "pace_sec_per_km": 360,
@@ -67536,7 +67536,7 @@
       "date": "2025-08-13",
       "start_time": "2025-08-13 18:33:58",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 4.01,
       "duration_sec": 1435,
       "pace_sec_per_km": 359,
@@ -69008,7 +69008,7 @@
       "date": "2025-08-19",
       "start_time": "2025-08-19 05:48:05",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 5.0,
       "duration_sec": 1708,
       "pace_sec_per_km": 341,
@@ -74159,7 +74159,7 @@
       "date": "2025-09-05",
       "start_time": "2025-09-05 06:37:34",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 3.1,
       "duration_sec": 1031,
       "pace_sec_per_km": 332,
@@ -74650,7 +74650,7 @@
       "date": "2025-09-06",
       "start_time": "2025-09-06 07:47:38",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 10.01,
       "duration_sec": 3458,
       "pace_sec_per_km": 345,
@@ -78691,7 +78691,7 @@
       "date": "2025-09-20",
       "start_time": "2025-09-20 07:47:13",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 10.01,
       "duration_sec": 3437,
       "pace_sec_per_km": 344,
@@ -80700,7 +80700,7 @@
       "date": "2025-09-27",
       "start_time": "2025-09-27 07:42:23",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 12.0,
       "duration_sec": 4291,
       "pace_sec_per_km": 358,
@@ -82177,7 +82177,7 @@
       "date": "2025-10-04",
       "start_time": "2025-10-04 08:02:50",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 14.0,
       "duration_sec": 5703,
       "pace_sec_per_km": 407,
@@ -85363,7 +85363,7 @@
       "date": "2025-11-09",
       "start_time": "2025-11-09 08:14:32",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 5.06,
       "duration_sec": 1635,
       "pace_sec_per_km": 323,
@@ -86058,7 +86058,7 @@
       "date": "2025-11-28",
       "start_time": "2025-11-28 20:01:13",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 8.02,
       "duration_sec": 2805,
       "pace_sec_per_km": 350,
@@ -88518,7 +88518,7 @@
       "date": "2026-01-08",
       "start_time": "2026-01-08 22:00:09",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 10.0,
       "duration_sec": 3584,
       "pace_sec_per_km": 359,
@@ -89985,7 +89985,7 @@
       "date": "2026-01-11",
       "start_time": "2026-01-11 18:18:17",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 7.01,
       "duration_sec": 2488,
       "pace_sec_per_km": 355,
@@ -91741,7 +91741,7 @@
       "date": "2026-02-02",
       "start_time": "2026-02-02 07:15:17",
       "activity_type": "running",
-      "category": "base_run",
+      "category": "quality_intervals",
       "distance_km": 2.7,
       "duration_sec": 1115,
       "pace_sec_per_km": 413,
@@ -92773,7 +92773,7 @@
       "date": "2026-02-07",
       "start_time": "2026-02-07 10:42:53",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 4.51,
       "duration_sec": 1561,
       "pace_sec_per_km": 346,
@@ -94960,7 +94960,7 @@
       "date": "2026-03-10",
       "start_time": "2026-03-10 20:43:54",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 5.01,
       "duration_sec": 1805,
       "pace_sec_per_km": 360,
@@ -95869,7 +95869,7 @@
       "date": "2026-03-15",
       "start_time": "2026-03-15 10:07:53",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 7.01,
       "duration_sec": 2642,
       "pace_sec_per_km": 377,
@@ -97820,7 +97820,7 @@
       "date": "2026-04-18",
       "start_time": "2026-04-18 17:15:06",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 5.22,
       "duration_sec": 1830,
       "pace_sec_per_km": 351,
@@ -98632,7 +98632,7 @@
       "date": "2026-04-21",
       "start_time": "2026-04-21 17:08:11",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 5.01,
       "duration_sec": 1809,
       "pace_sec_per_km": 361,
@@ -99542,7 +99542,7 @@
       "date": "2026-04-29",
       "start_time": "2026-04-29 20:40:22",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 5.01,
       "duration_sec": 1807,
       "pace_sec_per_km": 361,
@@ -103674,7 +103674,7 @@
       "date": "2026-05-16",
       "start_time": "2026-05-16 08:25:50",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 3.91,
       "duration_sec": 1384,
       "pace_sec_per_km": 354,
@@ -106100,7 +106100,7 @@
       "date": "2026-05-23",
       "start_time": "2026-05-23 08:44:05",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 8.15,
       "duration_sec": 2763,
       "pace_sec_per_km": 339,
@@ -107775,7 +107775,7 @@
       "date": "2026-05-30",
       "start_time": "2026-05-30 09:50:00",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 7.0,
       "duration_sec": 2579,
       "pace_sec_per_km": 368,
@@ -109966,7 +109966,7 @@
       "date": "2026-06-06",
       "start_time": "2026-06-06 07:33:31",
       "activity_type": "running",
-      "category": "quality_tempo",
+      "category": "base_run",
       "distance_km": 8.01,
       "duration_sec": 3092,
       "pace_sec_per_km": 386,
@@ -111381,6 +111381,1014 @@
           "pace_sec_per_km": 366,
           "avg_hr": 160.0,
           "cadence_spm": 159
+        }
+      ]
+    },
+    {
+      "activity_id": 23164618606,
+      "date": "2026-06-07",
+      "start_time": "2026-06-07 15:54:27",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "distance_km": null,
+      "duration_sec": 4303,
+      "pace_sec_per_km": null,
+      "best_pace_sec_per_km": null,
+      "avg_hr": 109.0,
+      "max_hr": 163.0,
+      "recovery_hr": null,
+      "cadence_spm": null,
+      "max_cadence_spm": null,
+      "gct_ms": null,
+      "stride_length_m": null,
+      "vertical_oscillation_cm": null,
+      "vertical_ratio_pct": null,
+      "aerobic_effect": 0.8999999761581421,
+      "anaerobic_effect": 0.699999988079071,
+      "training_effect_label": "AEROBIC_BASE",
+      "training_stress_score": null,
+      "exercise_load": 18.113845825195312,
+      "vo2max": null,
+      "stamina_start_pct": null,
+      "stamina_end_pct": null,
+      "active_calories": null,
+      "total_calories": 373.0,
+      "sweat_loss_ml": 755,
+      "body_battery_impact": -10,
+      "avg_respiration": null,
+      "max_respiration": null,
+      "moderate_intensity_min": 39,
+      "vigorous_intensity_min": 6,
+      "total_ascent_m": null,
+      "total_descent_m": null,
+      "temperature": null,
+      "gps": [],
+      "hr_zones_sec": [
+        1885,
+        718,
+        168,
+        0,
+        0
+      ],
+      "hr_drift_bpm": null,
+      "laps": []
+    },
+    {
+      "activity_id": 23170600098,
+      "date": "2026-06-08",
+      "start_time": "2026-06-08 06:25:58",
+      "activity_type": "running",
+      "category": "quality_tempo",
+      "distance_km": 6.33,
+      "duration_sec": 1981,
+      "pace_sec_per_km": 313,
+      "best_pace_sec_per_km": 236,
+      "avg_hr": 172.0,
+      "max_hr": 190.0,
+      "recovery_hr": 50,
+      "cadence_spm": 167,
+      "max_cadence_spm": 180,
+      "gct_ms": 262,
+      "stride_length_m": 1.14,
+      "vertical_oscillation_cm": 9.34000015258789,
+      "vertical_ratio_pct": 8.319999694824219,
+      "aerobic_effect": 3.700000047683716,
+      "anaerobic_effect": 0.8999999761581421,
+      "training_effect_label": "TEMPO",
+      "training_stress_score": null,
+      "exercise_load": 133.2089080810547,
+      "vo2max": 52.0,
+      "stamina_start_pct": 99,
+      "stamina_end_pct": 64,
+      "active_calories": null,
+      "total_calories": 459.0,
+      "sweat_loss_ml": 550,
+      "body_battery_impact": -13,
+      "avg_respiration": 37.560001373291016,
+      "max_respiration": 47.959999084472656,
+      "moderate_intensity_min": 1,
+      "vigorous_intensity_min": 31,
+      "total_ascent_m": 14,
+      "total_descent_m": 12,
+      "temperature": null,
+      "gps": [
+        {
+          "lat": 32.832828015089035,
+          "lon": 34.97421517968178
+        },
+        {
+          "lat": 32.83275945112109,
+          "lon": 34.97398911975324
+        },
+        {
+          "lat": 32.83266498707235,
+          "lon": 34.97376096434891
+        },
+        {
+          "lat": 32.83257035538554,
+          "lon": 34.973534904420376
+        },
+        {
+          "lat": 32.83247882500291,
+          "lon": 34.97332108207047
+        },
+        {
+          "lat": 32.83240028657019,
+          "lon": 34.97311111539602
+        },
+        {
+          "lat": 32.83231621608138,
+          "lon": 34.97289008460939
+        },
+        {
+          "lat": 32.83223466016352,
+          "lon": 34.972674921154976
+        },
+        {
+          "lat": 32.832164503633976,
+          "lon": 34.97244550846517
+        },
+        {
+          "lat": 32.8321199119091,
+          "lon": 34.97220008634031
+        },
+        {
+          "lat": 32.832055455073714,
+          "lon": 34.9719569273293
+        },
+        {
+          "lat": 32.8319679480046,
+          "lon": 34.97173933312297
+        },
+        {
+          "lat": 32.83187289722264,
+          "lon": 34.971531545743346
+        },
+        {
+          "lat": 32.83180030994117,
+          "lon": 34.971290649846196
+        },
+        {
+          "lat": 32.831726130098104,
+          "lon": 34.970986135303974
+        },
+        {
+          "lat": 32.831627894192934,
+          "lon": 34.97060936875641
+        },
+        {
+          "lat": 32.83150602132082,
+          "lon": 34.97025883756578
+        },
+        {
+          "lat": 32.831337209790945,
+          "lon": 34.96994501911104
+        },
+        {
+          "lat": 32.83121190033853,
+          "lon": 34.969606222584844
+        },
+        {
+          "lat": 32.83118700608611,
+          "lon": 34.969227109104395
+        },
+        {
+          "lat": 32.83117996528745,
+          "lon": 34.96885981410742
+        },
+        {
+          "lat": 32.831184240058064,
+          "lon": 34.968495117500424
+        },
+        {
+          "lat": 32.83125129528344,
+          "lon": 34.96815129183233
+        },
+        {
+          "lat": 32.83132136799395,
+          "lon": 34.96781039983034
+        },
+        {
+          "lat": 32.831416334956884,
+          "lon": 34.9674550909549
+        },
+        {
+          "lat": 32.83152068965137,
+          "lon": 34.96711646206677
+        },
+        {
+          "lat": 32.8314171731472,
+          "lon": 34.966775653883815
+        },
+        {
+          "lat": 32.83122112043202,
+          "lon": 34.96651589870453
+        },
+        {
+          "lat": 32.83123872242868,
+          "lon": 34.966138042509556
+        },
+        {
+          "lat": 32.83115750178695,
+          "lon": 34.96577527374029
+        },
+        {
+          "lat": 32.831054236739874,
+          "lon": 34.96543748304248
+        },
+        {
+          "lat": 32.83096371218562,
+          "lon": 34.96510220691562
+        },
+        {
+          "lat": 32.830837313085794,
+          "lon": 34.96478511951864
+        },
+        {
+          "lat": 32.83070890232921,
+          "lon": 34.964463924989104
+        },
+        {
+          "lat": 32.830563224852085,
+          "lon": 34.9641620926559
+        },
+        {
+          "lat": 32.83037664368749,
+          "lon": 34.963901583105326
+        },
+        {
+          "lat": 32.83022501505911,
+          "lon": 34.96361550875008
+        },
+        {
+          "lat": 32.83006248995662,
+          "lon": 34.96332130394876
+        },
+        {
+          "lat": 32.829898707568645,
+          "lon": 34.96303774416447
+        },
+        {
+          "lat": 32.82971329987049,
+          "lon": 34.96276189573109
+        },
+        {
+          "lat": 32.829520013183355,
+          "lon": 34.96249660849571
+        },
+        {
+          "lat": 32.8293034248054,
+          "lon": 34.96224347501993
+        },
+        {
+          "lat": 32.829085662961006,
+          "lon": 34.96199713088572
+        },
+        {
+          "lat": 32.82886295579374,
+          "lon": 34.96176394633949
+        },
+        {
+          "lat": 32.82860663719475,
+          "lon": 34.96156060136855
+        },
+        {
+          "lat": 32.82833028584719,
+          "lon": 34.96134577319026
+        },
+        {
+          "lat": 32.82806499861181,
+          "lon": 34.96110336855054
+        },
+        {
+          "lat": 32.82780658453703,
+          "lon": 34.960839757695794
+        },
+        {
+          "lat": 32.82754473388195,
+          "lon": 34.96056893840432
+        },
+        {
+          "lat": 32.827302161604166,
+          "lon": 34.96028051711619
+        },
+        {
+          "lat": 32.827054811641574,
+          "lon": 34.959973404183984
+        },
+        {
+          "lat": 32.82679572701454,
+          "lon": 34.9596565682441
+        },
+        {
+          "lat": 32.82654049806297,
+          "lon": 34.959343085065484
+        },
+        {
+          "lat": 32.82629339955747,
+          "lon": 34.95903354138136
+        },
+        {
+          "lat": 32.82605158165097,
+          "lon": 34.958727518096566
+        },
+        {
+          "lat": 32.82581118866801,
+          "lon": 34.9584287032485
+        },
+        {
+          "lat": 32.82557507045567,
+          "lon": 34.95814187452197
+        },
+        {
+          "lat": 32.8253420535475,
+          "lon": 34.95785932056606
+        },
+        {
+          "lat": 32.82512211240828,
+          "lon": 34.957559667527676
+        },
+        {
+          "lat": 32.82501013018191,
+          "lon": 34.95716999284923
+        },
+        {
+          "lat": 32.82487467862666,
+          "lon": 34.95679850690067
+        },
+        {
+          "lat": 32.824709890410304,
+          "lon": 34.95643607340753
+        },
+        {
+          "lat": 32.82446111552417,
+          "lon": 34.956142622977495
+        },
+        {
+          "lat": 32.824151990935206,
+          "lon": 34.955945229157805
+        },
+        {
+          "lat": 32.82381830736995,
+          "lon": 34.95584229938686
+        },
+        {
+          "lat": 32.82348118722439,
+          "lon": 34.955793768167496
+        },
+        {
+          "lat": 32.82317399047315,
+          "lon": 34.95562629774213
+        },
+        {
+          "lat": 32.82294088974595,
+          "lon": 34.95532924309373
+        },
+        {
+          "lat": 32.822699239477515,
+          "lon": 34.95504333637655
+        },
+        {
+          "lat": 32.82240520231426,
+          "lon": 34.954811576753855
+        },
+        {
+          "lat": 32.82214838080108,
+          "lon": 34.954689452424645
+        },
+        {
+          "lat": 32.821910083293915,
+          "lon": 34.95463354513049
+        },
+        {
+          "lat": 32.82166499644518,
+          "lon": 34.954595658928156
+        },
+        {
+          "lat": 32.82141404226422,
+          "lon": 34.95456171222031
+        },
+        {
+          "lat": 32.821153700351715,
+          "lon": 34.954545032233
+        },
+        {
+          "lat": 32.820890843868256,
+          "lon": 34.95455249212682
+        },
+        {
+          "lat": 32.82063318416476,
+          "lon": 34.95458937250078
+        },
+        {
+          "lat": 32.82038860023022,
+          "lon": 34.95465508662164
+        },
+        {
+          "lat": 32.82014049589634,
+          "lon": 34.954738318920135
+        },
+        {
+          "lat": 32.819891134276986,
+          "lon": 34.95475759729743
+        },
+        {
+          "lat": 32.81971159391105,
+          "lon": 34.95459088124335
+        },
+        {
+          "lat": 32.819527108222246,
+          "lon": 34.954434307292104
+        },
+        {
+          "lat": 32.81929182820022,
+          "lon": 34.95448803529143
+        },
+        {
+          "lat": 32.819045316427946,
+          "lon": 34.95451586320996
+        },
+        {
+          "lat": 32.8187888301909,
+          "lon": 34.954491555690765
+        },
+        {
+          "lat": 32.81854424625635,
+          "lon": 34.95444059371948
+        },
+        {
+          "lat": 32.81849890016019,
+          "lon": 34.95446087792516
+        },
+        {
+          "lat": 32.8187470883131,
+          "lon": 34.95450890623033
+        },
+        {
+          "lat": 32.81899703666568,
+          "lon": 34.9545275978744
+        },
+        {
+          "lat": 32.8192444704473,
+          "lon": 34.95451636612415
+        },
+        {
+          "lat": 32.81949299387634,
+          "lon": 34.954467080533504
+        },
+        {
+          "lat": 32.81969089061022,
+          "lon": 34.9545778054744
+        },
+        {
+          "lat": 32.81988392584026,
+          "lon": 34.95474636554718
+        },
+        {
+          "lat": 32.820125659927726,
+          "lon": 34.95476748794317
+        },
+        {
+          "lat": 32.820360101759434,
+          "lon": 34.95469070971012
+        },
+        {
+          "lat": 32.82060015946627,
+          "lon": 34.954627929255366
+        },
+        {
+          "lat": 32.820837534964085,
+          "lon": 34.95458258315921
+        },
+        {
+          "lat": 32.82109125517309,
+          "lon": 34.954582918435335
+        },
+        {
+          "lat": 32.82134883105755,
+          "lon": 34.95459046214819
+        },
+        {
+          "lat": 32.82160984352231,
+          "lon": 34.95461795479059
+        },
+        {
+          "lat": 32.821866665035486,
+          "lon": 34.95465659536421
+        },
+        {
+          "lat": 32.822112338617444,
+          "lon": 34.95470856316388
+        },
+        {
+          "lat": 32.82234191894531,
+          "lon": 34.95481174439192
+        },
+        {
+          "lat": 32.82254492864013,
+          "lon": 34.95495147071779
+        },
+        {
+          "lat": 32.82273670658469,
+          "lon": 34.95513495057821
+        },
+        {
+          "lat": 32.82291155308485,
+          "lon": 34.95533427223563
+        },
+        {
+          "lat": 32.82312453724444,
+          "lon": 34.955619843676686
+        },
+        {
+          "lat": 32.8234357573092,
+          "lon": 34.95582084171474
+        },
+        {
+          "lat": 32.823796179145575,
+          "lon": 34.95587113313377
+        },
+        {
+          "lat": 32.824148973450065,
+          "lon": 34.95597532019019
+        },
+        {
+          "lat": 32.82446580938995,
+          "lon": 34.9561838619411
+        },
+        {
+          "lat": 32.82471600919962,
+          "lon": 34.956504721194506
+        },
+        {
+          "lat": 32.82487526535988,
+          "lon": 34.956886600703
+        },
+        {
+          "lat": 32.82502530142665,
+          "lon": 34.957281136885285
+        },
+        {
+          "lat": 32.82517391256988,
+          "lon": 34.95766821317375
+        },
+        {
+          "lat": 32.82542612403631,
+          "lon": 34.95798647403717
+        },
+        {
+          "lat": 32.82568101771176,
+          "lon": 34.95829727500677
+        },
+        {
+          "lat": 32.825930044054985,
+          "lon": 34.958613608032465
+        },
+        {
+          "lat": 32.826185524463654,
+          "lon": 34.95892943814397
+        },
+        {
+          "lat": 32.8264351375401,
+          "lon": 34.959240574389696
+        },
+        {
+          "lat": 32.826681062579155,
+          "lon": 34.95954860933125
+        },
+        {
+          "lat": 32.82693830318749,
+          "lon": 34.95985731482506
+        },
+        {
+          "lat": 32.827195543795824,
+          "lon": 34.960174234583974
+        },
+        {
+          "lat": 32.827454041689634,
+          "lon": 34.960486963391304
+        },
+        {
+          "lat": 32.82772980630398,
+          "lon": 34.96078141964972
+        },
+        {
+          "lat": 32.82801487483084,
+          "lon": 34.96107704937458
+        },
+        {
+          "lat": 32.828323831781745,
+          "lon": 34.961350969970226
+        },
+        {
+          "lat": 32.828650726005435,
+          "lon": 34.9616077914834
+        },
+        {
+          "lat": 32.828955575823784,
+          "lon": 34.961873749271035
+        },
+        {
+          "lat": 32.82923251390457,
+          "lon": 34.962182119488716
+        },
+        {
+          "lat": 32.82946947030723,
+          "lon": 34.96246584691107
+        },
+        {
+          "lat": 32.82961162738502,
+          "lon": 34.96264647692442
+        },
+        {
+          "lat": 32.82975135371089,
+          "lon": 34.962833393365145
+        },
+        {
+          "lat": 32.82988948747516,
+          "lon": 34.96302676387131
+        },
+        {
+          "lat": 32.830012533813715,
+          "lon": 34.96323203667998
+        },
+        {
+          "lat": 32.830127784982324,
+          "lon": 34.96345164254308
+        },
+        {
+          "lat": 32.83024446107447,
+          "lon": 34.9636731762439
+        },
+        {
+          "lat": 32.83035879023373,
+          "lon": 34.96388180181384
+        },
+        {
+          "lat": 32.830502120777965,
+          "lon": 34.96413476765156
+        },
+        {
+          "lat": 32.83060018904507,
+          "lon": 34.964389661327004
+        },
+        {
+          "lat": 32.830676548182964,
+          "lon": 34.96464111842215
+        },
+        {
+          "lat": 32.830743100494146,
+          "lon": 34.964898778125644
+        },
+        {
+          "lat": 32.8308006003499,
+          "lon": 34.96515912003815
+        },
+        {
+          "lat": 32.830857429653406,
+          "lon": 34.965433375909925
+        },
+        {
+          "lat": 32.83092808909714,
+          "lon": 34.96568877249956
+        },
+        {
+          "lat": 32.83099682070315,
+          "lon": 34.96594282798469
+        },
+        {
+          "lat": 32.831056667491794,
+          "lon": 34.966206941753626
+        },
+        {
+          "lat": 32.83112632110715,
+          "lon": 34.966473737731576
+        },
+        {
+          "lat": 32.83126763999462,
+          "lon": 34.966690661385655
+        },
+        {
+          "lat": 32.831416837871075,
+          "lon": 34.966889563947916
+        },
+        {
+          "lat": 32.83149378374219,
+          "lon": 34.96716784313321
+        },
+        {
+          "lat": 32.83145070075989,
+          "lon": 34.967482667416334
+        },
+        {
+          "lat": 32.831348944455385,
+          "lon": 34.96778449974954
+        },
+        {
+          "lat": 32.831243919208646,
+          "lon": 34.96814441867173
+        },
+        {
+          "lat": 32.8310926258564,
+          "lon": 34.9685154017061
+        },
+        {
+          "lat": 32.831088015809655,
+          "lon": 34.96880323626101
+        },
+        {
+          "lat": 32.8311169333756,
+          "lon": 34.969140691682696
+        },
+        {
+          "lat": 32.83115431666374,
+          "lon": 34.96946146711707
+        },
+        {
+          "lat": 32.83124945126474,
+          "lon": 34.969796407967806
+        },
+        {
+          "lat": 32.83142899163067,
+          "lon": 34.97007611207664
+        },
+        {
+          "lat": 32.831537537276745,
+          "lon": 34.970365623012185
+        },
+        {
+          "lat": 32.8316243737936,
+          "lon": 34.970691511407495
+        },
+        {
+          "lat": 32.83169947564602,
+          "lon": 34.97098219580948
+        },
+        {
+          "lat": 32.8317697159946,
+          "lon": 34.971283273771405
+        },
+        {
+          "lat": 32.831875244155526,
+          "lon": 34.97156641446054
+        },
+        {
+          "lat": 32.83199124969542,
+          "lon": 34.971835389733315
+        },
+        {
+          "lat": 32.83207540400326,
+          "lon": 34.97211023233831
+        },
+        {
+          "lat": 32.832132233306766,
+          "lon": 34.97241667471826
+        },
+        {
+          "lat": 32.83221839927137,
+          "lon": 34.9726977199316
+        },
+        {
+          "lat": 32.832323256880045,
+          "lon": 34.97298865579069
+        },
+        {
+          "lat": 32.83244772814214,
+          "lon": 34.9732693657279
+        },
+        {
+          "lat": 32.83257085829973,
+          "lon": 34.973552422598004
+        },
+        {
+          "lat": 32.832677476108074,
+          "lon": 34.97383648529649
+        },
+        {
+          "lat": 32.83278468064964,
+          "lon": 34.974133372306824
+        },
+        {
+          "lat": 32.83289800398052,
+          "lon": 34.974426571279764
+        },
+        {
+          "lat": 32.83297570422292,
+          "lon": 34.97473661787808
+        },
+        {
+          "lat": 32.83311006613076,
+          "lon": 34.97502252459526
+        },
+        {
+          "lat": 32.83328499644995,
+          "lon": 34.97527842409909
+        },
+        {
+          "lat": 32.83341692760587,
+          "lon": 34.975564666092396
+        },
+        {
+          "lat": 32.83350250683725,
+          "lon": 34.97586817480624
+        },
+        {
+          "lat": 32.83362848684192,
+          "lon": 34.97615424916148
+        },
+        {
+          "lat": 32.83377676270902,
+          "lon": 34.97643311508
+        },
+        {
+          "lat": 32.833832167088985,
+          "lon": 34.97673410922289
+        },
+        {
+          "lat": 32.833959236741066,
+          "lon": 34.9770272243768
+        },
+        {
+          "lat": 32.83410608768463,
+          "lon": 34.97734196484089
+        },
+        {
+          "lat": 32.83429350703955,
+          "lon": 34.97762938030064
+        },
+        {
+          "lat": 32.83439140766859,
+          "lon": 34.97798594646156
+        },
+        {
+          "lat": 32.83456583507359,
+          "lon": 34.978287694975734
+        },
+        {
+          "lat": 32.8347032982856,
+          "lon": 34.97860821895301
+        },
+        {
+          "lat": 32.8348277695477,
+          "lon": 34.97894190251827
+        },
+        {
+          "lat": 32.83497319556773,
+          "lon": 34.979253709316254
+        },
+        {
+          "lat": 32.835106970742345,
+          "lon": 34.97957314364612
+        },
+        {
+          "lat": 32.835252061486244,
+          "lon": 34.979880172759295
+        },
+        {
+          "lat": 32.83541986718774,
+          "lon": 34.980184184387326
+        },
+        {
+          "lat": 32.83562237396836,
+          "lon": 34.980423487722874
+        },
+        {
+          "lat": 32.835918171331286,
+          "lon": 34.98049112968147
+        },
+        {
+          "lat": 32.83612696453929,
+          "lon": 34.98070386238396
+        },
+        {
+          "lat": 32.83629518933594,
+          "lon": 34.98096604831517
+        },
+        {
+          "lat": 32.836409183219075,
+          "lon": 34.98114366084337
+        }
+      ],
+      "hr_zones_sec": [
+        0,
+        56,
+        96,
+        1745,
+        83
+      ],
+      "hr_drift_bpm": null,
+      "laps": [
+        {
+          "lap": 1,
+          "distance_km": 0.31,
+          "duration_sec": 135,
+          "pace_sec_per_km": 438,
+          "avg_hr": 146.0,
+          "cadence_spm": 154
+        },
+        {
+          "lap": 2,
+          "distance_km": 0.5,
+          "duration_sec": 143,
+          "pace_sec_per_km": 287,
+          "avg_hr": 165.0,
+          "cadence_spm": 167
+        },
+        {
+          "lap": 3,
+          "distance_km": 0.5,
+          "duration_sec": 151,
+          "pace_sec_per_km": 302,
+          "avg_hr": 168.0,
+          "cadence_spm": 168
+        },
+        {
+          "lap": 4,
+          "distance_km": 0.5,
+          "duration_sec": 130,
+          "pace_sec_per_km": 260,
+          "avg_hr": 175.0,
+          "cadence_spm": 175
+        },
+        {
+          "lap": 5,
+          "distance_km": 0.5,
+          "duration_sec": 130,
+          "pace_sec_per_km": 261,
+          "avg_hr": 182.0,
+          "cadence_spm": 175
+        },
+        {
+          "lap": 6,
+          "distance_km": 0.5,
+          "duration_sec": 178,
+          "pace_sec_per_km": 358,
+          "avg_hr": 172.0,
+          "cadence_spm": 162
+        },
+        {
+          "lap": 7,
+          "distance_km": 0.5,
+          "duration_sec": 180,
+          "pace_sec_per_km": 362,
+          "avg_hr": 166.0,
+          "cadence_spm": 162
+        },
+        {
+          "lap": 8,
+          "distance_km": 0.5,
+          "duration_sec": 125,
+          "pace_sec_per_km": 250,
+          "avg_hr": 179.0,
+          "cadence_spm": 175
+        },
+        {
+          "lap": 9,
+          "distance_km": 0.5,
+          "duration_sec": 120,
+          "pace_sec_per_km": 241,
+          "avg_hr": 187.0,
+          "cadence_spm": 177
+        },
+        {
+          "lap": 10,
+          "distance_km": 0.5,
+          "duration_sec": 196,
+          "pace_sec_per_km": 393,
+          "avg_hr": 173.0,
+          "cadence_spm": 160
+        },
+        {
+          "lap": 11,
+          "distance_km": 0.5,
+          "duration_sec": 164,
+          "pace_sec_per_km": 329,
+          "avg_hr": 172.0,
+          "cadence_spm": 167
+        },
+        {
+          "lap": 12,
+          "distance_km": 0.5,
+          "duration_sec": 167,
+          "pace_sec_per_km": 335,
+          "avg_hr": 173.0,
+          "cadence_spm": 166
+        },
+        {
+          "lap": 13,
+          "distance_km": 0.5,
+          "duration_sec": 148,
+          "pace_sec_per_km": 297,
+          "avg_hr": 179.0,
+          "cadence_spm": 170
+        },
+        {
+          "lap": 14,
+          "distance_km": 0.02,
+          "duration_sec": 7,
+          "pace_sec_per_km": 423,
+          "avg_hr": 179.0,
+          "cadence_spm": 160
         }
       ]
     }
@@ -112941,6 +113949,14 @@
     "2026-06-06": {
       "sleep_score": 92,
       "body_battery_morning": 88
+    },
+    "2026-06-07": {
+      "sleep_score": 88,
+      "body_battery_morning": 79
+    },
+    "2026-06-08": {
+      "sleep_score": 82,
+      "body_battery_morning": 58
     }
   },
   "shoes": [
