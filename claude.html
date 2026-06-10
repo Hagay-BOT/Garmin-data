@@ -4,7 +4,6 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>שלח לקלוד</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <style>
     :root {
       --bg:   #0a0a0e;
@@ -99,31 +98,6 @@
       margin-bottom:1.25rem; font-size:.86rem; display:none;
     }
 
-    /* ── CALORIE CHART ── */
-    .cal-card { padding:1.3rem 1.4rem; margin-bottom:.75rem; }
-    .cal-chart-wrap { position:relative; height:220px; }
-    .cal-legend { display:flex; gap:1rem; margin-top:.55rem; flex-wrap:wrap; }
-    .cal-leg-item { display:flex; align-items:center; gap:.3rem; font-size:.68rem; color:var(--t2); }
-    .cal-leg-dot { width:10px; height:10px; border-radius:3px; }
-    .cal-total-row {
-      display:grid; grid-template-columns:repeat(3,1fr); gap:.55rem;
-      margin-bottom:.9rem;
-    }
-    .cal-stat {
-      background:var(--s2); border:0.5px solid var(--b1);
-      border-radius:var(--r2); padding:.65rem .9rem;
-    }
-    .cal-stat-lbl { font-size:.63rem; color:var(--t3); letter-spacing:.04em; margin-bottom:.18rem; }
-    .cal-stat-val { font-size:1.3rem; font-weight:700; color:var(--t1); line-height:1; }
-    .cal-stat-val.g {
-      background:linear-gradient(160deg,#05e07a 0%,#00b85d 100%);
-      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-    }
-    .cal-stat-val.b {
-      background:linear-gradient(160deg,#38bdf8 0%,#0ea5e9 100%);
-      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-    }
-
     /* ── CONFIG CARD ── */
     .config-card { padding:1.3rem 1.4rem; margin-bottom:.75rem; display:flex; flex-direction:column; gap:1rem; }
     .sec-label { font-size:.69rem; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--t3); margin-bottom:.5rem; display:flex; align-items:center; gap:.4rem; }
@@ -212,17 +186,6 @@
 <main>
   <div id="error-banner"></div>
 
-  <!-- Calorie Chart -->
-  <div class="cal-card card">
-    <div class="sec-title">שריפת קלוריות — 14 ימים אחרונים</div>
-    <div class="cal-total-row" id="cal-stats-row"></div>
-    <div class="cal-chart-wrap"><canvas id="cal-chart"></canvas></div>
-    <div class="cal-legend">
-      <div class="cal-leg-item"><div class="cal-leg-dot" style="background:rgba(56,189,248,.7)"></div>מנוחה (BMR)</div>
-      <div class="cal-leg-item"><div class="cal-leg-dot" style="background:rgba(5,224,122,.8)"></div>פעילות</div>
-    </div>
-  </div>
-
   <!-- Config -->
   <div class="config-card card">
     <div>
@@ -284,129 +247,6 @@ function catClass(c){
   if(c==='base_run') return 'cat-base';
   if(c&&c.startsWith('quality')) return 'cat-quality';
   return 'cat-other';
-}
-
-// ── Calorie chart ──────────────────────────────────────────────────────────
-function buildCalChart(){
-  const today = new Date();
-  const days = [];
-  for(let i=13;i>=0;i--){
-    const d = new Date(today);
-    d.setDate(today.getDate()-i);
-    days.push(d.toISOString().slice(0,10));
-  }
-
-  const resting=[], active=[], labels=[];
-  let totalActive=0, totalResting=0, daysWithData=0;
-
-  days.forEach(d=>{
-    const day = dailyData[d]||{};
-    const r = day.calories_resting||null;
-    const a = day.calories_active||null;
-
-    // Fallback: sum activity total_calories for the day if no stats data
-    const actCals = allRuns.reduce((s,run)=>{
-      if(run.date===d && run.total_calories) return s+run.total_calories;
-      return s;
-    }, 0) || null;
-    const activeFinal = a ?? actCals;
-
-    resting.push(r);
-    active.push(activeFinal);
-    labels.push(fmtDateShort(d));
-
-    if(activeFinal){ totalActive+=activeFinal; daysWithData++; }
-    if(r) totalResting+=r;
-  });
-
-  // Summary stats
-  const avgActive = daysWithData>0 ? Math.round(totalActive/daysWithData) : null;
-  const avgTotal = daysWithData>0 ? Math.round((totalActive+totalResting)/daysWithData) : null;
-  const today14 = dailyData[days[days.length-1]]||{};
-  const todayTotal = (today14.calories_resting||0) + (today14.calories_active||0);
-
-  document.getElementById('cal-stats-row').innerHTML=`
-    <div class="cal-stat">
-      <div class="cal-stat-lbl">ממוצע פעילות / יום</div>
-      <div class="cal-stat-val g">${avgActive??'—'}</div>
-    </div>
-    <div class="cal-stat">
-      <div class="cal-stat-lbl">סה"כ ממוצע / יום</div>
-      <div class="cal-stat-val">${avgTotal??'—'}</div>
-    </div>
-    <div class="cal-stat">
-      <div class="cal-stat-lbl">היום</div>
-      <div class="cal-stat-val b">${todayTotal>0?todayTotal:'—'}</div>
-    </div>
-  `;
-
-  const hasAnyData = resting.some(v=>v!=null) || active.some(v=>v!=null);
-  if(!hasAnyData){
-    document.getElementById('cal-stats-row').innerHTML+=`
-      <div style="grid-column:1/-1;font-size:.78rem;color:var(--t3);padding:.4rem 0">
-        נתוני קלוריות יומיים יהיו זמינים לאחר הרצת fetch_garmin.py עם העדכון החדש
-      </div>`;
-  }
-
-  const canvas = document.getElementById('cal-chart');
-  const existing = Chart.getChart(canvas);
-  if(existing) existing.destroy();
-
-  new Chart(canvas, {
-    type:'bar',
-    data:{
-      labels,
-      datasets:[
-        {
-          label:'מנוחה (BMR)',
-          data: resting,
-          backgroundColor:'rgba(56,189,248,0.35)',
-          borderColor:'rgba(56,189,248,0.55)',
-          borderWidth:1,
-          borderRadius:{topLeft:0,topRight:0,bottomLeft:3,bottomRight:3},
-          stack:'cal', order:2,
-        },
-        {
-          label:'פעילות',
-          data: active,
-          backgroundColor: days.map((_,i)=>i===13?'rgba(5,224,122,0.72)':'rgba(5,224,122,0.45)'),
-          borderColor: days.map((_,i)=>i===13?'rgba(5,224,122,0.9)':'rgba(5,224,122,0.6)'),
-          borderWidth:1,
-          borderRadius:{topLeft:4,topRight:4,bottomLeft:0,bottomRight:0},
-          stack:'cal', order:1,
-        },
-      ]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false, animation:{duration:650},
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          callbacks:{
-            title: ctx => days[ctx[0].dataIndex],
-            label: ctx => {
-              const lbl = ctx.dataset.label;
-              const val = ctx.raw;
-              const rest = resting[ctx.dataIndex]||0;
-              const act  = active[ctx.dataIndex]||0;
-              if(ctx.datasetIndex===1){
-                const tot = rest+act;
-                return [` ${lbl}: ${val??'—'} kcal`, tot>0?` סה"כ: ${tot} kcal`:''].filter(Boolean);
-              }
-              return ` ${lbl}: ${val??'—'} kcal`;
-            }
-          }
-        }
-      },
-      scales:{
-        x:{ stacked:true, ticks:{color:'rgba(255,255,255,.28)',font:{size:10}}, grid:{color:'rgba(255,255,255,.04)'} },
-        y:{ stacked:true, min:0,
-            ticks:{color:'rgba(255,255,255,.28)',font:{size:10},callback:v=>v>=1000?`${(v/1000).toFixed(1)}k`:v},
-            grid:{color:'rgba(255,255,255,.05)'}
-        }
-      }
-    }
-  });
 }
 
 // ── Run cards / export ────────────────────────────────────────────────────
@@ -571,7 +411,6 @@ fetch('data.json')
       r.activity_type==='running'||
       (r.category&&(r.category==='base_run'||r.category.startsWith('quality')))
     );
-    buildCalChart();
     populateSingleSelect();
     refresh();
   })
