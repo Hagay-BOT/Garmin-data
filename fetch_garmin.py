@@ -2,7 +2,7 @@ import os
 import json
 import sys
 import time
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timezone, timedelta
 from garminconnect import Garmin, GarminConnectAuthenticationError, GarminConnectConnectionError
 
 email = os.environ.get("GARMIN_EMAIL")
@@ -313,13 +313,17 @@ try:
 except Exception:
     pass
 
-# שינה + Body Battery לכל יום אימון
-unique_dates = sorted(set(r["date"] for r in records))
+# שינה + Body Battery + קלוריות — כל ימי האימון + 14 הימים האחרונים
+today_dt = date.today()
+last_14_days = {(today_dt - timedelta(days=i)).isoformat() for i in range(14)}
+unique_dates = sorted(set(r["date"] for r in records) | last_14_days)
 daily = {}
 
 for d in unique_dates:
     sleep_score = None
     body_battery = None
+    calories_resting = None
+    calories_active = None
     try:
         sleep_data = client.get_sleep_data(d)
         sleep_score = (sleep_data.get("dailySleepDTO", {})
@@ -335,8 +339,19 @@ for d in unique_dates:
             body_battery = max(vals) if vals else None
     except Exception:
         pass
+    try:
+        stats = client.get_stats(d)
+        calories_resting = stats.get("bmrKilocalories")
+        calories_active = stats.get("activeKilocalories")
+    except Exception:
+        pass
     time.sleep(0.3)
-    daily[d] = {"sleep_score": sleep_score, "body_battery_morning": body_battery}
+    daily[d] = {
+        "sleep_score": sleep_score,
+        "body_battery_morning": body_battery,
+        "calories_resting": calories_resting,
+        "calories_active": calories_active,
+    }
 
 output = {
     "last_updated": datetime.now(timezone.utc).isoformat(),

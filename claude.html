@@ -1,296 +1,230 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>שלח לקלוד</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
+    :root {
+      --bg:   #0a0a0e;
+      --s1:   #111116;
+      --s2:   #16161e;
+      --b1:   rgba(255,255,255,0.07);
+      --b2:   rgba(255,255,255,0.14);
+      --b3:   rgba(255,255,255,0.24);
+      --t1:   rgba(255,255,255,0.90);
+      --t2:   rgba(255,255,255,0.48);
+      --t3:   rgba(255,255,255,0.22);
+      --green:#05e07a;
+      --amber:#f59e0b;
+      --red:  #f87171;
+      --blue: #38bdf8;
+      --ease: cubic-bezier(0.4,0,0.2,1);
+      --r1:   18px;
+      --r2:   12px;
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
     body {
-      background: linear-gradient(135deg, #06041a 0%, #160f3b 50%, #0a0820 100%);
-      background-attachment: fixed;
-      min-height: 100vh;
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      color: rgba(255,255,255,0.9);
-      direction: rtl;
+      background:var(--bg);
+      min-height:100vh;
+      font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+      color:var(--t1);
+      direction:rtl;
     }
+    ::-webkit-scrollbar { width:4px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:var(--b2); border-radius:2px; }
 
+    /* ── NAV ── */
     nav {
-      background: rgba(255,255,255,0.04);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      padding: 0 1.5rem;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      background:rgba(10,10,14,0.88);
+      backdrop-filter:blur(28px);
+      -webkit-backdrop-filter:blur(28px);
+      border-bottom:0.5px solid var(--b1);
+      padding:0 1.5rem;
+      height:52px;
+      display:flex; align-items:center; justify-content:space-between;
+      position:sticky; top:0; z-index:200;
     }
-    .nav-title { font-weight: 700; font-size: 1.05rem; color: #00d4e8; }
-    nav a {
-      color: rgba(255,255,255,0.55);
-      text-decoration: none;
-      font-size: 0.88rem;
-      transition: color 0.2s;
-    }
-    nav a:hover { color: #00d4e8; }
+    .nav-brand { display:flex; align-items:center; gap:.5rem; }
+    .nav-title { font-weight:700; font-size:.95rem; letter-spacing:-.01em; color:var(--t1); }
+    .nav-upd { font-size:.7rem; color:var(--t3); }
+    .nav-links { display:flex; gap:1.25rem; }
+    nav a { color:var(--t2); text-decoration:none; font-size:.84rem; transition:color .2s var(--ease); }
+    nav a:hover { color:var(--t1); }
+    nav a.active { color:var(--green); }
 
-    main { max-width: 860px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+    /* ── MAIN ── */
+    main { max-width:900px; margin:0 auto; padding:1.5rem 1rem 3rem; }
 
-    .glass {
-      background: rgba(255,255,255,0.05);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 18px;
+    /* ── CARD ── */
+    .card {
+      background:var(--s1);
+      border:0.5px solid var(--b1);
+      border-radius:var(--r1);
+      box-shadow:0 2px 14px rgba(0,0,0,.28);
+      transition:border-color .28s var(--ease), box-shadow .32s var(--ease);
     }
 
-    /* ── Page header ── */
-    .page-header {
-      text-align: center;
-      margin-bottom: 2rem;
-      padding: 2rem 1rem 1.5rem;
+    /* ── SEC TITLE ── */
+    .sec-title {
+      font-size:.69rem; font-weight:600; text-transform:uppercase;
+      letter-spacing:.1em; color:var(--t3); margin-bottom:.85rem;
+      display:flex; align-items:center; gap:.4rem;
     }
-    .page-header h1 {
-      font-size: 2rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, #00d4e8, #a855f7);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 0.4rem;
+    .sec-title::before {
+      content:''; display:inline-block;
+      width:2px; height:11px; background:var(--green);
+      border-radius:2px; opacity:.5; flex-shrink:0;
     }
-    .page-header p { color: rgba(255,255,255,0.45); font-size: 0.92rem; }
 
+    /* ── ANIMATIONS ── */
+    @keyframes fadeInUp {
+      from { opacity:0; transform:translateY(14px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    main > * { animation:fadeInUp .42s var(--ease) both; }
+    main > *:nth-child(1) { animation-delay:.03s; }
+    main > *:nth-child(2) { animation-delay:.09s; }
+    main > *:nth-child(3) { animation-delay:.15s; }
+    main > *:nth-child(4) { animation-delay:.21s; }
+    main > *:nth-child(5) { animation-delay:.27s; }
+
+    /* ── ERROR ── */
     #error-banner {
-      background: rgba(239,68,68,0.12);
-      border: 1px solid rgba(239,68,68,0.35);
-      color: #fca5a5;
-      border-radius: 12px;
-      padding: 0.9rem 1.2rem;
-      margin-bottom: 1.5rem;
-      font-size: 0.88rem;
-    }
-    #error-banner.hidden { display: none; }
-
-    /* ── Section label ── */
-    .sec-label {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: rgba(255,255,255,0.35);
-      margin-bottom: 0.6rem;
+      background:rgba(248,113,113,.07); border:0.5px solid rgba(248,113,113,.25);
+      color:#fca5a5; border-radius:12px; padding:.75rem 1rem;
+      margin-bottom:1.25rem; font-size:.86rem; display:none;
     }
 
-    /* ── Controls row ── */
-    .controls {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      flex-wrap: wrap;
+    /* ── CALORIE CHART ── */
+    .cal-card { padding:1.3rem 1.4rem; margin-bottom:.75rem; }
+    .cal-chart-wrap { position:relative; height:220px; }
+    .cal-legend { display:flex; gap:1rem; margin-top:.55rem; flex-wrap:wrap; }
+    .cal-leg-item { display:flex; align-items:center; gap:.3rem; font-size:.68rem; color:var(--t2); }
+    .cal-leg-dot { width:10px; height:10px; border-radius:3px; }
+    .cal-total-row {
+      display:grid; grid-template-columns:repeat(3,1fr); gap:.55rem;
+      margin-bottom:.9rem;
     }
-    .controls label { font-size: 0.88rem; color: rgba(255,255,255,0.55); white-space: nowrap; }
+    .cal-stat {
+      background:var(--s2); border:0.5px solid var(--b1);
+      border-radius:var(--r2); padding:.65rem .9rem;
+    }
+    .cal-stat-lbl { font-size:.63rem; color:var(--t3); letter-spacing:.04em; margin-bottom:.18rem; }
+    .cal-stat-val { font-size:1.3rem; font-weight:700; color:var(--t1); line-height:1; }
+    .cal-stat-val.g {
+      background:linear-gradient(160deg,#05e07a 0%,#00b85d 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .cal-stat-val.b {
+      background:linear-gradient(160deg,#38bdf8 0%,#0ea5e9 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+
+    /* ── CONFIG CARD ── */
+    .config-card { padding:1.3rem 1.4rem; margin-bottom:.75rem; display:flex; flex-direction:column; gap:1rem; }
+    .sec-label { font-size:.69rem; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--t3); margin-bottom:.5rem; display:flex; align-items:center; gap:.4rem; }
+    .sec-label::before { content:''; display:inline-block; width:2px; height:10px; background:var(--green); border-radius:2px; opacity:.4; flex-shrink:0; }
+    .controls { display:flex; align-items:center; gap:.85rem; flex-wrap:wrap; }
+    .controls label { font-size:.84rem; color:var(--t2); white-space:nowrap; }
     .controls select {
-      background: #1a1040;
-      border: 1px solid rgba(255,255,255,0.2);
-      color: rgba(255,255,255,0.9);
-      border-radius: 8px;
-      padding: 0.45rem 0.85rem;
-      font-size: 0.88rem;
-      cursor: pointer;
+      background:var(--s2); border:0.5px solid var(--b2);
+      color:var(--t1); border-radius:8px;
+      padding:.4rem .8rem; font-size:.84rem; cursor:pointer;
+      transition:border-color .2s var(--ease);
     }
-    .controls select:focus { outline: none; border-color: rgba(0,212,232,0.5); }
-    .controls select option { background: #1a1040; color: rgba(255,255,255,0.9); }
+    .controls select:focus { outline:none; border-color:rgba(5,224,122,.4); }
+    .controls select option { background:var(--s1); }
 
-    /* ── Config card ── */
-    .config-card {
-      padding: 1.4rem 1.6rem;
-      margin-bottom: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1.2rem;
-    }
-
-    /* ── Prompt template ── */
-    .prompt-wrap { display: flex; flex-direction: column; gap: 0.5rem; }
-    #prompt-template {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 10px;
-      color: rgba(255,255,255,0.85);
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      font-size: 0.88rem;
-      line-height: 1.55;
-      padding: 0.85rem 1rem;
-      resize: vertical;
-      min-height: 90px;
-      width: 100%;
-      direction: rtl;
-      transition: border-color 0.2s;
-    }
-    #prompt-template:focus { outline: none; border-color: rgba(168,85,247,0.5); }
-    .prompt-hint { font-size: 0.75rem; color: rgba(255,255,255,0.3); }
-
-    /* ── Run cards ── */
-    #run-cards { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.2rem; }
-
-    .run-card {
-      padding: 1.1rem 1.4rem;
-      cursor: default;
-    }
-    .run-card-header {
-      display: flex;
-      align-items: center;
-      gap: 0.9rem;
-      margin-bottom: 0.7rem;
-    }
-    .run-date {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #00d4e8;
-    }
+    /* ── RUN CARDS ── */
+    #run-cards { display:flex; flex-direction:column; gap:.6rem; margin-bottom:.75rem; }
+    .run-card { padding:1.1rem 1.4rem; }
+    .run-card-header { display:flex; align-items:center; gap:.8rem; margin-bottom:.65rem; }
+    .run-date { font-size:1rem; font-weight:700; color:var(--t1); }
+    .run-time { font-size:.76rem; color:var(--t3); }
     .run-category {
-      font-size: 0.72rem;
-      padding: 0.18rem 0.55rem;
-      border-radius: 20px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      font-size:.68rem; padding:.15rem .5rem; border-radius:20px;
+      font-weight:600; text-transform:uppercase; letter-spacing:.04em;
     }
-    .cat-base { background: rgba(59,130,246,0.2); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
-    .cat-quality { background: rgba(0,212,232,0.15); color: #00d4e8; border: 1px solid rgba(0,212,232,0.3); }
-    .cat-other { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.1); }
-
-    .run-metrics {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-    }
+    .cat-base     { background:rgba(56,189,248,.12); color:#7dd3fc; border:0.5px solid rgba(56,189,248,.25); }
+    .cat-quality  { background:rgba(5,224,122,.1);  color:#6ee7b7; border:0.5px solid rgba(5,224,122,.25); }
+    .cat-other    { background:var(--b1); color:var(--t2); border:0.5px solid var(--b1); }
+    .run-metrics  { display:flex; flex-wrap:wrap; gap:.35rem; }
     .mchip {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 7px;
-      padding: 0.22rem 0.6rem;
-      font-size: 0.77rem;
-      color: rgba(255,255,255,0.6);
+      background:rgba(255,255,255,.05); border:0.5px solid var(--b1);
+      border-radius:7px; padding:.2rem .55rem;
+      font-size:.76rem; color:var(--t2);
+      transition:border-color .18s var(--ease), background .18s var(--ease);
     }
-    .mchip b { color: rgba(255,255,255,0.9); font-weight: 600; }
+    .mchip:hover { background:rgba(255,255,255,.08); border-color:var(--b2); }
+    .mchip b { color:var(--t1); font-weight:600; }
 
-    /* lap mini table */
-    .lap-table {
-      margin-top: 0.75rem;
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.76rem;
-    }
-    .lap-table th {
-      color: rgba(255,255,255,0.35);
-      font-weight: 500;
-      padding: 0.25rem 0.5rem;
-      text-align: right;
-      border-bottom: 1px solid rgba(255,255,255,0.07);
-    }
-    .lap-table td {
-      padding: 0.25rem 0.5rem;
-      color: rgba(255,255,255,0.7);
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-    }
-    .lap-table tr:last-child td { border-bottom: none; }
-
-    /* ── Preview ── */
-    .preview-card {
-      padding: 1.2rem 1.5rem;
-      margin-bottom: 1rem;
-    }
+    /* ── PREVIEW ── */
+    .preview-card { padding:1.2rem 1.4rem; margin-bottom:.75rem; }
     #preview-box {
-      margin-top: 0.6rem;
-      padding: 1rem 1.1rem;
-      background: rgba(0,0,0,0.25);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 10px;
-      font-family: 'Consolas', 'Courier New', monospace;
-      font-size: 0.76rem;
-      color: rgba(255,255,255,0.65);
-      white-space: pre-wrap;
-      line-height: 1.6;
-      max-height: 260px;
-      overflow-y: auto;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.15) transparent;
-      direction: ltr;
-      text-align: left;
+      margin-top:.55rem; padding:.9rem 1rem;
+      background:rgba(0,0,0,.3); border:0.5px solid var(--b1);
+      border-radius:10px;
+      font-family:'Consolas','Courier New',monospace;
+      font-size:.75rem; color:var(--t2);
+      white-space:pre-wrap; line-height:1.6;
+      max-height:240px; overflow-y:auto;
+      direction:ltr; text-align:left;
     }
 
-    /* ── Copy button ── */
+    /* ── COPY BTN ── */
     #copy-btn {
-      width: 100%;
-      padding: 1.05rem;
-      background: linear-gradient(135deg, rgba(0,212,232,0.15), rgba(168,85,247,0.15));
-      border: 1px solid rgba(0,212,232,0.35);
-      color: white;
-      font-size: 1rem;
-      font-weight: 700;
-      border-radius: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-      margin-bottom: 1rem;
-      letter-spacing: 0.02em;
+      width:100%; padding:1rem;
+      background:linear-gradient(135deg,rgba(5,224,122,.12),rgba(56,189,248,.12));
+      border:0.5px solid rgba(5,224,122,.3);
+      color:var(--t1); font-size:.95rem; font-weight:700;
+      border-radius:var(--r2); cursor:pointer;
+      transition:all .22s var(--ease); margin-bottom:1rem;
+      letter-spacing:.02em;
     }
     #copy-btn:hover {
-      background: linear-gradient(135deg, rgba(0,212,232,0.28), rgba(168,85,247,0.28));
-      border-color: rgba(0,212,232,0.65);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 20px rgba(0,212,232,0.15);
+      background:linear-gradient(135deg,rgba(5,224,122,.22),rgba(56,189,248,.22));
+      border-color:rgba(5,224,122,.55); transform:translateY(-1px);
+      box-shadow:0 4px 20px rgba(5,224,122,.12);
     }
     #copy-btn.copied {
-      background: linear-gradient(135deg, rgba(74,222,128,0.2), rgba(34,197,94,0.2));
-      border-color: rgba(74,222,128,0.6);
+      background:linear-gradient(135deg,rgba(5,224,122,.18),rgba(5,224,122,.12));
+      border-color:rgba(5,224,122,.6); color:var(--green);
     }
-
-    /* ── Instructions ── */
-    .instructions { padding: 1.2rem 1.6rem; }
-    .instructions h3 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.9rem; color: rgba(255,255,255,0.55); }
-    .steps { display: flex; flex-direction: column; gap: 0.55rem; }
-    .step { display: flex; align-items: flex-start; gap: 0.8rem; }
-    .step-num {
-      min-width: 22px; height: 22px;
-      background: rgba(0,212,232,0.15);
-      border: 1px solid rgba(0,212,232,0.35);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.72rem; font-weight: 700; color: #00d4e8;
-      flex-shrink: 0;
-    }
-    .step-text { font-size: 0.85rem; color: rgba(255,255,255,0.55); padding-top: 1px; }
-    .step-text a { color: #00d4e8; text-decoration: none; }
-    .step-text a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
 
 <nav>
-  <span class="nav-title">שלח לקלוד</span>
-  <div style="display:flex;gap:1.5rem">
+  <div class="nav-brand">
+    <span class="nav-title">שלח לקלוד</span>
+    <span class="nav-upd" id="nav-upd"></span>
+  </div>
+  <div class="nav-links">
     <a href="index.html">← דשבורד</a>
-    <a href="claude.html" style="color:#00d4e8">שלח לקלוד</a>
+    <a href="claude.html" class="active">שלח לקלוד</a>
   </div>
 </nav>
 
 <main>
-  <div class="page-header">
-    <h1>שלח נתונים לקלוד</h1>
-    <p>ייצוא ריצות מפורט עם פרומפט מובנה — העתק והדבק בפרויקט Claude</p>
+  <div id="error-banner"></div>
+
+  <!-- Calorie Chart -->
+  <div class="cal-card card">
+    <div class="sec-title">שריפת קלוריות — 14 ימים אחרונים</div>
+    <div class="cal-total-row" id="cal-stats-row"></div>
+    <div class="cal-chart-wrap"><canvas id="cal-chart"></canvas></div>
+    <div class="cal-legend">
+      <div class="cal-leg-item"><div class="cal-leg-dot" style="background:rgba(56,189,248,.7)"></div>מנוחה (BMR)</div>
+      <div class="cal-leg-item"><div class="cal-leg-dot" style="background:rgba(5,224,122,.8)"></div>פעילות</div>
+    </div>
   </div>
 
-  <div id="error-banner" class="hidden"></div>
-
-  <!-- Config card -->
-  <div class="config-card glass" style="margin-bottom:1.2rem">
-
-    <!-- Run selector -->
+  <!-- Config -->
+  <div class="config-card card">
     <div>
       <div class="sec-label">בחר ריצה</div>
       <div class="controls">
@@ -298,8 +232,6 @@
         <select id="single-run" onchange="onRunChange()"></select>
       </div>
     </div>
-
-    <!-- Category override -->
     <div id="category-override-wrap">
       <div class="sec-label">שנה סיווג אימון</div>
       <div class="controls">
@@ -315,16 +247,14 @@
         </select>
       </div>
     </div>
-
-
   </div>
 
   <!-- Run cards -->
   <div id="run-cards"></div>
 
   <!-- Preview -->
-  <div class="preview-card glass">
-    <div class="sec-label">תצוגה מקדימה — מה שייועתק</div>
+  <div class="preview-card card">
+    <div class="sec-title">תצוגה מקדימה — מה שייועתק</div>
     <div id="preview-box"></div>
   </div>
 
@@ -332,239 +262,323 @@
 </main>
 
 <script>
-  let allRuns = [];
-  let dailyData = {};
+let allRuns = [], dailyData = {};
 
+function fmtPace(s){ if(!s) return '—'; return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
+function fmtDate(iso){ if(!iso) return '—'; const [y,m,d]=iso.split('-'); return `${d}/${m}/${String(y).slice(2)}`; }
+function fmtDateShort(iso){ if(!iso) return ''; const [,m,d]=iso.split('-'); return `${parseInt(d)}/${parseInt(m)}`; }
+function fmtDur(s){
+  if(!s) return '—';
+  const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;
+  if(h>0) return `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+  return `${m}:${String(sec).padStart(2,'0')}`;
+}
 
-  function fmtPace(sec) {
-    if (!sec) return '—';
-    return `${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`;
-  }
-  function fmtDate(iso) {
-    if (!iso) return '—';
-    const [y,m,d] = iso.split('-');
-    return `${d}/${m}/${String(y).slice(2)}`;
-  }
-  function fmtDur(sec) {
-    if (!sec) return '—';
-    const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s=sec%60;
-    if(h>0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-    return `${m}:${String(s).padStart(2,'0')}`;
-  }
-  function n(v, unit='', dec=0) {
-    if(v==null||v===undefined) return '—';
-    const num = dec>0 ? parseFloat(v).toFixed(dec) : Math.round(v);
-    return unit ? `${num}${unit}` : `${num}`;
-  }
+const CAT_LABELS = {
+  base_run:'ריצת בסיס', quality_tempo:'שינוי קצבים',
+  quality_intervals:'אינטרוואלים', quality_hills:'עליות',
+  quality_segments:'מקטעים', quality_run:'ריצת איכות', strength:'כוח',
+};
+function catLabel(c){ return CAT_LABELS[c]||c||''; }
+function catClass(c){
+  if(c==='base_run') return 'cat-base';
+  if(c&&c.startsWith('quality')) return 'cat-quality';
+  return 'cat-other';
+}
 
-  function getSelectedRun() {
-    const sorted = [...allRuns].reverse();
-    const idx = parseInt(document.getElementById('single-run').value);
-    return isNaN(idx) ? null : sorted[idx];
-  }
-
-  function onRunChange() {
-    // Reset category override when switching runs
-    document.getElementById('category-override').value = '';
-    updateCategoryUI();
-    refresh();
+// ── Calorie chart ──────────────────────────────────────────────────────────
+function buildCalChart(){
+  const today = new Date();
+  const days = [];
+  for(let i=13;i>=0;i--){
+    const d = new Date(today);
+    d.setDate(today.getDate()-i);
+    days.push(d.toISOString().slice(0,10));
   }
 
-  function updateCategoryUI() {
-    // no visual display needed
-  }
+  const resting=[], active=[], labels=[];
+  let totalActive=0, totalResting=0, daysWithData=0;
 
-  function populateSingleSelect() {
-    const sorted = [...allRuns].reverse();
-    const sel = document.getElementById('single-run');
-    sel.innerHTML = sorted.map((r,i) => {
-      return `<option value="${i}">${fmtDate(r.date)} — ${r.distance_km?r.distance_km+' ק"מ':''} — ${fmtPace(r.pace_sec_per_km)}</option>`;
-    }).join('');
-  }
+  days.forEach(d=>{
+    const day = dailyData[d]||{};
+    const r = day.calories_resting||null;
+    const a = day.calories_active||null;
 
-  const CAT_LABELS = {
-    base_run:          'ריצת בסיס',
-    quality_tempo:     'שינוי קצבים',
-    quality_intervals: 'אינטרוואלים',
-    quality_hills:     'עליות',
-    quality_segments:  'מקטעים',
-    quality_run:       'ריצת איכות',  // backward compat
-    strength:          'כוח',
-  };
-  function catLabel(cat) { return CAT_LABELS[cat] || cat || ''; }
-  function catClass(cat) {
-    if(cat === 'base_run') return 'cat-base';
-    if(cat && cat.startsWith('quality')) return 'cat-quality';
-    return 'cat-other';
-  }
+    // Fallback: sum activity total_calories for the day if no stats data
+    const actCals = allRuns.reduce((s,run)=>{
+      if(run.date===d && run.total_calories) return s+run.total_calories;
+      return s;
+    }, 0) || null;
+    const activeFinal = a ?? actCals;
 
-  function buildRunCards(runs) {
-    const container = document.getElementById('run-cards');
-    const override = document.getElementById('category-override').value;
-    container.innerHTML = runs.map(r => {
-      const effectiveCat = (override && runs.length===1) ? override : r.category;
-      const day = dailyData[r.date] || {};
-      const chips = [
-        r.distance_km!=null ? `<div class="mchip">מרחק <b>${r.distance_km} ק"מ</b></div>` : '',
-        r.pace_sec_per_km    ? `<div class="mchip">קצב <b>${fmtPace(r.pace_sec_per_km)}</b></div>` : '',
-        r.best_pace_sec_per_km ? `<div class="mchip">מהיר ביותר <b>${fmtPace(r.best_pace_sec_per_km)}</b></div>` : '',
-        r.duration_sec       ? `<div class="mchip">זמן <b>${fmtDur(r.duration_sec)}</b></div>` : '',
-        r.avg_hr             ? `<div class="mchip">דופק <b>${r.avg_hr}</b></div>` : '',
-        r.max_hr             ? `<div class="mchip">מקס <b>${r.max_hr}</b></div>` : '',
-        r.recovery_hr        ? `<div class="mchip">ריקוברי <b>${r.recovery_hr}</b></div>` : '',
-        r.cadence_spm        ? `<div class="mchip">קדנס <b>${r.cadence_spm}</b></div>` : '',
-        r.gct_ms!=null       ? `<div class="mchip">GCT <b>${r.gct_ms}ms</b></div>` : '',
-        r.stride_length_m    ? `<div class="mchip">סטריד <b>${r.stride_length_m}m</b></div>` : '',
-        r.aerobic_effect     ? `<div class="mchip">אירובי <b>${r.aerobic_effect}</b></div>` : '',
-        r.vo2max             ? `<div class="mchip">VO₂max <b>${r.vo2max}</b></div>` : '',
-        r.total_ascent_m     ? `<div class="mchip">עלייה <b>${r.total_ascent_m}m</b></div>` : '',
-        r.temperature!=null  ? `<div class="mchip">טמפ׳ <b>${r.temperature}°</b></div>` : '',
-        r.active_calories    ? `<div class="mchip">קלוריות <b>${r.active_calories}</b></div>` : '',
-        day.sleep_score      ? `<div class="mchip">שינה <b>${day.sleep_score}</b></div>` : '',
-        day.body_battery_morning ? `<div class="mchip">BB <b>${day.body_battery_morning}</b></div>` : '',
-      ].filter(Boolean).join('');
+    resting.push(r);
+    active.push(activeFinal);
+    labels.push(fmtDateShort(d));
 
-      // Laps appear only in the markdown export, not visually here
-      const lapTable = '';
+    if(activeFinal){ totalActive+=activeFinal; daysWithData++; }
+    if(r) totalResting+=r;
+  });
 
-      return `<div class="run-card glass">
-        <div class="run-card-header">
-          <div class="run-date">${fmtDate(r.date)}</div>
-          ${r.start_time ? `<div style="font-size:0.78rem;color:rgba(255,255,255,0.35)">${r.start_time.slice(11,16)}</div>` : ''}
-          <div class="run-category ${catClass(effectiveCat)}">${catLabel(effectiveCat)}</div>
-        </div>
-        <div class="run-metrics">${chips}</div>
-        ${lapTable}
+  // Summary stats
+  const avgActive = daysWithData>0 ? Math.round(totalActive/daysWithData) : null;
+  const avgTotal = daysWithData>0 ? Math.round((totalActive+totalResting)/daysWithData) : null;
+  const today14 = dailyData[days[days.length-1]]||{};
+  const todayTotal = (today14.calories_resting||0) + (today14.calories_active||0);
+
+  document.getElementById('cal-stats-row').innerHTML=`
+    <div class="cal-stat">
+      <div class="cal-stat-lbl">ממוצע פעילות / יום</div>
+      <div class="cal-stat-val g">${avgActive??'—'}</div>
+    </div>
+    <div class="cal-stat">
+      <div class="cal-stat-lbl">סה"כ ממוצע / יום</div>
+      <div class="cal-stat-val">${avgTotal??'—'}</div>
+    </div>
+    <div class="cal-stat">
+      <div class="cal-stat-lbl">היום</div>
+      <div class="cal-stat-val b">${todayTotal>0?todayTotal:'—'}</div>
+    </div>
+  `;
+
+  const hasAnyData = resting.some(v=>v!=null) || active.some(v=>v!=null);
+  if(!hasAnyData){
+    document.getElementById('cal-stats-row').innerHTML+=`
+      <div style="grid-column:1/-1;font-size:.78rem;color:var(--t3);padding:.4rem 0">
+        נתוני קלוריות יומיים יהיו זמינים לאחר הרצת fetch_garmin.py עם העדכון החדש
       </div>`;
-    }).join('');
   }
 
-  function buildMarkdown(runs) {
-    const override = document.getElementById('category-override').value;
-    let md = runs.length ? `הנה הנתונים של הריצה מ-${fmtDate(runs[0].date)}:\n\n` : '';
+  const canvas = document.getElementById('cal-chart');
+  const existing = Chart.getChart(canvas);
+  if(existing) existing.destroy();
 
-    runs.forEach((r, idx) => {
-      const day = dailyData[r.date] || {};
-      const effectiveCat = (override && runs.length===1) ? override : r.category;
-      const hasConflict = override && runs.length===1 && override !== r.category;
-
-      md += `### ריצה — ${fmtDate(r.date)}`;
-      if(r.start_time) md += ` (${r.start_time.slice(11,16)})`;
-      md += `\n`;
-
-      if(hasConflict) {
-        md += `\n> ⚠️ **התנגשות בסיווג:**\n`;
-        md += `> - האלגוריתם סיווג: **${catLabel(r.category)}** (aerobic effect: ${r.aerobic_effect ?? '—'})\n`;
-        md += `> - הרץ שינה ל: **${catLabel(override)}**\n`;
-        md += `> - הסבר אפשרי: הנתונים מצביעים על עצימות גבוהה אך הרץ הרגיש שהריצה הייתה קלה — שים לב לגורמים חיצוניים (שינה, עייפות, תנאים).\n\n`;
-      } else if(effectiveCat) {
-        md += `סוג: ${catLabel(effectiveCat)}\n`;
+  new Chart(canvas, {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {
+          label:'מנוחה (BMR)',
+          data: resting,
+          backgroundColor:'rgba(56,189,248,0.35)',
+          borderColor:'rgba(56,189,248,0.55)',
+          borderWidth:1,
+          borderRadius:{topLeft:0,topRight:0,bottomLeft:3,bottomRight:3},
+          stack:'cal', order:2,
+        },
+        {
+          label:'פעילות',
+          data: active,
+          backgroundColor: days.map((_,i)=>i===13?'rgba(5,224,122,0.72)':'rgba(5,224,122,0.45)'),
+          borderColor: days.map((_,i)=>i===13?'rgba(5,224,122,0.9)':'rgba(5,224,122,0.6)'),
+          borderWidth:1,
+          borderRadius:{topLeft:4,topRight:4,bottomLeft:0,bottomRight:0},
+          stack:'cal', order:1,
+        },
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, animation:{duration:650},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          callbacks:{
+            title: ctx => days[ctx[0].dataIndex],
+            label: ctx => {
+              const lbl = ctx.dataset.label;
+              const val = ctx.raw;
+              const rest = resting[ctx.dataIndex]||0;
+              const act  = active[ctx.dataIndex]||0;
+              if(ctx.datasetIndex===1){
+                const tot = rest+act;
+                return [` ${lbl}: ${val??'—'} kcal`, tot>0?` סה"כ: ${tot} kcal`:''].filter(Boolean);
+              }
+              return ` ${lbl}: ${val??'—'} kcal`;
+            }
+          }
+        }
+      },
+      scales:{
+        x:{ stacked:true, ticks:{color:'rgba(255,255,255,.28)',font:{size:10}}, grid:{color:'rgba(255,255,255,.04)'} },
+        y:{ stacked:true, min:0,
+            ticks:{color:'rgba(255,255,255,.28)',font:{size:10},callback:v=>v>=1000?`${(v/1000).toFixed(1)}k`:v},
+            grid:{color:'rgba(255,255,255,.05)'}
+        }
       }
+    }
+  });
+}
 
-      md += `\n**מרחק ומהירות**\n`;
-      if(r.distance_km!=null) md += `- מרחק: ${r.distance_km} ק"מ\n`;
-      if(r.duration_sec) md += `- זמן: ${fmtDur(r.duration_sec)}\n`;
-      if(r.pace_sec_per_km) md += `- קצב ממוצע: ${fmtPace(r.pace_sec_per_km)} דק'/ק"מ\n`;
-      if(r.best_pace_sec_per_km) md += `- קצב מהיר ביותר: ${fmtPace(r.best_pace_sec_per_km)} דק'/ק"מ\n`;
-      if(r.total_ascent_m!=null) md += `- עלייה: ${r.total_ascent_m}m | ירידה: ${r.total_descent_m||0}m\n`;
-      if(r.temperature!=null) md += `- טמפרטורה: ${r.temperature}°C\n`;
+// ── Run cards / export ────────────────────────────────────────────────────
+function getSelectedRun(){
+  const sorted = [...allRuns].reverse();
+  const idx = parseInt(document.getElementById('single-run').value);
+  return isNaN(idx)?null:sorted[idx];
+}
+function onRunChange(){
+  document.getElementById('category-override').value='';
+  refresh();
+}
+function populateSingleSelect(){
+  const sorted = [...allRuns].reverse();
+  document.getElementById('single-run').innerHTML = sorted.map((r,i)=>
+    `<option value="${i}">${fmtDate(r.date)} — ${r.distance_km?r.distance_km+' ק"מ':''} — ${fmtPace(r.pace_sec_per_km)}</option>`
+  ).join('');
+}
 
-      md += `\n**דופק**\n`;
-      if(r.avg_hr) md += `- דופק ממוצע: ${r.avg_hr}\n`;
-      if(r.max_hr) md += `- דופק מקסימום: ${r.max_hr}\n`;
-      if(r.recovery_hr) md += `- דופק ריקוברי: ${r.recovery_hr}\n`;
-      if(r.avg_respiration) md += `- נשימה ממוצעת: ${r.avg_respiration}\n`;
+function buildRunCards(runs){
+  const override = document.getElementById('category-override').value;
+  document.getElementById('run-cards').innerHTML = runs.map(r=>{
+    const effectiveCat = (override&&runs.length===1)?override:r.category;
+    const day = dailyData[r.date]||{};
+    const chips = [
+      r.distance_km!=null    ? `<div class="mchip">מרחק <b>${r.distance_km} ק"מ</b></div>` : '',
+      r.pace_sec_per_km      ? `<div class="mchip">קצב <b>${fmtPace(r.pace_sec_per_km)}</b></div>` : '',
+      r.best_pace_sec_per_km ? `<div class="mchip">מהיר ביותר <b>${fmtPace(r.best_pace_sec_per_km)}</b></div>` : '',
+      r.duration_sec         ? `<div class="mchip">זמן <b>${fmtDur(r.duration_sec)}</b></div>` : '',
+      r.avg_hr               ? `<div class="mchip">דופק <b>${r.avg_hr}</b></div>` : '',
+      r.max_hr               ? `<div class="mchip">מקס <b>${r.max_hr}</b></div>` : '',
+      r.recovery_hr          ? `<div class="mchip">ריקוברי <b>${r.recovery_hr}</b></div>` : '',
+      r.cadence_spm          ? `<div class="mchip">קדנס <b>${r.cadence_spm}</b></div>` : '',
+      r.gct_ms!=null         ? `<div class="mchip">GCT <b>${r.gct_ms}ms</b></div>` : '',
+      r.stride_length_m      ? `<div class="mchip">סטריד <b>${r.stride_length_m}m</b></div>` : '',
+      r.aerobic_effect       ? `<div class="mchip">אירובי <b>${parseFloat(r.aerobic_effect).toFixed(1)}</b></div>` : '',
+      r.vo2max               ? `<div class="mchip">VO₂max <b>${r.vo2max}</b></div>` : '',
+      r.total_ascent_m       ? `<div class="mchip">עלייה <b>${r.total_ascent_m}m</b></div>` : '',
+      r.temperature!=null    ? `<div class="mchip">טמפ׳ <b>${r.temperature}°</b></div>` : '',
+      r.active_calories      ? `<div class="mchip">קלוריות <b>${r.active_calories}</b></div>` : '',
+      day.sleep_score        ? `<div class="mchip">שינה <b>${day.sleep_score}</b></div>` : '',
+      day.body_battery_morning ? `<div class="mchip">BB <b>${day.body_battery_morning}</b></div>` : '',
+      day.calories_active    ? `<div class="mchip">קל' יום <b>${Math.round((day.calories_resting||0)+(day.calories_active||0))}</b></div>` : '',
+    ].filter(Boolean).join('');
 
-      md += `\n**דינמיקה**\n`;
-      if(r.cadence_spm) md += `- קדנס ממוצע: ${r.cadence_spm} spm\n`;
-      if(r.max_cadence_spm) md += `- קדנס מקסימום: ${r.max_cadence_spm} spm\n`;
-      if(r.gct_ms!=null) md += `- Ground Contact Time: ${r.gct_ms}ms\n`;
-      if(r.stride_length_m) md += `- אורך פסיעה: ${r.stride_length_m}m\n`;
-      if(r.vertical_oscillation_cm) md += `- תנודה אנכית: ${r.vertical_oscillation_cm}cm\n`;
-      if(r.vertical_ratio_pct) md += `- יחס אנכי: ${r.vertical_ratio_pct}%\n`;
-      if(r.hr_drift_bpm!=null) md += `- Cardiac Drift: ${r.hr_drift_bpm>0?'+':''}${r.hr_drift_bpm} bpm\n`;
+    return `<div class="run-card card">
+      <div class="run-card-header">
+        <div class="run-date">${fmtDate(r.date)}</div>
+        ${r.start_time?`<div class="run-time">${r.start_time.slice(11,16)}</div>`:''}
+        <div class="run-category ${catClass(effectiveCat)}">${catLabel(effectiveCat)}</div>
+      </div>
+      <div class="run-metrics">${chips}</div>
+    </div>`;
+  }).join('');
+}
 
-      md += `\n**עומס ואיכות**\n`;
-      if(r.aerobic_effect) md += `- אפקט אירובי: ${r.aerobic_effect}${r.training_effect_label?' ('+r.training_effect_label+')':''}\n`;
-      if(r.anaerobic_effect) md += `- אפקט אנאירובי: ${r.anaerobic_effect}\n`;
-      if(r.training_stress_score) md += `- TSS: ${r.training_stress_score}\n`;
-      if(r.exercise_load) md += `- עומס פעילות: ${r.exercise_load}\n`;
-      if(r.vo2max) md += `- VO₂max מוערך: ${r.vo2max}\n`;
-      if(r.stamina_start_pct!=null) md += `- סיבולת תחילה: ${r.stamina_start_pct}% | סיום: ${r.stamina_end_pct}%\n`;
+function buildMarkdown(runs){
+  const override = document.getElementById('category-override').value;
+  let md = runs.length?`הנה הנתונים של הריצה מ-${fmtDate(runs[0].date)}:\n\n`:'';
+  runs.forEach(r=>{
+    const day = dailyData[r.date]||{};
+    const effectiveCat = (override&&runs.length===1)?override:r.category;
+    const hasConflict = override&&runs.length===1&&override!==r.category;
+    md += `### ריצה — ${fmtDate(r.date)}`;
+    if(r.start_time) md += ` (${r.start_time.slice(11,16)})`;
+    md += `\n`;
+    if(hasConflict){
+      md += `\n> ⚠️ **התנגשות בסיווג:**\n`;
+      md += `> - האלגוריתם סיווג: **${catLabel(r.category)}** (aerobic effect: ${r.aerobic_effect??'—'})\n`;
+      md += `> - הרץ שינה ל: **${catLabel(override)}**\n\n`;
+    } else if(effectiveCat){
+      md += `סוג: ${catLabel(effectiveCat)}\n`;
+    }
+    md += `\n**מרחק ומהירות**\n`;
+    if(r.distance_km!=null) md += `- מרחק: ${r.distance_km} ק"מ\n`;
+    if(r.duration_sec) md += `- זמן: ${fmtDur(r.duration_sec)}\n`;
+    if(r.pace_sec_per_km) md += `- קצב ממוצע: ${fmtPace(r.pace_sec_per_km)} דק'/ק"מ\n`;
+    if(r.best_pace_sec_per_km) md += `- קצב מהיר ביותר: ${fmtPace(r.best_pace_sec_per_km)} דק'/ק"מ\n`;
+    if(r.total_ascent_m!=null) md += `- עלייה: ${r.total_ascent_m}m | ירידה: ${r.total_descent_m||0}m\n`;
+    if(r.temperature!=null) md += `- טמפרטורה: ${r.temperature}°C\n`;
+    md += `\n**דופק**\n`;
+    if(r.avg_hr) md += `- דופק ממוצע: ${r.avg_hr}\n`;
+    if(r.max_hr) md += `- דופק מקסימום: ${r.max_hr}\n`;
+    if(r.recovery_hr) md += `- דופק ריקוברי: ${r.recovery_hr}\n`;
+    if(r.avg_respiration) md += `- נשימה ממוצעת: ${r.avg_respiration}\n`;
+    md += `\n**דינמיקה**\n`;
+    if(r.cadence_spm) md += `- קדנס ממוצע: ${r.cadence_spm} spm\n`;
+    if(r.gct_ms!=null) md += `- Ground Contact Time: ${r.gct_ms}ms\n`;
+    if(r.stride_length_m) md += `- אורך פסיעה: ${r.stride_length_m}m\n`;
+    if(r.vertical_oscillation_cm) md += `- תנודה אנכית: ${r.vertical_oscillation_cm}cm\n`;
+    if(r.vertical_ratio_pct) md += `- יחס אנכי: ${r.vertical_ratio_pct}%\n`;
+    if(r.hr_drift_bpm!=null) md += `- Cardiac Drift: ${r.hr_drift_bpm>0?'+':''}${r.hr_drift_bpm} bpm\n`;
+    md += `\n**עומס ואיכות**\n`;
+    if(r.aerobic_effect) md += `- אפקט אירובי: ${r.aerobic_effect}${r.training_effect_label?' ('+r.training_effect_label+')':''}\n`;
+    if(r.anaerobic_effect) md += `- אפקט אנאירובי: ${r.anaerobic_effect}\n`;
+    if(r.training_stress_score) md += `- TSS: ${r.training_stress_score}\n`;
+    if(r.vo2max) md += `- VO₂max מוערך: ${r.vo2max}\n`;
+    if(r.stamina_start_pct!=null) md += `- סיבולת תחילה: ${r.stamina_start_pct}% | סיום: ${r.stamina_end_pct}%\n`;
+    md += `\n**אנרגיה**\n`;
+    if(r.active_calories) md += `- קלוריות פעילות: ${r.active_calories} kcal\n`;
+    if(r.total_calories) md += `- סה"כ קלוריות ריצה: ${r.total_calories} kcal\n`;
+    if(day.calories_resting||day.calories_active){
+      md += `- BMR יומי: ${day.calories_resting??'—'} kcal\n`;
+      md += `- קלוריות פעילות יומיות: ${day.calories_active??'—'} kcal\n`;
+      const tot = (day.calories_resting||0)+(day.calories_active||0);
+      if(tot>0) md += `- סה"כ קלוריות יומי: ${tot} kcal\n`;
+    }
+    if(r.sweat_loss_ml) md += `- הזעה: ~${r.sweat_loss_ml}ml\n`;
+    if(r.body_battery_impact!=null) md += `- השפעה על Body Battery: ${r.body_battery_impact} נקודות\n`;
+    if(day.sleep_score||day.body_battery_morning){
+      md += `\n**מצב לפני הריצה**\n`;
+      if(day.sleep_score) md += `- ציון שינה: ${day.sleep_score}/100\n`;
+      if(day.body_battery_morning) md += `- Body Battery בוקר: ${day.body_battery_morning}/100\n`;
+    }
+    if(r.laps&&r.laps.length>0){
+      md += `\n**Laps**\n| ק"מ | מרחק | קצב | דופק | קדנס |\n|---|---|---|---|---|\n`;
+      r.laps.forEach(l=>{
+        md += `| ${l.lap} | ${l.distance_km?l.distance_km+' ק"מ':'—'} | ${fmtPace(l.pace_sec_per_km)} | ${l.avg_hr||'—'} | ${l.cadence_spm||'—'} |\n`;
+      });
+    }
+    md += `\n---\n\n`;
+  });
+  return md;
+}
 
-      md += `\n**אנרגיה**\n`;
-      if(r.active_calories) md += `- קלוריות פעילות: ${r.active_calories} kcal\n`;
-      if(r.total_calories) md += `- סה"כ קלוריות: ${r.total_calories} kcal\n`;
-      if(r.sweat_loss_ml) md += `- הזעה: ~${r.sweat_loss_ml}ml\n`;
-      if(r.moderate_intensity_min||r.vigorous_intensity_min)
-        md += `- דקות עצימות: מתון ${r.moderate_intensity_min||0} | עז ${r.vigorous_intensity_min||0}\n`;
-      if(r.body_battery_impact!=null) md += `- השפעה על Body Battery: ${r.body_battery_impact} נקודות\n`;
+function refresh(){
+  const run = getSelectedRun();
+  const runs = run?[run]:[];
+  buildRunCards(runs);
+  document.getElementById('preview-box').textContent = buildMarkdown(runs);
+}
 
-      if(day.sleep_score||day.body_battery_morning) {
-        md += `\n**מצב לפני הריצה**\n`;
-        if(day.sleep_score) md += `- ציון שינה: ${day.sleep_score}/100\n`;
-        if(day.body_battery_morning) md += `- Body Battery בוקר: ${day.body_battery_morning}/100\n`;
-      }
+function copyToClipboard(){
+  const run = getSelectedRun();
+  const text = buildMarkdown(run?[run]:[]);
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.getElementById('copy-btn');
+    btn.textContent='✓ הועתק!'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='העתק לקלוד'; btn.classList.remove('copied'); },2500);
+  }).catch(()=>{
+    const ta=document.createElement('textarea');
+    ta.value=text; ta.style.cssText='position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn=document.getElementById('copy-btn');
+    btn.textContent='✓ הועתק!'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='העתק לקלוד'; btn.classList.remove('copied'); },2500);
+  });
+}
 
-      if(r.laps && r.laps.length>0) {
-        md += `\n**Laps**\n`;
-        md += `| ק"מ | מרחק | קצב | דופק | קדנס |\n`;
-        md += `|---|---|---|---|---|\n`;
-        r.laps.forEach(l => {
-          md += `| ${l.lap} | ${l.distance_km?l.distance_km+' ק"מ':'—'} | ${fmtPace(l.pace_sec_per_km)} | ${l.avg_hr||'—'} | ${l.cadence_spm||'—'} |\n`;
-        });
-      }
-
-      md += `\n---\n\n`;
-    });
-
-    return md;
-  }
-
-  function refresh() {
-    updateCategoryUI();
-    const run = getSelectedRun();
-    const runs = run ? [run] : [];
-    buildRunCards(runs);
-    document.getElementById('preview-box').textContent = buildMarkdown(runs);
-  }
-
-  function copyToClipboard() {
-    const run = getSelectedRun();
-    const text = buildMarkdown(run ? [run] : []);
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = document.getElementById('copy-btn');
-      btn.textContent = '✓ הועתק!';
-      btn.classList.add('copied');
-      setTimeout(() => { btn.textContent = 'העתק לקלוד'; btn.classList.remove('copied'); }, 2500);
-    }).catch(() => {
-      const ta = document.createElement('textarea');
-      ta.value = text; ta.style.cssText='position:fixed;opacity:0';
-      document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-      document.body.removeChild(ta);
-      const btn = document.getElementById('copy-btn');
-      btn.textContent = '✓ הועתק!'; btn.classList.add('copied');
-      setTimeout(() => { btn.textContent = 'העתק לקלוד'; btn.classList.remove('copied'); }, 2500);
-    });
-  }
-
-  fetch('data.json')
-    .then(r => { if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
-    .then(data => {
-      dailyData = data.daily || {};
-      const activities = data.activities || data.runs || [];
-      allRuns = activities.filter(r =>
-        r.activity_type==='running' ||
-        (r.category && (r.category==='base_run' || r.category.startsWith('quality')))
-      );
-      populateSingleSelect();
-      refresh();
-    })
-    .catch(err => {
-      const b = document.getElementById('error-banner');
-      b.textContent = `שגיאה בטעינת נתונים: ${err.message}`;
-      b.classList.remove('hidden');
-    });
+fetch('data.json')
+  .then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+  .then(data=>{
+    dailyData = data.daily||{};
+    if(data.last_updated){
+      const d=new Date(data.last_updated);
+      document.getElementById('nav-upd').textContent=
+        ` — ${d.toLocaleDateString('he-IL')} ${d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}`;
+    }
+    const activities = data.activities||data.runs||[];
+    allRuns = activities.filter(r=>
+      r.activity_type==='running'||
+      (r.category&&(r.category==='base_run'||r.category.startsWith('quality')))
+    );
+    buildCalChart();
+    populateSingleSelect();
+    refresh();
+  })
+  .catch(err=>{
+    const b=document.getElementById('error-banner');
+    b.textContent=`שגיאה: ${err.message}`; b.style.display='block';
+  });
 </script>
 </body>
 </html>
