@@ -331,32 +331,6 @@
     .zone-lbl { font-size:.67rem; display:flex; align-items:center; gap:.26rem; color:var(--t2); }
     .zone-dot { width:8px; height:8px; border-radius:2px; }
 
-    /* ── CALORIE CHART ── */
-    .cal-card { padding:1.3rem 1.4rem; margin-bottom:.75rem; }
-    .cal-chart-wrap { position:relative; height:210px; }
-    .cal-summary {
-      display:grid; grid-template-columns:repeat(3,1fr); gap:.55rem;
-      margin-bottom:.85rem;
-    }
-    @media(max-width:500px){ .cal-summary{ grid-template-columns:1fr 1fr; } }
-    .cal-stat {
-      background:var(--s2); border:0.5px solid var(--b1);
-      border-radius:var(--r2); padding:.6rem .85rem;
-    }
-    .cal-stat-lbl { font-size:.63rem; color:var(--t3); letter-spacing:.04em; margin-bottom:.18rem; }
-    .cal-stat-val { font-size:1.28rem; font-weight:700; line-height:1; }
-    .cal-stat-val.g {
-      background:linear-gradient(160deg,#05e07a 0%,#00b85d 100%);
-      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-    }
-    .cal-stat-val.b {
-      background:linear-gradient(160deg,#38bdf8 0%,#0ea5e9 100%);
-      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-    }
-    .cal-legend { display:flex; gap:.85rem; margin-top:.5rem; flex-wrap:wrap; }
-    .cal-leg-item { display:flex; align-items:center; gap:.28rem; font-size:.67rem; color:var(--t2); }
-    .cal-leg-dot { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
-
     /* ── TABLE ── */
     .table-sec { padding:1.3rem 1.4rem; margin-bottom:.75rem; }
     .tbl-wrap { overflow-x:auto; }
@@ -503,17 +477,6 @@
     </div>
   </div>
 
-  <!-- Calorie Chart -->
-  <div class="cal-card card" id="cal-sec">
-    <div class="sec-title">שריפת קלוריות — 14 ימים אחרונים</div>
-    <div class="cal-summary" id="cal-summary"></div>
-    <div class="cal-chart-wrap"><canvas id="cal-chart"></canvas></div>
-    <div class="cal-legend">
-      <div class="cal-leg-item"><div class="cal-leg-dot" style="background:rgba(56,189,248,.65)"></div>מנוחה (BMR ~1,765)</div>
-      <div class="cal-leg-item"><div class="cal-leg-dot" style="background:rgba(5,224,122,.75)"></div>פעילות</div>
-    </div>
-  </div>
-
   <!-- Activity Table -->
   <div class="table-sec card">
     <div class="sec-title">כל האימונים</div>
@@ -614,7 +577,7 @@ function inferCategory(a){
 let allActivities=[], weekMap={}, piePeriod='week', pieChartInst=null;
 
 // ── dashboard ──────────────────────────────────────────────────────────────
-function buildDashboard(acts, globalMaxHR, daily){
+function buildDashboard(acts, globalMaxHR){
   allActivities=acts.map(a=>({...a, category:inferCategory(a)}));
   const runs=allActivities.filter(a=>a.category==='base_run'||isQuality(a.category));
   buildHero(runs);
@@ -625,7 +588,6 @@ function buildDashboard(acts, globalMaxHR, daily){
   buildGPS(runs);
   buildPRs(runs);
   buildZoneChart(runs, globalMaxHR);
-  buildCalChart(daily||{}, allActivities);
   buildTable('runs');
 }
 
@@ -1043,104 +1005,6 @@ function buildZoneChart(runs, globalMaxHR){
   });
 }
 
-// ── calorie chart ──────────────────────────────────────────────────────────
-const BMR_FALLBACK = 1765; // Mifflin-St Jeor: גיל 22, 77 ק"ג, 1.76 מ', זכר
-
-function buildCalChart(daily, acts){
-  const today = new Date();
-  const days = [];
-  for(let i=13;i>=0;i--){
-    const d=new Date(today); d.setDate(today.getDate()-i);
-    days.push(d.toISOString().slice(0,10));
-  }
-
-  const restData=[], activeData=[], labels=[];
-  let totalActive=0, activeDays=0;
-
-  days.forEach(d=>{
-    const day = daily[d]||{};
-    const r = day.calories_resting ?? BMR_FALLBACK;
-    // active: from Garmin stats, or fallback to sum of activity total_calories
-    let a = day.calories_active ?? null;
-    if(a==null){
-      a = acts.filter(x=>x.date===d&&x.total_calories)
-              .reduce((s,x)=>s+x.total_calories, 0) || null;
-    }
-    restData.push(r);
-    activeData.push(a);
-    labels.push((()=>{ const [,m,dd]=d.split('-'); return `${parseInt(dd)}/${parseInt(m)}`; })());
-    if(a){ totalActive+=a; activeDays++; }
-  });
-
-  const avgActive = activeDays>0 ? Math.round(totalActive/activeDays) : null;
-  const todayDay  = daily[days[13]]||{};
-  const todayRest = todayDay.calories_resting ?? BMR_FALLBACK;
-  const todayAct  = todayDay.calories_active ?? (acts.filter(x=>x.date===days[13]&&x.total_calories).reduce((s,x)=>s+x.total_calories,0)||0);
-  const todayTotal = todayRest + todayAct;
-  const avgTotal  = Math.round(BMR_FALLBACK + (avgActive||0));
-
-  document.getElementById('cal-summary').innerHTML=`
-    <div class="cal-stat"><div class="cal-stat-lbl">BMR יומי (מנוחה)</div><div class="cal-stat-val b">${BMR_FALLBACK}</div></div>
-    <div class="cal-stat"><div class="cal-stat-lbl">ממוצע פעילות / יום</div><div class="cal-stat-val g">${avgActive??'—'}</div></div>
-    <div class="cal-stat"><div class="cal-stat-lbl">סה"כ ממוצע / יום</div><div class="cal-stat-val">${avgTotal}</div></div>
-  `;
-
-  const canvas=document.getElementById('cal-chart');
-  const ex=Chart.getChart(canvas); if(ex) ex.destroy();
-
-  new Chart(canvas,{
-    type:'bar',
-    data:{
-      labels,
-      datasets:[
-        {
-          label:'מנוחה (BMR)',
-          data:restData,
-          backgroundColor:'rgba(56,189,248,0.28)',
-          borderColor:'rgba(56,189,248,0.50)',
-          borderWidth:1,
-          borderRadius:{topLeft:0,topRight:0,bottomLeft:3,bottomRight:3},
-          stack:'cal',
-        },
-        {
-          label:'פעילות',
-          data:activeData,
-          backgroundColor:days.map((_,i)=>i===13?'rgba(5,224,122,0.72)':'rgba(5,224,122,0.42)'),
-          borderColor:days.map((_,i)=>i===13?'rgba(5,224,122,0.9)':'rgba(5,224,122,0.58)'),
-          borderWidth:1,
-          borderRadius:{topLeft:4,topRight:4,bottomLeft:0,bottomRight:0},
-          stack:'cal',
-        },
-      ]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false, animation:{duration:650},
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          callbacks:{
-            title:ctx=>days[ctx[0].dataIndex],
-            label:ctx=>{
-              const v=ctx.raw;
-              if(ctx.datasetIndex===1){
-                const tot=(restData[ctx.dataIndex]||0)+(v||0);
-                return [` פעילות: ${v??'—'} kcal`, ` סה"כ: ${tot} kcal`];
-              }
-              return ` מנוחה: ${v} kcal`;
-            }
-          }
-        }
-      },
-      scales:{
-        x:{stacked:true, ticks:{color:'rgba(255,255,255,.28)',font:{size:10}}, grid:{color:'rgba(255,255,255,.04)'}},
-        y:{stacked:true, min:0,
-           ticks:{color:'rgba(255,255,255,.28)',font:{size:10},callback:v=>v>=1000?`${(v/1000).toFixed(1)}k`:v},
-           grid:{color:'rgba(255,255,255,.05)'}}
-      }
-    }
-  });
-}
-
 // ── table ──────────────────────────────────────────────────────────────────
 function switchTable(tab,btn){
   document.querySelectorAll('#table-tabs .tab-btn').forEach(b=>b.classList.remove('active'));
@@ -1231,7 +1095,7 @@ fetch('data.json')
       document.getElementById('nav-upd').textContent=
         ` — ${d.toLocaleDateString('he-IL')} ${d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}`;
     }
-    buildDashboard(acts, globalMaxHR, data.daily||{});
+    buildDashboard(acts, globalMaxHR);
   })
   .catch(err=>showError(err.message));
 </script>
