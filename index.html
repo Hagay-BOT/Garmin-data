@@ -1,294 +1,342 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>גרמין דשבורד</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9/dist/leaflet.js"></script>
   <style>
     :root {
-      --cyan: #00d4e8;
-      --purple: #a855f7;
-      --glass: rgba(255,255,255,0.05);
-      --border: rgba(255,255,255,0.1);
-      --text: rgba(255,255,255,0.9);
-      --muted: rgba(255,255,255,0.45);
+      --bg:   #0a0a0e;
+      --s1:   #111116;
+      --s2:   #16161e;
+      --b1:   rgba(255,255,255,0.07);
+      --b2:   rgba(255,255,255,0.14);
+      --b3:   rgba(255,255,255,0.24);
+      --t1:   rgba(255,255,255,0.90);
+      --t2:   rgba(255,255,255,0.48);
+      --t3:   rgba(255,255,255,0.22);
+      --green:#05e07a;
+      --amber:#f59e0b;
+      --red:  #f87171;
+      --blue: #38bdf8;
+      --ease: cubic-bezier(0.4,0,0.2,1);
+      --r1:   18px;
+      --r2:   12px;
     }
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
     body {
-      background: linear-gradient(135deg, #06041a 0%, #160f3b 55%, #0a0820 100%);
-      background-attachment: fixed;
-      min-height: 100vh;
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      color: var(--text);
-      direction: rtl;
+      background:var(--bg);
+      min-height:100vh;
+      font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+      color:var(--t1);
+      direction:rtl;
     }
+    ::-webkit-scrollbar { width:4px; height:4px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:var(--b2); border-radius:2px; }
+
+    /* ── NAV ── */
     nav {
-      background: rgba(0,0,0,0.45);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 1.5rem;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 200;
+      background:rgba(10,10,14,0.88);
+      backdrop-filter:blur(28px);
+      -webkit-backdrop-filter:blur(28px);
+      border-bottom:0.5px solid var(--b1);
+      padding:0 1.5rem;
+      height:52px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      position:sticky;
+      top:0;
+      z-index:200;
     }
-    .nav-title { font-weight:700; font-size:1.1rem; color:var(--cyan); }
-    .nav-upd { font-size:.72rem; color:var(--muted); margin-right:.75rem; }
-    nav a { color:var(--muted); text-decoration:none; font-size:.9rem; transition:color .2s; }
-    nav a:hover { color:var(--cyan); }
-    main { max-width:1100px; margin:0 auto; padding:2rem 1rem 3rem; }
-    .glass {
-      background: var(--glass);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--border);
-      border-radius: 20px;
+    .nav-brand { display:flex; align-items:center; gap:.5rem; }
+    .nav-title { font-weight:700; font-size:.95rem; letter-spacing:-.01em; color:var(--t1); }
+    .nav-upd { font-size:.7rem; color:var(--t3); }
+    .nav-links { display:flex; gap:1.25rem; }
+    nav a { color:var(--t2); text-decoration:none; font-size:.84rem; transition:color .2s var(--ease); }
+    nav a:hover { color:var(--t1); }
+    nav a.active { color:var(--green); }
+
+    /* ── MAIN ── */
+    main { max-width:1100px; margin:0 auto; padding:1.5rem 1rem 3rem; }
+
+    /* ── CARD ── */
+    .card {
+      background:var(--s1);
+      border:0.5px solid var(--b1);
+      border-radius:var(--r1);
+      transition:border-color .25s var(--ease), background .25s var(--ease);
     }
+
+    /* ── SEC TITLE ── */
     .sec-title {
-      font-size:.78rem; font-weight:600;
-      text-transform:uppercase; letter-spacing:.08em;
-      color:var(--muted); margin-bottom:1rem;
+      font-size:.69rem;
+      font-weight:600;
+      text-transform:uppercase;
+      letter-spacing:.1em;
+      color:var(--t3);
+      margin-bottom:.85rem;
     }
+
+    /* ── ERROR ── */
     #error-banner {
-      background:rgba(239,68,68,.12);
-      border:1px solid rgba(239,68,68,.35);
-      color:#fca5a5; border-radius:12px;
-      padding:.9rem 1.2rem; margin-bottom:1.5rem;
-      font-size:.9rem; display:none;
+      background:rgba(248,113,113,.07);
+      border:0.5px solid rgba(248,113,113,.25);
+      color:#fca5a5;
+      border-radius:12px;
+      padding:.75rem 1rem;
+      margin-bottom:1.25rem;
+      font-size:.86rem;
+      display:none;
     }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeInUp {
+      from { opacity:0; transform:translateY(16px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    @keyframes pulse-green {
+      0%,100% { box-shadow:0 0 0 0 rgba(5,224,122,0); }
+      50%      { box-shadow:0 0 12px 2px rgba(5,224,122,0.18); }
+    }
+    main > * { animation:fadeInUp .42s var(--ease) both; }
+    main > *:nth-child(1) { animation-delay:.03s; }
+    main > *:nth-child(2) { animation-delay:.08s; }
+    main > *:nth-child(3) { animation-delay:.13s; }
+    main > *:nth-child(4) { animation-delay:.18s; }
+    main > *:nth-child(5) { animation-delay:.23s; }
+    main > *:nth-child(6) { animation-delay:.28s; }
+    main > *:nth-child(7) { animation-delay:.33s; }
+    main > *:nth-child(8) { animation-delay:.38s; }
 
     /* ── HERO ── */
-    .hero { display:grid; grid-template-columns:repeat(3,1fr) 210px; gap:1rem; margin-bottom:1.5rem; }
-    @media(max-width:760px){ .hero{grid-template-columns:1fr 1fr;} .hero-pie-card{grid-column:1/-1;} }
-    .hero-card { padding:1.25rem 1.5rem; }
-    .hero-lbl { font-size:.78rem; color:var(--muted); margin-bottom:.35rem; }
-    .hero-val { font-size:2.1rem; font-weight:800; color:var(--cyan); line-height:1; margin-bottom:.25rem; }
-    .hero-sub { font-size:.78rem; color:var(--muted); }
-    .hero-trend { font-size:.78rem; margin-top:.3rem; }
-    .up { color:#4ade80; } .dn { color:#f87171; }
-    .hero-pie-card {
-      display:flex; flex-direction:column;
-      align-items:center; justify-content:center; padding:1rem;
+    .hero {
+      display:grid;
+      grid-template-columns:repeat(3,1fr) 210px;
+      gap:.75rem;
+      margin-bottom:.75rem;
     }
-    .hero-pie-card canvas { max-width:130px; max-height:130px; }
+    @media(max-width:780px){ .hero{grid-template-columns:1fr 1fr;} .hero-pie-card{grid-column:1/-1;} }
+
+    .hero-card { padding:1.2rem 1.4rem; }
+    .hero-lbl {
+      font-size:.69rem; font-weight:500; letter-spacing:.04em;
+      color:var(--t2); margin-bottom:.38rem;
+    }
+    .hero-val {
+      font-size:2.55rem; font-weight:800; line-height:1; letter-spacing:-.03em;
+      margin-bottom:.18rem;
+      background:linear-gradient(180deg,rgba(255,255,255,.92) 0%,rgba(255,255,255,.58) 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+    .hero-val.g {
+      background:linear-gradient(160deg,#05e07a 0%,#00b85d 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+    .hero-val.a {
+      background:linear-gradient(160deg,#f59e0b 0%,#d97706 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      background-clip:text;
+    }
+    .hero-sub { font-size:.72rem; color:var(--t3); }
+    .hero-delta { font-size:.74rem; margin-top:.28rem; display:flex; align-items:center; gap:.25rem; }
+    .hero-delta.up { color:var(--green); }
+    .hero-delta.dn { color:var(--red); }
+    .hero-delta.neu { color:var(--t3); }
+
+    /* PIE CARD */
+    .hero-pie-card { display:flex; flex-direction:column; padding:.85rem 1rem; }
+    .pie-tabs { display:flex; gap:.28rem; margin-bottom:.55rem; }
+    .pie-tab {
+      font-size:.66rem; font-weight:600; letter-spacing:.05em;
+      padding:.2rem .5rem; border-radius:6px;
+      border:0.5px solid var(--b1); background:transparent; color:var(--t3);
+      cursor:pointer; transition:all .2s var(--ease);
+    }
+    .pie-tab.active { background:rgba(255,255,255,.09); border-color:var(--b2); color:var(--t1); }
+    .pie-tab:hover:not(.active) { color:var(--t2); background:rgba(255,255,255,.04); }
+    .pie-canvas-wrap { display:flex; justify-content:center; }
+    .hero-pie-card canvas { max-width:108px; max-height:108px; }
     .pie-legend {
       display:grid; grid-template-columns:1fr 1fr;
-      gap:.25rem .5rem; margin-top:.5rem;
-      font-size:.7rem; color:var(--muted);
+      gap:.18rem .4rem; margin-top:.42rem;
+      font-size:.64rem; color:var(--t2);
     }
-    .pie-dot {
-      display:inline-block; width:8px; height:8px;
-      border-radius:50%; margin-left:4px; vertical-align:middle;
-    }
+    .pie-dot { display:inline-block; width:7px; height:7px; border-radius:50%; margin-left:4px; vertical-align:middle; }
 
-    /* ── WEEKLY CHART ── */
-    .heatmap-wrap { padding:1.5rem; margin-bottom:1.5rem; }
-    .weekly-chart-wrap { position:relative; height:200px; }
+    /* ── WEEK COMPARE ── */
+    .wc-sec { padding:1.2rem 1.4rem; margin-bottom:.75rem; }
+    .wc-body { display:grid; grid-template-columns:1fr auto; gap:1.5rem; align-items:center; }
+    @media(max-width:640px){ .wc-body{ grid-template-columns:1fr; } }
+    .wc-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:.55rem; }
+    @media(max-width:520px){ .wc-stats{ grid-template-columns:1fr 1fr; } }
+    .wc-stat {
+      background:var(--s2); border:0.5px solid var(--b1); border-radius:12px;
+      padding:.7rem .85rem;
+      transition:border-color .2s var(--ease);
+    }
+    .wc-stat:hover { border-color:var(--b2); }
+    .wc-stat-lbl { font-size:.65rem; color:var(--t3); margin-bottom:.2rem; letter-spacing:.04em; }
+    .wc-stat-this { font-size:1.45rem; font-weight:700; color:var(--t1); line-height:1; margin-bottom:.15rem; }
+    .wc-stat-last { font-size:.75rem; color:var(--t3); }
+    .wc-stat-delta { font-size:.7rem; margin-top:.18rem; }
+    .wc-stat-delta.up { color:var(--green); }
+    .wc-stat-delta.dn { color:var(--red); }
+    .wc-stat-delta.neu { color:var(--t3); }
+    .wc-pies { display:flex; gap:1.1rem; align-items:center; flex-shrink:0; }
+    .wc-pie-col { display:flex; flex-direction:column; align-items:center; gap:.35rem; }
+    .wc-pie-col canvas { max-width:86px; max-height:86px; }
+    .wc-pie-lbl { font-size:.66rem; color:var(--t3); }
+
+    /* ── WEEKLY KM CHART ── */
+    .heatmap-wrap { padding:1.3rem 1.4rem; margin-bottom:.75rem; }
+    .weekly-chart-wrap { position:relative; height:185px; }
 
     /* ── WEEKLY BARS ── */
-    .weekly-wrap { padding:1.5rem; margin-bottom:1.5rem; }
-    .weekly-bars { display:flex; align-items:flex-end; gap:8px; height:110px; margin-top:.5rem; }
-    .wk-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; }
-    .wk-col:hover .wk-stack { filter:brightness(1.25); }
+    .weekly-wrap { padding:1.3rem 1.4rem; margin-bottom:.75rem; }
+    .weekly-bars { display:flex; align-items:flex-end; gap:5px; height:98px; margin-top:.5rem; }
+    .wk-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; }
+    .wk-col:hover .wk-stack { filter:brightness(1.35); }
     .wk-stack {
       width:100%; display:flex; flex-direction:column;
-      border-radius:4px 4px 0 0; overflow:hidden; transition:filter .2s;
+      border-radius:4px 4px 0 0; overflow:hidden;
+      transition:filter .2s var(--ease);
     }
-    .wk-lbl { font-size:.62rem; color:var(--muted); }
+    .wk-lbl { font-size:.58rem; color:var(--t3); }
     .wb-base      { background:#0ea5e9; }
-    .wb-quality   { background:var(--cyan); }
-    .wb-intervals { background:#f472b6; }
-    .wb-hills     { background:#4ade80; }
+    .wb-intervals { background:#a78bfa; }
+    .wb-hills     { background:#34d399; }
     .wb-segments  { background:#fb923c; }
-    .wb-tempo     { background:var(--cyan); }
-    .wb-strength  { background:var(--purple); }
-    .wb-other     { background:rgba(255,255,255,0.2); }
-    .wk-legend { display:flex; gap:1rem; margin-top:.75rem; flex-wrap:wrap; }
-    .wl-item { display:flex; align-items:center; gap:.35rem; font-size:.73rem; color:var(--muted); }
-    .wl-dot { width:10px; height:10px; border-radius:2px; }
+    .wb-tempo     { background:#22d3ee; }
+    .wk-legend { display:flex; gap:.7rem; margin-top:.6rem; flex-wrap:wrap; }
+    .wl-item { display:flex; align-items:center; gap:.28rem; font-size:.68rem; color:var(--t3); }
+    .wl-dot { width:8px; height:8px; border-radius:2px; }
 
     /* ── MODAL ── */
     #wk-modal {
-      position:fixed; inset:0; background:rgba(0,0,0,.72);
-      backdrop-filter:blur(8px); z-index:500;
-      align-items:center; justify-content:center; display:none;
+      position:fixed; inset:0; background:rgba(0,0,0,.78);
+      backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+      z-index:500; align-items:center; justify-content:center; display:none;
     }
     #wk-modal.open { display:flex; }
     .modal-box {
-      background:#160f3b; border:1px solid var(--border);
-      border-radius:20px; padding:1.5rem;
-      width:90%; max-width:480px; max-height:80vh; overflow-y:auto;
+      background:var(--s1); border:0.5px solid var(--b2);
+      border-radius:20px; padding:1.35rem;
+      width:90%; max-width:450px; max-height:80vh; overflow-y:auto;
     }
-    .modal-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
-    .modal-title { font-size:1rem; font-weight:700; color:var(--cyan); }
-    .modal-x { cursor:pointer; font-size:1.4rem; color:var(--muted); line-height:1; }
+    .modal-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:.85rem; }
+    .modal-title { font-size:.92rem; font-weight:700; color:var(--t1); }
+    .modal-x { cursor:pointer; font-size:1.3rem; color:var(--t2); line-height:1; transition:color .2s; }
+    .modal-x:hover { color:var(--t1); }
     .modal-act {
-      padding:.6rem .8rem; border-radius:10px;
-      border:1px solid var(--border); background:rgba(255,255,255,0.04); margin-bottom:.5rem;
+      padding:.52rem .72rem; border-radius:10px;
+      border:0.5px solid var(--b1); background:var(--s2);
+      margin-bottom:.4rem; transition:border-color .2s var(--ease);
     }
-    .modal-act-dt { font-size:.73rem; color:var(--cyan); margin-bottom:.2rem; }
-    .modal-chips { display:flex; flex-wrap:wrap; gap:.35rem; margin-top:.3rem; }
-    .mchip {
-      background:rgba(255,255,255,0.08); border-radius:6px;
-      padding:.1rem .5rem; font-size:.73rem; color:var(--muted);
-    }
+    .modal-act:hover { border-color:var(--b2); }
+    .modal-act-dt { font-size:.68rem; color:var(--t2); margin-bottom:.16rem; }
+    .modal-chips { display:flex; flex-wrap:wrap; gap:.28rem; margin-top:.2rem; }
+    .mchip { background:rgba(255,255,255,.06); border-radius:6px; padding:.08rem .42rem; font-size:.68rem; color:var(--t2); }
 
     /* ── GPS ── */
-    .gps-wrap { padding:1.5rem; margin-bottom:1.5rem; }
-    .gps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem; }
+    .gps-wrap { padding:1.3rem 1.4rem; margin-bottom:.75rem; }
+    .gps-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.6rem; }
     @media(max-width:600px){ .gps-grid{grid-template-columns:1fr 1fr;} }
-    .gps-card { border-radius:12px; overflow:hidden; border:1px solid var(--border); }
-    .gps-map { height:120px; background:rgba(255,255,255,0.03); }
-    .gps-foot { padding:.5rem .75rem; background:rgba(0,0,0,.35); }
-    .gps-dt { font-size:.72rem; color:var(--cyan); }
-    .gps-km { font-size:.8rem; font-weight:600; }
-    .gps-ph {
-      height:120px; display:flex; align-items:center; justify-content:center;
-      color:var(--muted); font-size:.78rem; background:rgba(255,255,255,0.02);
+    .gps-card {
+      border-radius:var(--r2); overflow:hidden;
+      border:0.5px solid var(--b1);
+      transition:border-color .2s var(--ease), transform .22s var(--ease);
     }
+    .gps-card:hover { border-color:var(--b2); transform:translateY(-2px); }
+    .gps-map { height:112px; background:var(--s2); }
+    .gps-foot { padding:.42rem .68rem; background:rgba(0,0,0,.45); }
+    .gps-dt { font-size:.66rem; color:var(--t2); }
+    .gps-km { font-size:.76rem; font-weight:600; color:var(--t1); }
+    .gps-ph { height:112px; display:flex; align-items:center; justify-content:center; color:var(--t3); font-size:.73rem; }
 
     /* ── TABS ── */
-    .tabs { display:flex; gap:.5rem; margin-bottom:1rem; flex-wrap:wrap; }
+    .tabs { display:flex; gap:.38rem; margin-bottom:.85rem; flex-wrap:wrap; }
     .tab-btn {
-      padding:.32rem .8rem; border-radius:8px;
-      border:1px solid var(--border);
-      background:transparent; color:var(--muted); font-size:.82rem;
-      cursor:pointer; transition:all .2s;
+      padding:.27rem .72rem; border-radius:8px;
+      border:0.5px solid var(--b1); background:transparent;
+      color:var(--t2); font-size:.78rem;
+      cursor:pointer; transition:all .2s var(--ease);
     }
-    .tab-btn.active { background:rgba(0,212,232,.15); border-color:var(--cyan); color:var(--cyan); }
-    .tab-btn:hover:not(.active) { background:rgba(255,255,255,0.05); color:var(--text); }
+    .tab-btn.active { background:rgba(255,255,255,.08); border-color:var(--b2); color:var(--t1); }
+    .tab-btn:hover:not(.active) { background:rgba(255,255,255,.04); color:var(--t1); }
 
-    /* ── CHARTS ── */
-    .chart-wrap { position:relative; height:220px; }
-    .chart-sec { padding:1.5rem; margin-bottom:1.5rem; }
+    /* ── CHART SECTIONS ── */
+    .chart-wrap { position:relative; height:205px; }
+    .chart-sec { padding:1.3rem 1.4rem; margin-bottom:.75rem; }
 
-    /* ── PR ── */
-    .pr-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem; }
-    @media(max-width:500px){ .pr-grid{grid-template-columns:1fr;} }
-    .pr-card { padding:1.25rem 1.5rem; }
-    .pr-lbl { font-size:.78rem; color:var(--muted); margin-bottom:.4rem; }
-    .pr-val { font-size:1.6rem; font-weight:800; color:var(--cyan); margin-bottom:.2rem; }
-    .pr-sub { font-size:.78rem; color:var(--muted); }
-    .pr-badge {
-      display:inline-block; background:rgba(0,212,232,.15);
-      border:1px solid rgba(0,212,232,.4); color:var(--cyan);
-      font-size:.62rem; padding:.12rem .45rem; border-radius:6px;
-      margin-right:.4rem; vertical-align:middle;
-    }
-
-    /* ── TABLE ── */
-    .table-sec { padding:1.5rem; margin-bottom:1.5rem; }
-    .tbl-wrap { overflow-x:auto; }
-    table { width:100%; border-collapse:collapse; font-size:.84rem; min-width:560px; }
-    th {
-      text-align:right; padding:.55rem .75rem;
-      color:var(--muted); font-weight:600; font-size:.76rem;
-      border-bottom:1px solid var(--border);
-    }
-    td { padding:.5rem .75rem; border-bottom:1px solid rgba(255,255,255,0.04); }
-    tr:last-child td { border-bottom:none; }
-    tr:hover td { background:rgba(255,255,255,0.03); }
-    tr.month-row td {
-      background:rgba(0,212,232,0.07); color:var(--cyan);
-      font-size:.77rem; font-weight:700;
-      padding:.38rem .75rem; border-bottom:none;
-      cursor:pointer; user-select:none;
-    }
-    tr.month-row td:hover { background:rgba(0,212,232,0.12); }
-    .month-arrow { display:inline-block; transition:transform .2s; margin-left:.5rem; font-size:.8rem; }
-    .month-arrow.closed { transform:rotate(-90deg); }
-    tr.month-hidden { display:none; }
-    .cbadge { font-size:.68rem; padding:.1rem .4rem; border-radius:5px; }
-    .cbase { background:rgba(14,165,233,.2); color:#38bdf8; }
-    .cqual { background:rgba(0,212,232,.2); color:var(--cyan); }
-    .cstr { background:rgba(168,85,247,.2); color:#c084fc; }
-    .coth { background:rgba(255,255,255,.1); color:var(--muted); }
-
-    ::-webkit-scrollbar { width:5px; height:5px; }
-    ::-webkit-scrollbar-track { background:transparent; }
-    ::-webkit-scrollbar-thumb { background:rgba(255,255,255,.15); border-radius:3px; }
-
-    /* ── ANNUAL GOAL ── */
-    .goal-bar-wrap {
-      margin-top:.9rem; padding:.75rem 1.25rem;
-      background:rgba(0,212,232,.05); border-radius:12px;
-      border:1px solid rgba(0,212,232,.12);
-      display:flex; align-items:center; gap:.75rem; flex-wrap:wrap;
-    }
-    .goal-lbl { font-size:.78rem; color:var(--muted); white-space:nowrap; }
-    .goal-bar-bg {
-      flex:1; min-width:100px; height:8px;
-      background:rgba(255,255,255,.08); border-radius:4px; overflow:hidden;
-    }
-    .goal-bar-fill { height:100%; border-radius:4px; transition:width .6s ease; background:var(--cyan); }
-    .goal-bar-fill.warn { background:#fbbf24; }
-    .goal-bar-fill.done { background:#4ade80; }
-    .goal-text { font-size:.82rem; color:var(--text); white-space:nowrap; }
-    .goal-input {
-      width:68px; background:rgba(255,255,255,.08); border:1px solid var(--border);
-      border-radius:6px; color:var(--text); padding:.15rem .4rem; font-size:.82rem;
-      text-align:center;
-    }
-    .goal-input:focus { outline:none; border-color:var(--cyan); }
-
-    /* ── RAMP RATE BADGE ── */
-    .heatmap-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; }
-    .ramp-badge {
-      font-size:.74rem; padding:.3rem .65rem; border-radius:8px;
-      border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.05);
-      display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;
-    }
-    .ramp-green { color:#4ade80; } .ramp-yellow { color:#fbbf24; } .ramp-red { color:#f87171; }
-
-    /* ── PRs per Distance ── */
-    .prs-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:.75rem; }
+    /* ── PRs ── */
+    .prs-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:.6rem; }
     @media(max-width:700px){ .prs-grid{grid-template-columns:1fr 1fr;} }
     .pr-dist-card {
-      background:rgba(255,255,255,.04); border:1px solid var(--border);
-      border-radius:14px; padding:1rem 1.1rem;
+      background:var(--s2); border:0.5px solid var(--b1);
+      border-radius:var(--r2); padding:.85rem 1rem;
+      transition:border-color .2s var(--ease), transform .2s var(--ease);
     }
-    .pr-dist-label { font-size:.72rem; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.06em; margin-bottom:.5rem; }
-    .pr-dist-top { font-size:1.6rem; font-weight:800; color:var(--cyan); line-height:1.1; }
-    .pr-dist-date { font-size:.7rem; color:var(--muted); margin-top:.15rem; margin-bottom:.5rem; }
-    .pr-dist-sub { font-size:.76rem; color:rgba(255,255,255,.35); }
-    .pr-dist-sub span { color:rgba(255,255,255,.55); margin-left:.35rem; }
-    .pr-none { color:var(--muted); font-size:.82rem; padding:.5rem 0; }
+    .pr-dist-card:hover { border-color:var(--b2); transform:translateY(-1px); }
+    .pr-dist-label { font-size:.65rem; color:var(--t3); font-weight:600; text-transform:uppercase; letter-spacing:.07em; margin-bottom:.38rem; }
+    .pr-dist-top { font-size:1.48rem; font-weight:800; color:var(--t1); line-height:1.1; }
+    .pr-dist-date { font-size:.65rem; color:var(--t3); margin-top:.14rem; margin-bottom:.38rem; }
+    .pr-dist-sub { font-size:.7rem; color:var(--t3); }
+    .pr-dist-sub span { color:var(--t2); margin-left:.28rem; }
+    .pr-none { color:var(--t3); font-size:.76rem; padding:.3rem 0; }
 
-    /* ── HR ZONE DISTRIBUTION ── */
-    .zone-chart-wrap { position:relative; height:200px; }
-    .zone-legend { display:flex; gap:.75rem; margin-top:.6rem; flex-wrap:wrap; }
-    .zone-lbl { font-size:.72rem; display:flex; align-items:center; gap:.3rem; color:var(--muted); }
-    .zone-dot { width:10px; height:10px; border-radius:2px; }
+    /* ── HR ZONES ── */
+    .zone-chart-wrap { position:relative; height:192px; }
+    .zone-legend { display:flex; gap:.6rem; margin-top:.52rem; flex-wrap:wrap; }
+    .zone-lbl { font-size:.67rem; display:flex; align-items:center; gap:.26rem; color:var(--t2); }
+    .zone-dot { width:8px; height:8px; border-radius:2px; }
 
-    /* ── SHOE TRACKER ── */
-    .shoe-list { display:flex; flex-direction:column; gap:.75rem; margin-top:.5rem; }
-    .shoe-item { display:grid; grid-template-columns:1fr auto; gap:.3rem .75rem; align-items:center; }
-    .shoe-name { font-size:.88rem; color:var(--text); }
-    .shoe-km { font-size:.8rem; color:var(--muted); text-align:left; }
-    .shoe-bar-bg {
-      grid-column:1/-1; height:6px;
-      background:rgba(255,255,255,.08); border-radius:3px; overflow:hidden;
+    /* ── TABLE ── */
+    .table-sec { padding:1.3rem 1.4rem; margin-bottom:.75rem; }
+    .tbl-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:.81rem; min-width:460px; }
+    th {
+      text-align:right; padding:.48rem .68rem;
+      color:var(--t3); font-weight:600; font-size:.69rem;
+      border-bottom:0.5px solid var(--b1); letter-spacing:.05em;
     }
-    .shoe-bar-fill { height:100%; border-radius:3px; transition:width .6s ease; }
-    .shoe-alert { font-size:.72rem; color:#f87171; margin-top:.1rem; grid-column:1/-1; }
-    .shoe-empty { color:var(--muted); font-size:.84rem; }
+    td { padding:.46rem .68rem; border-bottom:0.5px solid rgba(255,255,255,.03); }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:rgba(255,255,255,.025); }
+    tr.month-row td {
+      background:rgba(255,255,255,.025); color:var(--t2);
+      font-size:.7rem; font-weight:600;
+      padding:.33rem .68rem; border-bottom:none;
+      cursor:pointer; user-select:none;
+      transition:background .2s var(--ease);
+    }
+    tr.month-row:hover td { background:rgba(255,255,255,.045); }
+    .month-arrow { display:inline-block; transition:transform .25s var(--ease); margin-left:.38rem; font-size:.72rem; opacity:.45; }
+    .month-arrow.closed { transform:rotate(-90deg); }
+    tr.month-hidden { display:none; }
+    .cbadge { font-size:.63rem; padding:.07rem .36rem; border-radius:4px; display:inline-block; vertical-align:middle; }
+    .cbase { background:rgba(14,165,233,.15); color:#7dd3fc; }
+    .cqual { background:rgba(5,224,122,.12); color:#6ee7b7; }
+    .cstr  { background:rgba(167,139,250,.15); color:#c4b5fd; }
+    .coth  { background:rgba(255,255,255,.07); color:var(--t2); }
   </style>
 </head>
 <body>
 
 <nav>
-  <div style="display:flex;align-items:center">
+  <div class="nav-brand">
     <span class="nav-title">ריצות</span>
     <span class="nav-upd" id="nav-upd"></span>
   </div>
-  <div style="display:flex;gap:1.5rem">
-    <a href="index.html" style="color:var(--cyan)">דשבורד</a>
+  <div class="nav-links">
+    <a href="index.html" class="active">דשבורד</a>
     <a href="claude.html">שלח לקלוד →</a>
   </div>
 </nav>
@@ -308,117 +356,96 @@
 
   <!-- Hero -->
   <div class="hero">
-    <div class="hero-card glass">
+    <div class="hero-card card">
       <div class="hero-lbl">ריצות החודש</div>
       <div class="hero-val" id="h-runs">—</div>
       <div class="hero-sub">אימוני ריצה</div>
     </div>
-    <div class="hero-card glass">
-      <div class="hero-lbl">ק"מ החודש</div>
+    <div class="hero-card card">
+      <div class="hero-lbl">ק"מ השבוע</div>
       <div class="hero-val" id="h-km">—</div>
-      <div class="hero-sub" id="h-km-sub"></div>
+      <div class="hero-delta" id="h-km-delta"></div>
     </div>
-    <div class="hero-card glass">
-      <div class="hero-lbl">חודש קודם</div>
-      <div class="hero-val" id="h-prev">—</div>
-      <div class="hero-sub">ק"מ</div>
-      <div class="hero-trend" id="h-arrow"></div>
+    <div class="hero-card card">
+      <div class="hero-lbl">קצב ממוצע שבועי</div>
+      <div class="hero-val" id="h-pace">—</div>
+      <div class="hero-delta" id="h-pace-delta"></div>
     </div>
-    <div class="hero-pie-card glass">
-      <div class="sec-title" style="margin-bottom:.4rem">התפלגות אימונים</div>
-      <canvas id="pie-chart"></canvas>
+    <div class="hero-pie-card card">
+      <div class="pie-tabs">
+        <button class="pie-tab active" onclick="setPiePeriod('week',this)">שבוע</button>
+        <button class="pie-tab" onclick="setPiePeriod('month',this)">חודש</button>
+        <button class="pie-tab" onclick="setPiePeriod('all',this)">הכל</button>
+      </div>
+      <div class="pie-canvas-wrap"><canvas id="pie-chart"></canvas></div>
       <div class="pie-legend" id="pie-legend"></div>
     </div>
   </div>
 
-  <!-- Annual Goal -->
-  <div class="glass" style="padding:.85rem 1.25rem;margin-bottom:1.5rem">
-    <div class="goal-bar-wrap" style="background:none;border:none;padding:0;margin:0">
-      <span class="goal-lbl">🎯 יעד שנתי</span>
-      <div class="goal-bar-bg"><div class="goal-bar-fill" id="goal-fill" style="width:0%"></div></div>
-      <span class="goal-text" id="goal-text">0 ק"מ</span>
-      <span class="goal-lbl">מתוך</span>
-      <input class="goal-input" id="goal-input" type="number" min="100" max="9999" placeholder="1000">
-      <span class="goal-lbl">ק"מ</span>
+  <!-- Week Compare -->
+  <div class="wc-sec card">
+    <div class="sec-title">השבוע מול שבוע שעבר</div>
+    <div class="wc-body">
+      <div class="wc-stats" id="wc-stats"></div>
+      <div class="wc-pies">
+        <div class="wc-pie-col">
+          <canvas id="wc-pie-this" width="86" height="86"></canvas>
+          <div class="wc-pie-lbl">השבוע</div>
+        </div>
+        <div class="wc-pie-col">
+          <canvas id="wc-pie-last" width="86" height="86"></canvas>
+          <div class="wc-pie-lbl">שבוע שעבר</div>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Weekly km chart -->
-  <div class="heatmap-wrap glass">
-    <div class="heatmap-header">
-      <div class="sec-title" style="margin-bottom:0">ק"מ שבועי — 12 שבועות אחרונים</div>
-      <div class="ramp-badge" id="ramp-badge"></div>
-    </div>
-    <div class="weekly-chart-wrap" style="margin-top:1rem"><canvas id="weekly-km-chart"></canvas></div>
+  <div class="heatmap-wrap card">
+    <div class="sec-title">ק"מ שבועי — 12 שבועות אחרונים</div>
+    <div class="weekly-chart-wrap"><canvas id="weekly-km-chart"></canvas></div>
   </div>
 
   <!-- Weekly stacked bars -->
-  <div class="weekly-wrap glass">
-    <div class="sec-title">עומס שבועי — 8 שבועות <span style="font-size:.68rem;opacity:.6">(לחץ לפירוט)</span></div>
+  <div class="weekly-wrap card">
+    <div class="sec-title">עומס שבועי — 8 שבועות <span style="font-size:.6rem;opacity:.45">(לחץ לפירוט)</span></div>
     <div class="weekly-bars" id="weekly-bars"></div>
     <div class="wk-legend">
       <div class="wl-item"><div class="wl-dot" style="background:#0ea5e9"></div>בסיס</div>
-      <div class="wl-item"><div class="wl-dot" style="background:var(--cyan)"></div>שינוי קצבים</div>
-      <div class="wl-item"><div class="wl-dot" style="background:#f472b6"></div>אינטרוואלים</div>
-      <div class="wl-item"><div class="wl-dot" style="background:#4ade80"></div>עליות</div>
+      <div class="wl-item"><div class="wl-dot" style="background:#22d3ee"></div>טמפו</div>
+      <div class="wl-item"><div class="wl-dot" style="background:#a78bfa"></div>אינטרוואלים</div>
+      <div class="wl-item"><div class="wl-dot" style="background:#34d399"></div>עליות</div>
       <div class="wl-item"><div class="wl-dot" style="background:#fb923c"></div>מקטעים</div>
-      <div class="wl-item" style="color:rgba(255,255,255,.3);font-size:.67rem">גובה = TSS</div>
     </div>
   </div>
 
   <!-- GPS Gallery -->
-  <div class="gps-wrap glass" id="gps-sec">
+  <div class="gps-wrap card" id="gps-sec">
     <div class="sec-title">6 ריצות אחרונות — מסלול</div>
     <div class="gps-grid" id="gps-grid"></div>
   </div>
 
-  <!-- Sleep / Body Battery / Intensity -->
-  <div class="chart-sec glass">
-    <div class="sec-title">שינה × מוכנות × עצימות</div>
-    <div class="chart-wrap"><canvas id="sleep-chart"></canvas></div>
-  </div>
-
   <!-- PRs per Distance -->
-  <div class="chart-sec glass" id="prs-sec">
+  <div class="chart-sec card" id="prs-sec">
     <div class="sec-title">שיאים אישיים לפי מרחק</div>
     <div class="prs-grid" id="prs-grid"></div>
   </div>
 
   <!-- HR Zone Distribution -->
-  <div class="chart-sec glass" id="zones-sec">
+  <div class="chart-sec card" id="zones-sec">
     <div class="sec-title">התפלגות HR Zones — 12 שבועות</div>
     <div class="zone-chart-wrap"><canvas id="zone-chart"></canvas></div>
     <div class="zone-legend">
-      <div class="zone-lbl"><div class="zone-dot" style="background:#6b7280"></div>Z1 קל מאוד</div>
-      <div class="zone-lbl"><div class="zone-dot" style="background:#4ade80"></div>Z2 בסיס</div>
+      <div class="zone-lbl"><div class="zone-dot" style="background:#4b5563"></div>Z1 קל מאוד</div>
+      <div class="zone-lbl"><div class="zone-dot" style="background:#34d399"></div>Z2 בסיס</div>
       <div class="zone-lbl"><div class="zone-dot" style="background:#fbbf24"></div>Z3 אירובי</div>
       <div class="zone-lbl"><div class="zone-dot" style="background:#f97316"></div>Z4 סף</div>
       <div class="zone-lbl"><div class="zone-dot" style="background:#f87171"></div>Z5 מקסימום</div>
     </div>
   </div>
 
-  <!-- Shoe Mileage Tracker -->
-  <div class="chart-sec glass" id="shoes-sec" style="display:none">
-    <div class="sec-title">קילומטרז' נעליים</div>
-    <div class="shoe-list" id="shoe-list"></div>
-  </div>
-
-  <!-- This month summary -->
-  <div class="pr-grid" style="grid-template-columns:1fr;">
-    <div class="pr-card glass">
-      <div class="pr-lbl">החודש</div>
-      <div style="display:flex;gap:2rem;flex-wrap:wrap;margin-top:.4rem">
-        <div><div style="font-size:.72rem;color:var(--muted)">ריצות</div><div class="pr-val" id="pm-runs" style="font-size:1.4rem">—</div></div>
-        <div><div style="font-size:.72rem;color:var(--muted)">ק"מ</div><div class="pr-val" id="pm-km" style="font-size:1.4rem">—</div></div>
-        <div><div style="font-size:.72rem;color:var(--muted)">קצב ממוצע</div><div class="pr-val" id="pm-pace" style="font-size:1.4rem">—</div></div>
-        <div><div style="font-size:.72rem;color:var(--muted)">דופק ממוצע</div><div class="pr-val" id="pm-hr" style="font-size:1.4rem">—</div></div>
-        <div><div style="font-size:.72rem;color:var(--muted)">TSS שבועי ממוצע</div><div class="pr-val" id="pm-tss" style="font-size:1.4rem">—</div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Activity table -->
-  <div class="table-sec glass">
+  <!-- Activity Table -->
+  <div class="table-sec card">
     <div class="sec-title">כל האימונים</div>
     <div class="tabs" id="table-tabs">
       <button class="tab-btn active" onclick="switchTable('runs',this)">ריצות</button>
@@ -435,14 +462,14 @@
 </main>
 
 <script>
-// ── utils ──────────────────────────────────────────────────────
+// ── utils ─────────────────────────────────────────────────────────────────
 function fmtPace(s){
   if(!s) return '—';
   return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
 }
 function fmtDur(s){
   if(!s) return '—';
-  const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60;
+  const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;
   if(h>0) return `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
   return `${m}:${String(sec).padStart(2,'0')}`;
 }
@@ -459,33 +486,39 @@ function fmtMonthHe(ym){
 }
 function avg(arr){
   const v=arr.filter(x=>x!=null&&!isNaN(x));
-  return v.length ? Math.round(v.reduce((s,x)=>s+x,0)/v.length) : null;
-}
-function hex2rgba(hex,a){
-  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
-  return `rgba(${r},${g},${b},${a})`;
+  return v.length?Math.round(v.reduce((s,x)=>s+x,0)/v.length):null;
 }
 function showError(msg){
   const b=document.getElementById('error-banner');
   b.textContent=`שגיאה: ${msg}`;
   b.style.display='block';
 }
+function weekBounds(offsetWeeks=0){
+  const today=new Date();
+  const mon=new Date(today);
+  mon.setDate(today.getDate()-((today.getDay()+6)%7)-offsetWeeks*7);
+  const sun=new Date(mon); sun.setDate(mon.getDate()+6);
+  return { start:mon.toISOString().slice(0,10), end:sun.toISOString().slice(0,10) };
+}
 
-// ── state ──────────────────────────────────────────────────────
-let allActivities=[], dailyData={}, weekMap={};
-
-// ── main ──────────────────────────────────────────────────────
+// ── constants ──────────────────────────────────────────────────────────────
 const STRENGTH_TYPES=new Set(['strength_training','weightlifting','fitness_equipment','gym','indoor_cardio']);
-// תת-קטגוריות ריצת איכות
 const CAT_LABELS={
   base_run:'ריצת בסיס', quality_tempo:'שינוי קצבים',
   quality_intervals:'אינטרוואלים', quality_hills:'עליות',
   quality_segments:'מקטעים', quality_run:'ריצת איכות',
   strength:'כוח', other:'אחר'
 };
+const PIE_COLORS={
+  base_run:'#0ea5e9', quality_tempo:'#22d3ee',
+  quality_intervals:'#a78bfa', quality_hills:'#34d399',
+  quality_segments:'#fb923c', quality_run:'#22d3ee',
+  strength:'#818cf8', other:'rgba(255,255,255,0.14)'
+};
+const PIE_ORDER=['base_run','quality_tempo','quality_intervals','quality_hills','quality_segments','quality_run','strength','other'];
+
 function isQuality(cat){ return cat&&cat.startsWith('quality'); }
 function catLabel(cat){ return CAT_LABELS[cat]||cat||''; }
-
 function inferCategory(a){
   if(a.category) return a.category;
   const t=a.activity_type||'';
@@ -494,71 +527,111 @@ function inferCategory(a){
   return 'other';
 }
 
-function buildDashboard(acts, daily, shoes, globalMaxHR){
+// ── state ──────────────────────────────────────────────────────────────────
+let allActivities=[], weekMap={}, piePeriod='week', pieChartInst=null;
+
+// ── dashboard ──────────────────────────────────────────────────────────────
+function buildDashboard(acts, globalMaxHR){
   allActivities=acts.map(a=>({...a, category:inferCategory(a)}));
-  dailyData=daily;
   const runs=allActivities.filter(a=>a.category==='base_run'||isQuality(a.category));
-  buildHero(allActivities, runs);
-  buildGoal(runs);
-  buildHeatmap(acts);
-  renderRampBadge(allActivities);
-  buildWeekly(acts);
+  buildHero(runs);
+  buildPie(allActivities);
+  buildWeekCompare(runs);
+  buildHeatmap(allActivities);
+  buildWeekly(allActivities);
   buildGPS(runs);
-  buildSleepChart(runs, daily);
   buildPRs(runs);
   buildZoneChart(runs, globalMaxHR);
-  buildShoes(shoes);
-  buildPR(runs);
   buildTable('runs');
 }
 
-// ── hero ──────────────────────────────────────────────────────
-function buildHero(acts, runs){
+// ── hero ───────────────────────────────────────────────────────────────────
+function buildHero(runs){
   const now=new Date();
   const thisM=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  const prev=new Date(now.getFullYear(),now.getMonth()-1,1);
-  const prevM=`${prev.getFullYear()}-${String(prev.getMonth()+1).padStart(2,'0')}`;
+  const thisW=weekBounds(0), lastW=weekBounds(1);
 
-  const thisRuns=runs.filter(r=>r.date&&r.date.startsWith(thisM));
-  const prevRuns=runs.filter(r=>r.date&&r.date.startsWith(prevM));
-  const thisKm=thisRuns.reduce((s,r)=>s+(r.distance_km||0),0);
-  const prevKm=prevRuns.reduce((s,r)=>s+(r.distance_km||0),0);
+  const monthRuns=runs.filter(r=>r.date&&r.date.startsWith(thisM));
+  document.getElementById('h-runs').textContent=monthRuns.length||'0';
 
-  document.getElementById('h-runs').textContent=thisRuns.length;
-  document.getElementById('h-km').textContent=thisKm.toFixed(1);
-  document.getElementById('h-prev').textContent=prevKm.toFixed(1);
+  const thisWRuns=runs.filter(r=>r.date>=thisW.start&&r.date<=thisW.end);
+  const lastWRuns=runs.filter(r=>r.date>=lastW.start&&r.date<=lastW.end);
+  const thisKm=thisWRuns.reduce((s,r)=>s+(r.distance_km||0),0);
+  const lastKm=lastWRuns.reduce((s,r)=>s+(r.distance_km||0),0);
 
-  if(prevKm>0){
-    const diff=thisKm-prevKm, pct=Math.abs(Math.round((diff/prevKm)*100));
-    const cls=diff>=0?'up':'dn', arrow=diff>=0?'↑':'↓';
-    document.getElementById('h-arrow').innerHTML=`<span class="${cls}">${arrow} ${pct}% לעומת חודש קודם</span>`;
+  const kmEl=document.getElementById('h-km');
+  const kmDelta=document.getElementById('h-km-delta');
+  kmEl.textContent=thisKm.toFixed(1);
+  kmEl.className='hero-val'+(thisKm>lastKm?' g':thisKm<lastKm&&lastKm>0?' ':'');
+
+  if(lastKm>0){
+    const diff=+(thisKm-lastKm).toFixed(1);
+    const pct=Math.round(Math.abs(diff)/lastKm*100);
+    const cls=diff>=0?'up':'dn', arr=diff>=0?'↑':'↓';
+    kmDelta.className=`hero-delta ${cls}`;
+    kmDelta.innerHTML=`${arr} ${diff>=0?'+':''}${diff} ק"מ · ${pct}%`;
+  } else {
+    kmDelta.className='hero-delta neu';
+    kmDelta.textContent='אין נתון לשבוע שעבר';
   }
 
-  // Doughnut — כולל תת-קטגוריות
-  const PIE_ORDER=['base_run','quality_tempo','quality_intervals','quality_hills','quality_segments','quality_run','strength','other'];
-  const PIE_COLORS={
-    base_run:'#0ea5e9',
-    quality_tempo:'#00d4e8', quality_intervals:'#f472b6',
-    quality_hills:'#4ade80',  quality_segments:'#fb923c',
-    quality_run:'#00d4e8',    // backward compat
-    strength:'#a855f7',       other:'rgba(255,255,255,0.2)'
-  };
+  const thisPace=avg(thisWRuns.map(r=>r.pace_sec_per_km));
+  const lastPace=avg(lastWRuns.map(r=>r.pace_sec_per_km));
+  const paceEl=document.getElementById('h-pace');
+  const paceDelta=document.getElementById('h-pace-delta');
+  if(thisPace){
+    paceEl.textContent=fmtPace(thisPace);
+    if(lastPace){
+      const diff=lastPace-thisPace; // positive = faster this week
+      const abs=Math.abs(diff);
+      const diffFmt=`${Math.floor(abs/60)}:${String(abs%60).padStart(2,'0')}`;
+      const cls=diff>0?'up':diff<0?'dn':'neu';
+      const arr=diff>0?'↑':diff<0?'↓':'';
+      paceDelta.className=`hero-delta ${cls}`;
+      paceDelta.innerHTML=`${arr} ${diffFmt} שנ/קמ ${diff>0?'מהיר יותר':'איטי יותר'}`;
+    }
+  } else {
+    paceEl.textContent='—';
+  }
+}
+
+// ── pie ────────────────────────────────────────────────────────────────────
+function setPiePeriod(period, btn){
+  piePeriod=period;
+  document.querySelectorAll('.pie-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  buildPie(allActivities);
+}
+
+function buildPie(acts){
+  const now=new Date();
+  const thisM=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const thisW=weekBounds(0);
+  let subset;
+  if(piePeriod==='week') subset=acts.filter(a=>a.date>=thisW.start&&a.date<=thisW.end);
+  else if(piePeriod==='month') subset=acts.filter(a=>a.date&&a.date.startsWith(thisM));
+  else subset=acts;
+
   const cats={};
-  acts.forEach(a=>{ const c=a.category||'other'; cats[c]=(cats[c]||0)+1; });
+  subset.forEach(a=>{ const c=a.category||'other'; cats[c]=(cats[c]||0)+1; });
   const entries=PIE_ORDER.map(k=>[k,cats[k]||0]).filter(([,v])=>v>0);
 
-  new Chart(document.getElementById('pie-chart'),{
+  const canvas=document.getElementById('pie-chart');
+  const existing=Chart.getChart(canvas);
+  if(existing) existing.destroy();
+
+  pieChartInst=new Chart(canvas,{
     type:'doughnut',
     data:{
       labels:entries.map(([k])=>catLabel(k)),
       datasets:[{
         data:entries.map(([,v])=>v),
         backgroundColor:entries.map(([k])=>PIE_COLORS[k]||'#888'),
-        borderWidth:0, hoverOffset:6
+        borderWidth:0, hoverOffset:5
       }]
     },
     options:{
-      cutout:'66%', animation:{duration:700},
+      cutout:'68%', animation:{duration:450},
       plugins:{
         legend:{display:false},
         tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw}`}}
@@ -571,7 +644,77 @@ function buildHero(acts, runs){
   ).join('');
 }
 
-// ── 12-week km bar+line chart ──────────────────────────────────────
+// ── week compare ───────────────────────────────────────────────────────────
+function buildWeekCompare(runs){
+  const thisW=weekBounds(0), lastW=weekBounds(1);
+  const thisRuns=runs.filter(r=>r.date>=thisW.start&&r.date<=thisW.end);
+  const lastRuns=runs.filter(r=>r.date>=lastW.start&&r.date<=lastW.end);
+
+  const thisKm=thisRuns.reduce((s,r)=>s+(r.distance_km||0),0);
+  const lastKm=lastRuns.reduce((s,r)=>s+(r.distance_km||0),0);
+  const thisPace=avg(thisRuns.map(r=>r.pace_sec_per_km));
+  const lastPace=avg(lastRuns.map(r=>r.pace_sec_per_km));
+  const thisHR=avg(thisRuns.map(r=>r.avg_hr));
+  const lastHR=avg(lastRuns.map(r=>r.avg_hr));
+
+  function makeStatCard(lbl, thisVal, lastVal, rawThis, rawLast, fmtDelta, higherBetter){
+    let deltaHtml='';
+    if(rawThis!=null&&rawLast!=null&&rawLast!==0){
+      const diff=rawThis-rawLast;
+      if(diff!==0){
+        const isGood=higherBetter?(diff>0):(diff<0);
+        const cls=isGood?'up':'dn';
+        const sign=diff>0?'+':'';
+        deltaHtml=`<div class="wc-stat-delta ${cls}">${sign}${fmtDelta(diff)} ${diff>0?'↑':'↓'}</div>`;
+      }
+    }
+    return `<div class="wc-stat">
+      <div class="wc-stat-lbl">${lbl}</div>
+      <div class="wc-stat-this">${thisVal}</div>
+      <div class="wc-stat-last">${lastVal} שבוע שעבר</div>
+      ${deltaHtml}
+    </div>`;
+  }
+
+  document.getElementById('wc-stats').innerHTML=[
+    makeStatCard('ק"מ', thisKm.toFixed(1), lastKm.toFixed(1), thisKm, lastKm, d=>Math.abs(d).toFixed(1), true),
+    makeStatCard('ריצות', thisRuns.length, lastRuns.length, thisRuns.length, lastRuns.length, d=>Math.abs(d), true),
+    makeStatCard('קצב', thisPace?fmtPace(thisPace):'—', lastPace?fmtPace(lastPace):'—', thisPace, lastPace, d=>{const a=Math.abs(d);return `${Math.floor(a/60)}:${String(a%60).padStart(2,'0')}`}, false),
+    makeStatCard('דופק ממוצע', thisHR||'—', lastHR||'—', thisHR, lastHR, d=>Math.abs(d), false),
+  ].join('');
+
+  function buildMiniPie(id, runsArr){
+    const canvas=document.getElementById(id);
+    if(!canvas) return;
+    const existing=Chart.getChart(canvas);
+    if(existing) existing.destroy();
+    const cats={};
+    runsArr.forEach(r=>{ const c=r.category||'other'; cats[c]=(cats[c]||0)+1; });
+    let entries=PIE_ORDER.map(k=>[k,cats[k]||0]).filter(([,v])=>v>0);
+    if(!entries.length) entries=[['other',1]];
+    new Chart(canvas,{
+      type:'doughnut',
+      data:{
+        datasets:[{
+          data:entries.map(([,v])=>v),
+          backgroundColor:entries.map(([k])=>PIE_COLORS[k]||'rgba(255,255,255,0.14)'),
+          borderWidth:0, hoverOffset:3
+        }]
+      },
+      options:{
+        cutout:'58%', animation:{duration:450},
+        plugins:{
+          legend:{display:false},
+          tooltip:{callbacks:{label:c=>` ${catLabel(entries[c.dataIndex][0])}: ${c.raw}`}}
+        }
+      }
+    });
+  }
+  buildMiniPie('wc-pie-this', thisRuns);
+  buildMiniPie('wc-pie-last', lastRuns);
+}
+
+// ── 12-week km chart ───────────────────────────────────────────────────────
 function buildHeatmap(acts){
   const today=new Date();
   const weeks=[];
@@ -579,68 +722,53 @@ function buildHeatmap(acts){
     const mon=new Date(today);
     mon.setDate(today.getDate()-((today.getDay()+6)%7)-i*7);
     const sun=new Date(mon); sun.setDate(mon.getDate()+6);
-    const start=mon.toISOString().slice(0,10);
-    const end=sun.toISOString().slice(0,10);
+    const start=mon.toISOString().slice(0,10), end=sun.toISOString().slice(0,10);
     const label=mon.toLocaleDateString('he-IL',{day:'numeric',month:'numeric'});
     const km=acts.filter(a=>a.date>=start&&a.date<=end&&(a.category==='base_run'||isQuality(a.category)))
                .reduce((s,a)=>s+(a.distance_km||0),0);
-    weeks.push({label, km:+km.toFixed(1)});
+    weeks.push({label,km:+km.toFixed(1),isCurrent:i===0});
   }
-
   new Chart(document.getElementById('weekly-km-chart').getContext('2d'),{
     type:'bar',
     data:{
       labels:weeks.map(w=>w.label),
       datasets:[
         {
-          type:'bar',
-          label:'ק"מ',
+          type:'bar', label:'ק"מ',
           data:weeks.map(w=>w.km),
-          backgroundColor:'rgba(0,212,232,0.25)',
-          borderColor:'rgba(0,212,232,0.6)',
-          borderWidth:1,
-          borderRadius:4,
-          order:2,
+          backgroundColor:weeks.map(w=>w.isCurrent?'rgba(5,224,122,0.32)':'rgba(255,255,255,0.09)'),
+          borderColor:weeks.map(w=>w.isCurrent?'rgba(5,224,122,0.65)':'rgba(255,255,255,0.16)'),
+          borderWidth:1, borderRadius:4, order:2,
         },
         {
-          type:'line',
-          label:'מגמה',
+          type:'line', label:'מגמה',
           data:weeks.map(w=>w.km),
-          borderColor:'#00d4e8',
-          backgroundColor:'rgba(0,212,232,0.05)',
-          tension:.4,
-          pointRadius:4,
-          pointHoverRadius:7,
-          fill:true,
-          spanGaps:false,
-          order:1,
+          borderColor:'rgba(255,255,255,0.32)',
+          backgroundColor:'rgba(255,255,255,0.025)',
+          tension:.4, pointRadius:3, pointHoverRadius:6,
+          pointBackgroundColor:weeks.map(w=>w.isCurrent?'#05e07a':'rgba(255,255,255,0.45)'),
+          pointBorderWidth:0, fill:true, spanGaps:false, order:1,
         }
       ]
     },
     options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{
-        legend:{display:false},
-        tooltip:{callbacks:{label:c=>` ${c.raw} ק"מ`}}
-      },
+      responsive:true, maintainAspectRatio:false, animation:{duration:650},
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>` ${c.raw} ק"מ`}}},
       scales:{
-        x:{ticks:{color:'rgba(255,255,255,.45)',font:{size:10}}, grid:{color:'rgba(255,255,255,.04)'}},
-        y:{min:0, ticks:{color:'rgba(255,255,255,.45)',font:{size:10}}, grid:{color:'rgba(255,255,255,.06)'},
-           title:{display:true,text:'ק"מ',color:'rgba(255,255,255,.3)',font:{size:9}}}
+        x:{ticks:{color:'rgba(255,255,255,.28)',font:{size:10}}, grid:{color:'rgba(255,255,255,.04)'}},
+        y:{min:0, ticks:{color:'rgba(255,255,255,.28)',font:{size:10}}, grid:{color:'rgba(255,255,255,.05)'},
+           title:{display:true,text:'ק"מ',color:'rgba(255,255,255,.18)',font:{size:9}}}
       }
     }
   });
 }
 
-// ── weekly stacked bars (ריצות בלבד, עומס = TSS) ──────────────────
-// עומס מחושב לפי Training Stress Score (TSS) של גרמין — מבוסס EPOC
-// כשאין TSS: aerobic_effect × (משך בדקות / 60) × 20 כ-proxy
+// ── weekly stacked bars ────────────────────────────────────────────────────
 function calcLoad(a){
   if(a.training_stress_score) return a.training_stress_score;
-  if(a.exercise_load) return a.exercise_load;  // Garmin activityTrainingLoad (EPOC-based)
-  if(a.aerobic_effect && a.duration_sec)
-    return a.aerobic_effect * (a.duration_sec/3600) * 20;
-  return (a.duration_sec||0)/60 * 0.8; // fallback: דקות × 0.8
+  if(a.exercise_load) return a.exercise_load;
+  if(a.aerobic_effect&&a.duration_sec) return a.aerobic_effect*(a.duration_sec/3600)*20;
+  return (a.duration_sec||0)/60*0.8;
 }
 
 function buildWeekly(acts){
@@ -650,7 +778,7 @@ function buildWeekly(acts){
     const mon=new Date(today);
     mon.setDate(today.getDate()-((today.getDay()+6)%7)-i*7);
     const sun=new Date(mon); sun.setDate(mon.getDate()+6);
-    weeks.push({start:mon.toISOString().slice(0,10), end:sun.toISOString().slice(0,10), acts:[]});
+    weeks.push({start:mon.toISOString().slice(0,10),end:sun.toISOString().slice(0,10),acts:[],isCurrent:i===0});
   }
   acts.forEach(a=>{
     if(!a.date) return;
@@ -660,13 +788,9 @@ function buildWeekly(acts){
   weekMap={};
   weeks.forEach(w=>{ weekMap[w.start]=w.acts; });
 
-  // רק ריצות (ללא כוח)
   const isRun=a=>a.category==='base_run'||isQuality(a.category);
-  const maxLoad=Math.max(...weeks.map(w=>
-    w.acts.filter(isRun).reduce((s,a)=>s+calcLoad(a),0)
-  ),1);
-
-  const H=110, container=document.getElementById('weekly-bars');
+  const maxLoad=Math.max(...weeks.map(w=>w.acts.filter(isRun).reduce((s,a)=>s+calcLoad(a),0)),1);
+  const H=98, container=document.getElementById('weekly-bars');
   container.innerHTML='';
 
   weeks.forEach(w=>{
@@ -676,26 +800,22 @@ function buildWeekly(acts){
       const l=calcLoad(a);
       if(a.category==='base_run') load.base+=l;
       else if(a.category==='quality_intervals') load.intervals+=l;
-      else if(a.category==='quality_hills')     load.hills+=l;
-      else if(a.category==='quality_segments')  load.segments+=l;
-      else load.tempo+=l; // quality_tempo + quality_run legacy
+      else if(a.category==='quality_hills') load.hills+=l;
+      else if(a.category==='quality_segments') load.segments+=l;
+      else load.tempo+=l;
     });
     const total=load.base+load.tempo+load.intervals+load.hills+load.segments;
     const scale=total>0?(total/maxLoad)*H:0;
-
-    const seg=(k,cls)=>load[k]>0
-      ?`<div class="${cls}" style="height:${(load[k]/total)*scale}px"></div>`:'';
-
+    const seg=(k,cls)=>load[k]>0?`<div class="${cls}" style="height:${(load[k]/total)*scale}px"></div>`:'';
     const lbl=new Date(w.start).toLocaleDateString('he-IL',{day:'numeric',month:'numeric'});
-    const tssLabel=total>0?`TSS ${Math.round(total)}`:'';
     const col=document.createElement('div'); col.className='wk-col';
     col.onclick=()=>openModal(w.start);
-    col.title=tssLabel;
+    col.title=total>0?`TSS ${Math.round(total)}`:'';
     col.innerHTML=`
       <div class="wk-stack" style="height:${scale}px;min-height:${total>0?'4px':'0'}">
         ${seg('intervals','wb-intervals')}${seg('hills','wb-hills')}${seg('segments','wb-segments')}${seg('tempo','wb-tempo')}${seg('base','wb-base')}
       </div>
-      <div class="wk-lbl">${lbl}</div>`;
+      <div class="wk-lbl" style="${w.isCurrent?'color:rgba(5,224,122,0.65)':''}">${lbl}</div>`;
     container.appendChild(col);
   });
 }
@@ -703,22 +823,19 @@ function buildWeekly(acts){
 function openModal(weekStart){
   const wa=weekMap[weekStart]||[];
   const end=new Date(weekStart); end.setDate(end.getDate()+6);
-  document.getElementById('modal-ttl').textContent=
-    `${fmtDate(weekStart)} — ${fmtDate(end.toISOString().slice(0,10))}`;
+  document.getElementById('modal-ttl').textContent=`${fmtDate(weekStart)} — ${fmtDate(end.toISOString().slice(0,10))}`;
   const cCls={base_run:'cbase',quality_run:'cqual',quality_tempo:'cqual',quality_intervals:'cqual',quality_hills:'cqual',quality_segments:'cqual',strength:'cstr',other:'coth'};
-  const cLbl=k=>CAT_LABELS[k]||k;
-  document.getElementById('modal-body').innerHTML=wa.length===0
-    ?'<div style="color:var(--muted);font-size:.85rem">אין אימונים בשבוע זה</div>'
+  document.getElementById('modal-body').innerHTML=!wa.length
+    ?'<div style="color:var(--t2);font-size:.84rem">אין אימונים בשבוע זה</div>'
     :wa.map(a=>{
         const c=a.category||'other';
         return `<div class="modal-act">
-          <div class="modal-act-dt">${fmtDate(a.date)} <span class="cbadge ${cCls[c]||'coth'}">${cLbl(c)}</span></div>
+          <div class="modal-act-dt">${fmtDate(a.date)} <span class="cbadge ${cCls[c]||'coth'}">${catLabel(c)}</span></div>
           <div class="modal-chips">
             ${a.distance_km!=null?`<span class="mchip">${a.distance_km} ק"מ</span>`:''}
             ${a.duration_sec?`<span class="mchip">${fmtDur(a.duration_sec)}</span>`:''}
             ${a.pace_sec_per_km?`<span class="mchip">קצב ${fmtPace(a.pace_sec_per_km)}</span>`:''}
             ${a.avg_hr?`<span class="mchip">♥ ${a.avg_hr}</span>`:''}
-            ${a.aerobic_effect!=null?`<span class="mchip">עצימות ${a.aerobic_effect.toFixed(1)}</span>`:''}
           </div>
         </div>`;
       }).join('');
@@ -729,7 +846,7 @@ document.getElementById('wk-modal').addEventListener('click',e=>{
   if(e.target===document.getElementById('wk-modal')) closeModal();
 });
 
-// ── GPS gallery ──────────────────────────────────────────────────
+// ── GPS gallery ────────────────────────────────────────────────────────────
 function buildGPS(runs){
   const recent=[...runs].reverse().slice(0,6);
   if(!recent.length){ document.getElementById('gps-sec').style.display='none'; return; }
@@ -739,10 +856,7 @@ function buildGPS(runs){
     const card=document.createElement('div'); card.className='gps-card';
     if(r.gps&&r.gps.length>=3){
       card.innerHTML=`<div class="gps-map" id="gmap-${i}"></div>
-        <div class="gps-foot">
-          <div class="gps-dt">${fmtDate(r.date)}</div>
-          <div class="gps-km">${r.distance_km?r.distance_km+' ק"מ':'—'}</div>
-        </div>`;
+        <div class="gps-foot"><div class="gps-dt">${fmtDate(r.date)}</div><div class="gps-km">${r.distance_km?r.distance_km+' ק"מ':'—'}</div></div>`;
       grid.appendChild(card);
       setTimeout(()=>{
         const el=document.getElementById(`gmap-${i}`);
@@ -750,120 +864,113 @@ function buildGPS(runs){
         const map=L.map(el,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false});
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:18}).addTo(map);
         const pts=r.gps.map(p=>[p.lat,p.lon]);
-        const poly=L.polyline(pts,{color:'#00d4e8',weight:2,opacity:.85}).addTo(map);
+        const poly=L.polyline(pts,{color:'#05e07a',weight:2.5,opacity:.88}).addTo(map);
         map.fitBounds(poly.getBounds(),{padding:[6,6]});
-      },120);
+      },130);
     } else {
       card.innerHTML=`<div class="gps-ph">אין GPS</div>
-        <div class="gps-foot">
-          <div class="gps-dt">${fmtDate(r.date)}</div>
-          <div class="gps-km">${r.distance_km?r.distance_km+' ק"מ':'—'}</div>
-        </div>`;
+        <div class="gps-foot"><div class="gps-dt">${fmtDate(r.date)}</div><div class="gps-km">${r.distance_km?r.distance_km+' ק"מ':'—'}</div></div>`;
       grid.appendChild(card);
     }
   });
 }
 
+// ── PRs ────────────────────────────────────────────────────────────────────
+const DIST_TARGETS=[
+  {label:'5K',min:4.5,max:5.5},
+  {label:'10K',min:9.5,max:10.5},
+  {label:'חצי מרתון',min:20.5,max:21.5},
+  {label:'מרתון',min:41.5,max:42.9},
+];
+function buildPRs(runs){
+  const grid=document.getElementById('prs-grid');
+  if(!grid) return;
+  grid.innerHTML='';
+  DIST_TARGETS.forEach(({label,min,max})=>{
+    const cands=runs.filter(r=>r.distance_km>=min&&r.distance_km<=max&&r.pace_sec_per_km)
+      .sort((a,b)=>a.pace_sec_per_km-b.pace_sec_per_km);
+    const card=document.createElement('div'); card.className='pr-dist-card';
+    if(!cands.length){
+      card.innerHTML=`<div class="pr-dist-label">${label}</div><div class="pr-none">אין ריצות</div>`;
+    } else {
+      const top=cands[0];
+      const s2=cands[1]?`<span>#2</span> ${fmtPace(cands[1].pace_sec_per_km)}`:'';
+      const s3=cands[2]?`&nbsp;&nbsp;<span>#3</span> ${fmtPace(cands[2].pace_sec_per_km)}`:'';
+      card.innerHTML=`<div class="pr-dist-label">${label}</div>
+        <div class="pr-dist-top">${fmtPace(top.pace_sec_per_km)}</div>
+        <div class="pr-dist-date">${fmtDate(top.date)} · ${top.distance_km} ק"מ</div>
+        <div class="pr-dist-sub">${s2}${s3}</div>`;
+    }
+    grid.appendChild(card);
+  });
+}
 
-// ── sleep / body battery / intensity chart ───────────────────────
-function buildSleepChart(runs, daily){
-  if(!runs.length) return;
-  const recent=runs.slice(-24);
-  const labels=recent.map(r=>fmtDate(r.date));
-  const sleep=recent.map(r=>{ const d=daily[r.date]; return d?(d.sleep_score??null):null; });
-  const bb=recent.map(r=>{ const d=daily[r.date]; return d?(d.body_battery_morning??null):null; });
-  const intensity=recent.map(r=>r.aerobic_effect??null);
-
-  new Chart(document.getElementById('sleep-chart').getContext('2d'),{
+// ── HR Zone chart ──────────────────────────────────────────────────────────
+function buildZoneChart(runs, globalMaxHR){
+  const today=new Date();
+  const weeks=[];
+  for(let i=11;i>=0;i--){
+    const mon=new Date(today);
+    mon.setDate(today.getDate()-((today.getDay()+6)%7)-i*7);
+    const sun=new Date(mon); sun.setDate(mon.getDate()+6);
+    weeks.push({
+      label:mon.toLocaleDateString('he-IL',{day:'numeric',month:'numeric'}),
+      start:mon.toISOString().slice(0,10), end:sun.toISOString().slice(0,10),
+      zones:[0,0,0,0,0]
+    });
+  }
+  const maxHR=globalMaxHR||180;
+  runs.forEach(r=>{
+    if(!r.date) return;
+    const w=weeks.find(w=>r.date>=w.start&&r.date<=w.end);
+    if(!w) return;
+    if(r.hr_zones_sec&&r.hr_zones_sec.some(v=>v>0)){
+      r.hr_zones_sec.forEach((v,i)=>{ w.zones[i]+=v; });
+    } else if(r.avg_hr&&r.duration_sec){
+      const pct=r.avg_hr/maxHR;
+      const z=pct<.60?0:pct<.70?1:pct<.80?2:pct<.90?3:4;
+      w.zones[z]+=r.duration_sec;
+    }
+  });
+  const hasData=weeks.some(w=>w.zones.some(v=>v>0));
+  if(!hasData){ document.getElementById('zones-sec').style.display='none'; return; }
+  const zColors=['#4b5563','#34d399','#fbbf24','#f97316','#f87171'];
+  const zLabels=['Z1','Z2','Z3','Z4','Z5'];
+  const datasets=zLabels.map((lbl,zi)=>({
+    label:lbl,
+    data:weeks.map(w=>{ const t=w.zones.reduce((s,v)=>s+v,0); return t>0?+((w.zones[zi]/t*100).toFixed(1)):0; }),
+    backgroundColor:zColors[zi], stack:'zones',
+  }));
+  new Chart(document.getElementById('zone-chart').getContext('2d'),{
     type:'bar',
-    data:{labels, datasets:[
-      {type:'bar', label:'עצימות',
-       data:intensity, backgroundColor:'rgba(168,85,247,.35)', borderColor:'#a855f7', borderWidth:1,
-       yAxisID:'yI', order:3},
-      {type:'line', label:'שינה',
-       data:sleep, borderColor:'#00d4e8', backgroundColor:'rgba(0,212,232,.07)',
-       tension:.35, pointRadius:3, spanGaps:false, fill:false, yAxisID:'y01', order:1},
-      {type:'line', label:'Body Battery',
-       data:bb, borderColor:'#4ade80', backgroundColor:'rgba(74,222,128,.07)',
-       tension:.35, pointRadius:3, spanGaps:false, fill:false, yAxisID:'y01', order:2},
-    ]},
+    data:{labels:weeks.map(w=>w.label), datasets},
     options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{
-        legend:{display:true, labels:{color:'rgba(255,255,255,.5)',boxWidth:10,font:{size:11}}},
-        tooltip:{callbacks:{label:c=>{
-          if(c.raw==null) return null;
-          if(c.dataset.label==='עצימות') return ` עצימות: ${(+c.raw).toFixed(1)}`;
-          return ` ${c.dataset.label}: ${c.raw}`;
-        }}}
-      },
+      responsive:true, maintainAspectRatio:false, animation:{duration:650},
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw}%`}}},
       scales:{
-        x:{ticks:{color:'rgba(255,255,255,.4)',maxRotation:45,font:{size:10}},
-           grid:{color:'rgba(255,255,255,.04)'}},
-        y01:{type:'linear', position:'right', min:0, max:100,
-             ticks:{color:'rgba(255,255,255,.4)',font:{size:10}},
-             grid:{color:'rgba(255,255,255,.05)'},
-             title:{display:true,text:'0–100',color:'rgba(255,255,255,.3)',font:{size:9}}},
-        yI:{type:'linear', position:'left', min:0, max:5,
-            ticks:{color:'rgba(255,255,255,.35)',font:{size:10}},
-            grid:{display:false},
-            title:{display:true,text:'עצימות',color:'rgba(255,255,255,.3)',font:{size:9}}}
+        x:{stacked:true, ticks:{color:'rgba(255,255,255,.28)',font:{size:10}}, grid:{color:'rgba(255,255,255,.04)'}},
+        y:{stacked:true, min:0, max:100, ticks:{color:'rgba(255,255,255,.28)',font:{size:10},callback:v=>v+'%'}, grid:{color:'rgba(255,255,255,.05)'}}
       }
     }
   });
 }
 
-// ── This month summary ────────────────────────────────────────────
-function buildPR(runs){
-  if(!runs.length) return;
-  const now=new Date();
-  const thisM=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  const mRuns=runs.filter(r=>r.date&&r.date.startsWith(thisM));
-
-  document.getElementById('pm-runs').textContent=mRuns.length||'0';
-  const km=mRuns.reduce((s,r)=>s+(r.distance_km||0),0);
-  document.getElementById('pm-km').textContent=km.toFixed(1);
-
-  const ap=avg(mRuns.map(r=>r.pace_sec_per_km));
-  document.getElementById('pm-pace').textContent=ap?fmtPace(ap):'—';
-
-  const ah=avg(mRuns.map(r=>r.avg_hr));
-  document.getElementById('pm-hr').textContent=ah||'—';
-
-  // TSS שבועי ממוצע החודש
-  const wkTss={};
-  mRuns.forEach(r=>{
-    if(!r.date) return;
-    const d=new Date(r.date), mon=new Date(d);
-    mon.setDate(d.getDate()-((d.getDay()+6)%7));
-    const k=mon.toISOString().slice(0,10);
-    wkTss[k]=(wkTss[k]||0)+calcLoad(r);
-  });
-  const wkVals=Object.values(wkTss);
-  const avgTss=wkVals.length?Math.round(wkVals.reduce((s,v)=>s+v,0)/wkVals.length):null;
-  document.getElementById('pm-tss').textContent=avgTss||'—';
-}
-
-// ── table (tabs + monthly separators) ───────────────────────────
-function switchTable(tab, btn){
+// ── table ──────────────────────────────────────────────────────────────────
+function switchTable(tab,btn){
   document.querySelectorAll('#table-tabs .tab-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   buildTable(tab);
 }
-function toggleMonth(monthKey){
-  document.querySelectorAll(`tr[data-month="${monthKey}"]`).forEach(r=>{
-    r.classList.toggle('month-hidden');
-  });
-  const arrow=document.querySelector(`.month-arrow[data-mkey="${monthKey}"]`);
-  if(arrow) arrow.classList.toggle('closed');
+function toggleMonth(mk){
+  document.querySelectorAll(`tr[data-month="${mk}"]`).forEach(r=>r.classList.toggle('month-hidden'));
+  const arr=document.querySelector(`.month-arrow[data-mkey="${mk}"]`);
+  if(arr) arr.classList.toggle('closed');
 }
-
 function buildTable(tab){
   const head=document.getElementById('tbl-head'), body=document.getElementById('tbl-body');
-
-  // רק 3 חודשים אחרונים
   const now=new Date();
-  const cutoff=new Date(now.getFullYear(), now.getMonth()-2, 1).toISOString().slice(0,10);
+  const cutoff=new Date(now.getFullYear(),now.getMonth()-2,1).toISOString().slice(0,10);
+  const cCls={base_run:'cbase',quality_run:'cqual',quality_tempo:'cqual',quality_intervals:'cqual',quality_hills:'cqual',quality_segments:'cqual',strength:'cstr',other:'coth'};
 
   let filtered;
   if(tab==='runs') filtered=allActivities.filter(a=>a.category==='base_run'||isQuality(a.category));
@@ -871,10 +978,9 @@ function buildTable(tab){
   else filtered=allActivities.filter(a=>a.category==='other');
   filtered=[...filtered].filter(a=>a.date>=cutoff).sort((a,b)=>b.date.localeCompare(a.date));
 
-  const colCount=tab==='runs'?9:4;
-
+  const colCount=tab==='runs'?7:4;
   if(tab==='runs'){
-    head.innerHTML=`<tr><th>תאריך</th><th>מרחק</th><th>זמן</th><th>קצב</th><th>דופק</th><th>קדנס</th><th>GCT</th><th>עצימות</th><th title="Cardiac Drift — עלייה בדופק ללא עלייה בקצב, מדד לעייפות aerobic">דריפט</th></tr>`;
+    head.innerHTML=`<tr><th>תאריך</th><th>מרחק</th><th>זמן</th><th>קצב</th><th>דופק</th><th>קדנס</th><th>GCT</th></tr>`;
   } else if(tab==='strength'){
     head.innerHTML=`<tr><th>תאריך</th><th>זמן</th><th>דופק</th><th>עצימות</th></tr>`;
   } else {
@@ -890,258 +996,56 @@ function buildTable(tab){
       const mActs=filtered.filter(x=>x.date&&x.date.startsWith(m));
       const tr=document.createElement('tr'); tr.className='month-row';
       tr.onclick=()=>toggleMonth(m);
-      let summary='';
       if(tab==='runs'){
-        const ap=avg(mActs.map(x=>x.pace_sec_per_km)), ah=avg(mActs.map(x=>x.avg_hr));
-        const ac=avg(mActs.map(x=>x.cadence_spm?Math.round(x.cadence_spm):null));
+        const ap=avg(mActs.map(x=>x.pace_sec_per_km));
+        const ah=avg(mActs.map(x=>x.avg_hr));
         const tk=mActs.reduce((s,x)=>s+(x.distance_km||0),0);
-        summary=`${fmtMonthHe(m)} | ${mActs.length} ריצות, ${tk.toFixed(1)} ק"מ`
-          +(ap?` | קצב ${fmtPace(ap)}`:'')+(ah?` | דופק ${ah}`:'')+(ac?` | קדנס ${ac}`:'');
-        tr.innerHTML=`<td colspan="9"><span class="month-arrow" data-mkey="${m}">▼</span> ${summary}</td>`;
+        const summary=`${fmtMonthHe(m)} · ${mActs.length} ריצות · ${tk.toFixed(1)} ק"מ`
+          +(ap?` · ${fmtPace(ap)}/קמ`:'')+(ah?` · ♥ ${ah}`:'');
+        tr.innerHTML=`<td colspan="7"><span class="month-arrow" data-mkey="${m}">▼</span> ${summary}</td>`;
       } else {
-        tr.innerHTML=`<td colspan="4"><span class="month-arrow" data-mkey="${m}">▼</span> ${fmtMonthHe(m)} | ${mActs.length} אימונים</td>`;
+        tr.innerHTML=`<td colspan="4"><span class="month-arrow" data-mkey="${m}">▼</span> ${fmtMonthHe(m)} · ${mActs.length} אימונים</td>`;
       }
       body.appendChild(tr);
     }
-
-    const tr=document.createElement('tr');
-    tr.dataset.month=m;
-    const cCls={base_run:'cbase',quality_run:'cqual',quality_tempo:'cqual',quality_intervals:'cqual',quality_hills:'cqual',quality_segments:'cqual',strength:'cstr',other:'coth'};
+    const tr=document.createElement('tr'); tr.dataset.month=m;
     const c=a.category||'other';
-
     if(tab==='runs'){
-      const drift=a.hr_drift_bpm!=null?`${a.hr_drift_bpm>0?'+':''}${a.hr_drift_bpm}`:'—';
-      const driftColor=a.hr_drift_bpm>10?'#f87171':a.hr_drift_bpm>5?'#fbbf24':'rgba(255,255,255,.45)';
-      tr.innerHTML=`<td>${fmtDate(a.date)}</td>
+      tr.innerHTML=`
+        <td><span class="cbadge ${cCls[c]||'coth'}" style="margin-left:5px">${catLabel(c).slice(0,4)}</span>${fmtDate(a.date)}</td>
         <td>${a.distance_km!=null?a.distance_km+' ק"מ':'—'}</td>
         <td>${fmtDur(a.duration_sec)}</td>
         <td>${fmtPace(a.pace_sec_per_km)}</td>
         <td>${a.avg_hr??'—'}</td>
         <td>${a.cadence_spm?Math.round(a.cadence_spm):'—'}</td>
-        <td>${a.gct_ms!=null?a.gct_ms+'ms':'—'}</td>
-        <td>${a.aerobic_effect!=null?`<span class="cbadge ${cCls[c]||'coth'}">${a.aerobic_effect.toFixed(1)}</span>`:'—'}</td>
-        <td style="color:${driftColor};font-size:.8rem">${drift}</td>`;
+        <td>${a.gct_ms!=null?a.gct_ms+'ms':'—'}</td>`;
     } else if(tab==='strength'){
-      tr.innerHTML=`<td>${fmtDate(a.date)}</td>
-        <td>${fmtDur(a.duration_sec)}</td>
-        <td>${a.avg_hr??'—'}</td>
-        <td>${a.aerobic_effect!=null?a.aerobic_effect.toFixed(1):'—'}</td>`;
+      tr.innerHTML=`<td>${fmtDate(a.date)}</td><td>${fmtDur(a.duration_sec)}</td><td>${a.avg_hr??'—'}</td><td>${a.aerobic_effect!=null?a.aerobic_effect.toFixed(1):'—'}</td>`;
     } else {
-      tr.innerHTML=`<td>${fmtDate(a.date)}</td>
-        <td>${a.activity_type||'—'}</td>
-        <td>${fmtDur(a.duration_sec)}</td>
-        <td>${a.avg_hr??'—'}</td>`;
+      tr.innerHTML=`<td>${fmtDate(a.date)}</td><td>${a.activity_type||'—'}</td><td>${fmtDur(a.duration_sec)}</td><td>${a.avg_hr??'—'}</td>`;
     }
     body.appendChild(tr);
   });
 
   if(!filtered.length){
-    body.innerHTML=`<tr><td colspan="${colCount}" style="text-align:center;color:var(--muted);padding:1.5rem">אין נתונים</td></tr>`;
+    body.innerHTML=`<tr><td colspan="${colCount}" style="text-align:center;color:var(--t3);padding:1.75rem">אין נתונים</td></tr>`;
   }
 }
 
-// ── Annual Goal ────────────────────────────────────────────────
-const GOAL_KEY='garmin_annual_goal';
-function buildGoal(runs){
-  const year=new Date().getFullYear().toString();
-  const ytd=runs.filter(r=>r.date&&r.date.startsWith(year))
-               .reduce((s,r)=>s+(r.distance_km||0),0);
-  const saved=parseInt(localStorage.getItem(GOAL_KEY));
-  const goal=saved&&saved>0?saved:1000;
-  const input=document.getElementById('goal-input');
-  input.value=goal;
-  updateGoalBar(ytd, goal);
-  input.addEventListener('change',()=>{
-    const v=parseInt(input.value);
-    if(v>0){ localStorage.setItem(GOAL_KEY,v); updateGoalBar(ytd,v); }
-  });
-}
-function updateGoalBar(ytd, goal){
-  const pct=Math.min(100, ytd/goal*100);
-  const fill=document.getElementById('goal-fill');
-  fill.style.width=pct+'%';
-  fill.className='goal-bar-fill'+(pct>=100?' done':pct>=75?' warn':'');
-  document.getElementById('goal-text').textContent=`${Math.round(ytd)} ק"מ`;
-}
-
-// ── Ramp Rate (CTL) ─────────────────────────────────────────────
-function calcRampRate(acts){
-  if(!acts.length) return null;
-  // Build daily TSS map
-  const tssMap={};
-  acts.forEach(a=>{
-    if(!a.date) return;
-    tssMap[a.date]=(tssMap[a.date]||0)+calcLoad(a);
-  });
-  const sorted=Object.keys(tssMap).sort();
-  if(!sorted.length) return null;
-  const start=new Date(sorted[0]), end=new Date();
-  let ctl=0, ctlPrev=null;
-  const pivot28=new Date(end); pivot28.setDate(end.getDate()-28);
-  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
-    const key=d.toISOString().slice(0,10);
-    const tss=tssMap[key]||0;
-    ctl=ctl+(tss-ctl)*(1/42);
-    if(d.toISOString().slice(0,10)===pivot28.toISOString().slice(0,10)) ctlPrev=ctl;
-  }
-  if(ctlPrev===null) ctlPrev=0;
-  const rampPerWeek=((ctl-ctlPrev)/28)*7;
-  return { ctl:Math.round(ctl), rampPerWeek:+rampPerWeek.toFixed(1) };
-}
-function renderRampBadge(acts){
-  const badge=document.getElementById('ramp-badge');
-  if(!badge) return;
-  const r=calcRampRate(acts);
-  if(!r){ badge.style.display='none'; return; }
-  const rampCls=Math.abs(r.rampPerWeek)>10?'ramp-red':Math.abs(r.rampPerWeek)>7?'ramp-yellow':'ramp-green';
-  const sign=r.rampPerWeek>=0?'+':'';
-  badge.innerHTML=`<span style="color:var(--muted)">CTL:</span> <strong>${r.ctl}</strong>
-    &nbsp;|&nbsp; <span style="color:var(--muted)">Ramp:</span>
-    <span class="${rampCls}">${sign}${r.rampPerWeek}/שבוע</span>`;
-}
-
-// ── PRs per Distance ────────────────────────────────────────────
-const DIST_TARGETS=[
-  {label:'5K',  min:4.5, max:5.5},
-  {label:'10K', min:9.5, max:10.5},
-  {label:'חצי מרתון', min:20.5, max:21.5},
-  {label:'מרתון', min:41.5, max:42.9},
-];
-function buildPRs(runs){
-  const grid=document.getElementById('prs-grid');
-  if(!grid) return;
-  grid.innerHTML='';
-  DIST_TARGETS.forEach(({label,min,max})=>{
-    const candidates=runs
-      .filter(r=>r.distance_km>=min&&r.distance_km<=max&&r.pace_sec_per_km)
-      .sort((a,b)=>a.pace_sec_per_km-b.pace_sec_per_km);
-    const card=document.createElement('div'); card.className='pr-dist-card';
-    if(!candidates.length){
-      card.innerHTML=`<div class="pr-dist-label">${label}</div><div class="pr-none">אין ריצות</div>`;
-    } else {
-      const top=candidates[0];
-      const sub2=candidates[1]?`<span>#2</span> ${fmtPace(candidates[1].pace_sec_per_km)}`:'';
-      const sub3=candidates[2]?`&nbsp;&nbsp;<span>#3</span> ${fmtPace(candidates[2].pace_sec_per_km)}`:'';
-      card.innerHTML=`
-        <div class="pr-dist-label">${label}</div>
-        <div class="pr-dist-top">${fmtPace(top.pace_sec_per_km)}</div>
-        <div class="pr-dist-date">${fmtDate(top.date)} · ${top.distance_km} ק"מ</div>
-        <div class="pr-dist-sub">${sub2}${sub3}</div>`;
-    }
-    grid.appendChild(card);
-  });
-}
-
-// ── HR Zone Distribution ────────────────────────────────────────
-function buildZoneChart(runs, globalMaxHR){
-  const recent=[...runs].slice(-60); // max 60 runs
-  if(!recent.length){ document.getElementById('zones-sec').style.display='none'; return; }
-
-  // Group into 12-week buckets
-  const today=new Date();
-  const weeks=[];
-  for(let i=11;i>=0;i--){
-    const mon=new Date(today);
-    mon.setDate(today.getDate()-((today.getDay()+6)%7)-i*7);
-    const sun=new Date(mon); sun.setDate(mon.getDate()+6);
-    weeks.push({
-      label:mon.toLocaleDateString('he-IL',{day:'numeric',month:'numeric'}),
-      start:mon.toISOString().slice(0,10),
-      end:sun.toISOString().slice(0,10),
-      zones:[0,0,0,0,0]
-    });
-  }
-
-  const maxHR=globalMaxHR||180;
-  runs.forEach(r=>{
-    if(!r.date) return;
-    const w=weeks.find(w=>r.date>=w.start&&r.date<=w.end);
-    if(!w) return;
-    // Use hr_zones_sec if available, else approximate from avg_hr
-    if(r.hr_zones_sec&&r.hr_zones_sec.some(v=>v>0)){
-      r.hr_zones_sec.forEach((v,i)=>{ w.zones[i]+=v; });
-    } else if(r.avg_hr&&r.duration_sec){
-      const pct=r.avg_hr/maxHR;
-      const z=pct<0.60?0:pct<0.70?1:pct<0.80?2:pct<0.90?3:4;
-      w.zones[z]+=r.duration_sec;
-    }
-  });
-
-  // Convert to percentages
-  const zColors=['#6b7280','#4ade80','#fbbf24','#f97316','#f87171'];
-  const zLabels=['Z1','Z2','Z3','Z4','Z5'];
-  const datasets=zLabels.map((lbl,zi)=>({
-    label:lbl,
-    data:weeks.map(w=>{
-      const total=w.zones.reduce((s,v)=>s+v,0);
-      return total>0?+((w.zones[zi]/total*100).toFixed(1)):0;
-    }),
-    backgroundColor:zColors[zi],
-    stack:'zones',
-  }));
-
-  new Chart(document.getElementById('zone-chart').getContext('2d'),{
-    type:'bar',
-    data:{labels:weeks.map(w=>w.label), datasets},
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{
-        legend:{display:false},
-        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.raw}%`}}
-      },
-      scales:{
-        x:{stacked:true, ticks:{color:'rgba(255,255,255,.45)',font:{size:10}}, grid:{color:'rgba(255,255,255,.04)'}},
-        y:{stacked:true, min:0, max:100, ticks:{color:'rgba(255,255,255,.45)',font:{size:10},callback:v=>v+'%'},
-           grid:{color:'rgba(255,255,255,.06)'}}
-      }
-    }
-  });
-}
-
-// ── Shoe Mileage Tracker ────────────────────────────────────────
-function buildShoes(shoes){
-  if(!shoes||!shoes.length) return;
-  const sec=document.getElementById('shoes-sec');
-  const list=document.getElementById('shoe-list');
-  if(!sec||!list) return;
-  sec.style.display='block';
-  list.innerHTML='';
-  shoes.forEach(s=>{
-    const pct=Math.min(100,s.total_km/s.max_km*100);
-    const color=pct>85?'#f87171':pct>65?'#fbbf24':'#4ade80';
-    const alert=pct>85?`<div class="shoe-alert">⚠️ קרוב לסוף חיים (${s.max_km} ק"מ) — שקול להחליף</div>`:'';
-    const item=document.createElement('div'); item.className='shoe-item';
-    item.innerHTML=`
-      <div class="shoe-name">${s.name||'נעל ללא שם'}</div>
-      <div class="shoe-km">${s.total_km} / ${s.max_km} ק"מ</div>
-      <div class="shoe-bar-bg">
-        <div class="shoe-bar-fill" style="width:${pct}%;background:${color}"></div>
-      </div>
-      ${alert}`;
-    list.appendChild(item);
-  });
-}
-
-// ── load data ──────────────────────────────────────────────────
+// ── load data ──────────────────────────────────────────────────────────────
 fetch('data.json')
   .then(r=>{ if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
   .then(data=>{
-    // Support both old (data.runs) and new (data.activities) formats
-    // Old format: data.runs — all entries are running activities
-    const isOldFormat=!data.activities&&Array.isArray(data.runs);
+    const isOld=!data.activities&&Array.isArray(data.runs);
     const rawActs=data.activities||data.runs||[];
-    // Inject activity_type for old-format runs that lack it
-    const acts=rawActs.map(a=>isOldFormat&&!a.activity_type
-      ? {...a, activity_type:'running'} : a);
-    const daily=data.daily||{};
-    const shoes=data.shoes||[];
+    const acts=rawActs.map(a=>isOld&&!a.activity_type?{...a,activity_type:'running'}:a);
     const globalMaxHR=data.global_max_hr||180;
     if(data.last_updated){
       const d=new Date(data.last_updated);
       document.getElementById('nav-upd').textContent=
-        ` — עדכון: ${d.toLocaleDateString('he-IL')} ${d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}`;
+        ` — ${d.toLocaleDateString('he-IL')} ${d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}`;
     }
-    buildDashboard(acts, daily, shoes, globalMaxHR);
+    buildDashboard(acts, globalMaxHR);
   })
   .catch(err=>showError(err.message));
 </script>
