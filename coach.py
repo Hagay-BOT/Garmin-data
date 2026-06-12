@@ -20,6 +20,10 @@ BASE_DIR = Path(__file__).parent
 DATA_FILE = BASE_DIR / "data.json"
 KB_DIR = BASE_DIR / "knowledge_base"
 REPORT_FILE = BASE_DIR / "coach_report.md"
+HISTORY_FILE = BASE_DIR / "coach_history.json"
+
+HISTORY_WEEKS_TO_KEEP = 52
+HISTORY_WEEKS_TO_INJECT = 4
 
 
 # ── Load data ────────────────────────────────────────────────────────────────
@@ -129,6 +133,141 @@ def compute_zone_distribution(activities: list, days: int = 28) -> dict:
     }
 
 
+# ── Fitness Trends ───────────────────────────────────────────────────────────
+
+def compute_efficiency_factor(run: dict) -> float | None:
+    """
+    EF = speed_m_per_min / avg_hr  (TrainingPeaks standard)
+    Only meaningful for Z2 runs (aerobic base work).
+    Higher EF over time = improving aerobic fitness.
+    """
+    pace = run.get("pace_sec_per_km")
+    avg_hr = run.get("avg_hr")
+    if not pace or not avg_hr or avg_hr <= 0:
+        return None
+    speed_m_per_min = 1000.0 / pace * 60.0
+    return round(speed_m_per_min / avg_hr, 4)
+
+
+def _linear_trend(values: list[float]) -> float | None:
+    """Slope of a simple linear regression (least squares)."""
+    n = len(values)
+    if n < 3:
+        return None
+    xs = list(range(n))
+    x_mean = sum(xs) / n
+    y_mean = sum(values) / n
+    num = sum((xs[i] - x_mean) * (values[i] - y_mean) for i in range(n))
+    den = sum((xs[i] - x_mean) ** 2 for i in range(n))
+    return round(num / den, 4) if den != 0 else None
+
+
+def compute_fitness_trends(activities: list, global_max_hr: float, weeks: int = 8) -> dict:
+    """
+    Compute 8-week trends for:
+    - Efficiency Factor (EF) on Z2 runs — rising = improving aerobic fitness
+    - VO2max trend from Garmin estimates
+    - Cadence trend across all runs
+    - VDOT estimate from best recent 5K/10K performance
+    """
+    cutoff = (date.today() - timedelta(weeks=weeks)).isoformat()
+    z2_lo = global_max_hr * 0.60
+    z2_hi = global_max_hr * 0.75  # slightly wider than strict Z2 to capture enough runs
+
+    all_runs = [
+        a for a in activities
+        if a.get("activity_type") in ("running", "treadmill_running", "trail_running")
+        and a.get("date", "") >= cutoff
+        and (a.get("distance_km") or 0) >= 3.0
+    ]
+    all_runs_sorted = sorted(all_runs, key=lambda x: x["date"])
+
+    # ── EF trend (Z2 runs only) ──────────────────────────────────────────
+    z2_runs = [
+        r for r in all_runs_sorted
+        if r.get("avg_hr") and z2_lo <= r["avg_hr"] <= z2_hi
+        and r.get("pace_sec_per_km")
+    ]
+    ef_values = [compute_efficiency_factor(r) for r in z2_runs]
+    ef_values = [v for v in ef_values if v is not None]
+    ef_trend = _linear_trend(ef_values)
+    ef_current = round(sum(ef_values[-3:]) / 3, 4) if len(ef_values) >= 3 else (ef_values[-1] if ef_values else None)
+
+    # ── VO2max trend ─────────────────────────────────────────────────────
+    vo2_runs = [(r["date"], r["vo2max"]) for r in all_runs_sorted if r.get("vo2max")]
+    vo2_values = [v for _, v in vo2_runs]
+    vo2_trend = _linear_trend(vo2_values)
+    vo2_current = vo2_values[-1] if vo2_values else None
+
+    # ── Cadence trend ────────────────────────────────────────────────────
+    cad_runs = [r for r in all_runs_sorted if r.get("cadence_spm")]
+    cad_values = [r["cadence_spm"] for r in cad_runs]
+    cad_trend = _linear_trend(cad_values)
+    cad_current = round(sum(cad_values[-4:]) / 4) if len(cad_values) >= 4 else (cad_values[-1] if cad_values else None)
+
+    # ── VDOT estimate ────────────────────────────────────────────────────
+    # Jack Daniels formula: VO2 = -4.60 + 0.182258*v + 0.000104*v^2
+    # %max = 0.8 + 0.1894393*e^(-0.012778*t) + 0.2989558*e^(-0.1932605*t)
+    # VDOT = VO2 / %max
+    import math
+    vdot = None
+    vdot_basis = None
+    for label, (lo, hi) in [("5K", (4.5, 5.5)), ("10K", (9.5, 10.5))]:
+        # Only use runs from last 90 days for VDOT (fitness must be current)
+        recent_cutoff = (date.today() - timedelta(days=90)).isoformat()
+        candidates = [
+            a for a in activities
+            if a.get("activity_type") in ("running", "treadmill_running")
+            and lo <= (a.get("distance_km") or 0) <= hi
+            and a.get("pace_sec_per_km")
+            and a.get("date", "") >= recent_cutoff
+        ]
+        if candidates:
+            best = min(candidates, key=lambda x: x["pace_sec_per_km"])
+            t_min = best["pace_sec_per_km"] * best["distance_km"] / 60.0
+            v = best["distance_km"] * 1000.0 / t_min  # m/min
+            vo2_at_pace = -4.60 + 0.182258 * v + 0.000104 * v ** 2
+            pct_max = (0.8 + 0.1894393 * math.exp(-0.012778 * t_min)
+                       + 0.2989558 * math.exp(-0.1932605 * t_min))
+            vdot_calc = round(vo2_at_pace / pct_max, 1)
+            if vdot is None or vdot_calc > vdot:
+                vdot = vdot_calc
+                pace_s = best["pace_sec_per_km"]
+                vdot_basis = f"{label} @ {pace_s // 60}:{pace_s % 60:02d}/km ({best['date']})"
+
+    return {
+        "ef": {
+            "current": ef_current,
+            "trend_slope": ef_trend,
+            "trend_direction": ("עולה ✓" if ef_trend and ef_trend > 0.0001 else
+                                "יורד ⚠" if ef_trend and ef_trend < -0.0001 else "יציב"),
+            "z2_runs_analyzed": len(z2_runs),
+            "note": "EF = מהירות(מ'/דק') / דופק — עלייה = שיפור אירובי",
+        },
+        "vo2max": {
+            "current": vo2_current,
+            "trend_slope": vo2_trend,
+            "trend_direction": ("עולה ✓" if vo2_trend and vo2_trend > 0.01 else
+                                "יורד ⚠" if vo2_trend and vo2_trend < -0.01 else "יציב"),
+            "readings_analyzed": len(vo2_values),
+        },
+        "cadence": {
+            "current_avg_spm": cad_current,
+            "trend_slope": cad_trend,
+            "trend_direction": ("עולה" if cad_trend and cad_trend > 0.1 else
+                                "יורד" if cad_trend and cad_trend < -0.1 else "יציב"),
+            "target_spm": 180,
+            "gap_to_target": round(180 - cad_current, 1) if cad_current else None,
+        },
+        "vdot": {
+            "estimate": vdot,
+            "basis": vdot_basis,
+            "note": "נוסחת Jack Daniels — מבוסס על ביצוע מירבי 90 יום אחרונים",
+        },
+        "weeks_analyzed": weeks,
+    }
+
+
 # ── Last Week Summary ────────────────────────────────────────────────────────
 
 def last_n_days_runs(activities: list, n: int = 7) -> list:
@@ -218,6 +357,177 @@ def compute_prs(activities: list) -> dict:
     return prs
 
 
+# ── Strength Training ────────────────────────────────────────────────────────
+
+STRENGTH_TYPES = {
+    "strength_training", "jump_rope", "pilates",
+    "indoor_cardio", "stair_climbing",
+}
+
+
+def compute_strength_metrics(activities: list, days: int = 7) -> dict:
+    """Summarise strength/neuromuscular sessions for the last N days."""
+    cutoff = (date.today() - timedelta(days=days)).isoformat()
+    sessions = [
+        a for a in activities
+        if a.get("activity_type") in STRENGTH_TYPES
+        and a.get("date", "") >= cutoff
+    ]
+    sessions_sorted = sorted(sessions, key=lambda x: x["date"])
+
+    total_load = sum(a.get("exercise_load") or 0 for a in sessions)
+    total_min = sum((a.get("duration_sec") or 0) / 60 for a in sessions)
+
+    last = sessions_sorted[-1] if sessions_sorted else None
+    days_since_last = None
+    if last:
+        last_d = date.fromisoformat(last["date"])
+        days_since_last = (date.today() - last_d).days
+
+    return {
+        "session_count": len(sessions),
+        "total_load": round(total_load, 1),
+        "total_min": round(total_min),
+        "days_since_last": days_since_last,
+        "last_session_date": last["date"] if last else None,
+        "last_session_load": round(last.get("exercise_load") or 0, 1) if last else None,
+        "sessions": [
+            {
+                "date": s["date"],
+                "type": s["activity_type"],
+                "duration_min": round((s.get("duration_sec") or 0) / 60),
+                "load": round(s.get("exercise_load") or 0, 1),
+            }
+            for s in sessions_sorted
+        ],
+    }
+
+
+def compute_neuromuscular_atl(activities: list, reference_date: date) -> float:
+    """
+    7-day EWA of strength load — parallel neuromuscular fatigue track.
+    Research: strength load decays with ~48-hour half-life; 7-day EWA is a good proxy.
+    """
+    k7 = 1.0 / 7
+    daily: dict[str, float] = {}
+    for a in activities:
+        if a.get("activity_type") in STRENGTH_TYPES:
+            d = a.get("date")
+            load = a.get("exercise_load") or 0.0
+            if d and load > 0:
+                daily[d] = daily.get(d, 0.0) + load
+
+    nm_atl = 0.0
+    day = date(2024, 1, 1)
+    while day <= reference_date:
+        load = daily.get(day.isoformat(), 0.0)
+        nm_atl = nm_atl + (load - nm_atl) * k7
+        day += timedelta(days=1)
+    return round(nm_atl, 1)
+
+
+# ── History & Memory ────────────────────────────────────────────────────────
+
+def current_week_monday() -> str:
+    """Return ISO date string for the Monday of the current week."""
+    today = date.today()
+    return (today - timedelta(days=today.weekday())).isoformat()
+
+
+def load_history() -> list[dict]:
+    """Return last HISTORY_WEEKS_TO_INJECT weeks from history file."""
+    if not HISTORY_FILE.exists():
+        return []
+    try:
+        data = json.loads(HISTORY_FILE.read_text(encoding="utf-8"))
+        return data.get("weeks", [])[-HISTORY_WEEKS_TO_INJECT:]
+    except Exception:
+        return []
+
+
+def save_history_entry(entry: dict) -> None:
+    """Append a weekly entry; keep last HISTORY_WEEKS_TO_KEEP. Idempotent on same week_of."""
+    if HISTORY_FILE.exists():
+        try:
+            data = json.loads(HISTORY_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            data = {"version": 1, "weeks": []}
+    else:
+        data = {"version": 1, "weeks": []}
+
+    week_of = entry["week_of"]
+    data["weeks"] = [w for w in data["weeks"] if w.get("week_of") != week_of]
+    data["weeks"].append(entry)
+    data["weeks"] = sorted(data["weeks"], key=lambda x: x["week_of"])
+    data["weeks"] = data["weeks"][-HISTORY_WEEKS_TO_KEEP:]
+    HISTORY_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def compute_compliance(history: list[dict], current_last_week: dict) -> dict:
+    """Compare last week's recommended plan against actual Garmin data."""
+    if not history:
+        return {"available": False, "reason": "אין היסטוריה קודמת"}
+    last = history[-1]
+    plan = last.get("recommended_plan") or {}
+    if not plan:
+        return {"available": False, "reason": "אין תוכנית מומלצת בשבוע הקודם"}
+
+    planned_km = plan.get("total_km_approx")
+    planned_runs = plan.get("run_count")
+    actual_km = current_last_week.get("total_km", 0)
+    actual_runs = current_last_week.get("count", 0)
+
+    result: dict = {
+        "available": True,
+        "prior_week_of": last.get("week_of"),
+        "plan_focus": plan.get("focus", "לא ידוע"),
+        "plan_key_workout": plan.get("key_workout", "לא ידוע"),
+        "planned_runs": planned_runs,
+        "actual_runs": actual_runs,
+        "planned_km_approx": planned_km,
+        "actual_km": actual_km,
+    }
+    if planned_km and actual_km:
+        pct = round(actual_km / planned_km * 100)
+        result["km_compliance_pct"] = pct
+        result["compliance_level"] = "מלא" if pct >= 90 else "חלקי" if pct >= 70 else "נמוך"
+    return result
+
+
+def extract_plan_json(report_text: str) -> dict:
+    """Extract the structured plan block Claude writes at the end of each report."""
+    import re
+    match = re.search(r"---PLAN_JSON---\s*(.*?)\s*---END_PLAN---", report_text, re.DOTALL)
+    if not match:
+        return {}
+    try:
+        return json.loads(match.group(1))
+    except Exception:
+        return {}
+
+
+def format_history_for_prompt(history: list[dict]) -> str:
+    """Convert stored JSON history to a compact markdown block for prompt injection.
+    JSON for storage, markdown for prompts — 15-34% fewer tokens than raw JSON."""
+    if not history:
+        return "אין היסטוריה קודמת — זהו הדוח הראשון."
+    lines = []
+    for w in history:
+        m = w.get("metrics", {})
+        ws = w.get("week_actual", {})
+        plan = w.get("recommended_plan") or {}
+        comp = w.get("compliance") or {}
+        lines.append(f"**שבוע {w.get('week_of', '?')}**")
+        lines.append(f"- CTL={m.get('ctl','?')}  ATL={m.get('atl','?')}  ACWR={m.get('acwr','?')}  TSB={m.get('tsb','?')}")
+        lines.append(f"- ביצוע: {ws.get('run_count','?')} ריצות, {ws.get('total_km','?')} ק\"מ")
+        if plan:
+            lines.append(f"- תוכנית שהומלצה: {plan.get('focus','?')} | מפתח: {plan.get('key_workout','?')}")
+        if comp.get("km_compliance_pct"):
+            lines.append(f"- ציות לתוכנית: {comp['km_compliance_pct']}% ({comp.get('compliance_level','')})")
+        lines.append("")
+    return "\n".join(lines).strip()
+
+
 # ── Knowledge Base ───────────────────────────────────────────────────────────
 
 def load_knowledge_base() -> str:
@@ -254,14 +564,65 @@ SYSTEM_PROMPT_TEMPLATE = """
 4. אם Body Battery < 50 או Sleep Score < 60 — אסור להמליץ על אימון קשה.
 5. כתוב בצורה ישירה: "עשה X", לא "אולי כדאי לשקול X".
 6. כל תוכנית שבוע חייבת לכלול ימים, קצב, מרחק, zone.
+7. בניתוח שבוע שעבר — התייחס לציות לתוכנית שהמלצת בשבוע הקודם (אם קיימת).
+8. בניתוח מגמות — הצבע על שינויים חיוביים או שליליים ביחס לשבועות קודמים.
+9. אם Neuromuscular ATL > 15 או "days_since_last" < 2 — אל תמליץ על ריצות מהירות/אינטרוולים יום לאחר אימון כוח.
+10. כלול אימוני כוח בתוכנית השבועית — קבע ימים שבהם הכוח ישורת עם הריצה (לא על ימי Z2/שחזור).
+
+## פורמט חובה — בסיום הדוח
+בסיום הדוח (אחרי כל הסעיפים), הוסף בדיוק את הבלוק הבא (JSON תקני):
+
+---PLAN_JSON---
+{{
+  "run_count": <מספר ריצות מתוכנן>,
+  "total_km_approx": <ק"מ משוערים לשבוע>,
+  "focus": "<מיקוד השבוע — לדוגמה: בסיס אירובי / סף חלבי / שחזור>",
+  "key_workout": "<תיאור קצר של האימון המרכזי>"
+}}
+---END_PLAN---
 """
+
+
+# ── Trend Formatting ────────────────────────────────────────────────────────
+
+def _format_trends(trends: dict) -> str:
+    if not trends:
+        return "נתוני מגמות לא זמינים."
+    ef = trends.get("ef", {})
+    vo2 = trends.get("vo2max", {})
+    cad = trends.get("cadence", {})
+    vdot = trends.get("vdot", {})
+    lines = [
+        f"**Efficiency Factor (Z2 בלבד):** נוכחי={ef.get('current','?')} | מגמה={ef.get('trend_direction','?')} (slope={ef.get('trend_slope','?')}) | {ef.get('z2_runs_analyzed',0)} ריצות",
+        f"**VO2max (גרמין):** נוכחי={vo2.get('current','?')} | מגמה={vo2.get('trend_direction','?')} (slope={vo2.get('trend_slope','?')}) | {vo2.get('readings_analyzed',0)} מדידות",
+        f"**קדנס:** נוכחי={cad.get('current_avg_spm','?')} spm | מגמה={cad.get('trend_direction','?')} | פער מיעד 180: {cad.get('gap_to_target','?')} spm",
+        f"**VDOT (Jack Daniels):** {vdot.get('estimate','?')} | בסיס: {vdot.get('basis','?')}",
+    ]
+    return "\n".join(lines)
 
 
 # ── User Prompt ──────────────────────────────────────────────────────────────
 
-def build_user_prompt(metrics: dict) -> str:
+def build_user_prompt(metrics: dict, history: list[dict], compliance: dict) -> str:
+    history_md = format_history_for_prompt(history)
+    compliance_md = (
+        f"- שבוע קודם: {compliance['prior_week_of']}\n"
+        f"- מיקוד מומלץ היה: {compliance['plan_focus']}\n"
+        f"- אימון מפתח מומלץ: {compliance['plan_key_workout']}\n"
+        f"- ריצות: תוכנן {compliance['planned_runs']}, בוצע {compliance['actual_runs']}\n"
+        f"- ק\"מ: תוכנן ~{compliance['planned_km_approx']}, בוצע {compliance['actual_km']}"
+        + (f"\n- ציות: {compliance['km_compliance_pct']}% ({compliance['compliance_level']})" if compliance.get('km_compliance_pct') else "")
+        if compliance.get("available") else f"- {compliance.get('reason', 'לא זמין')}"
+    )
+
     return f"""
 ## נתוני האתלט — {date.today().isoformat()}
+
+### היסטוריה — 4 שבועות אחרונים
+{history_md}
+
+### ציות לתוכנית שבוע שעבר
+{compliance_md}
 
 ### עומס אימונים (CTL/ATL)
 - CTL (כושר כרוני, 42 יום): {metrics['load']['ctl']}
@@ -285,21 +646,34 @@ def build_user_prompt(metrics: dict) -> str:
 ### Max HR (מדוד מנתוני גרמין)
 {metrics['global_max_hr']} bpm
 
+### אימוני כוח — שבוע שעבר
+{json.dumps(metrics['strength'], ensure_ascii=False, indent=2)}
+
+### עומס נוירומוסקולרי (Neuromuscular ATL, 7 יום)
+{metrics['nm_atl']} (לעומת Aerobic ATL: {metrics['load']['atl']})
+
+### מגמות כושר (8 שבועות אחרונים)
+{_format_trends(metrics['trends'])}
+
 ---
 
 כתוב דוח אימונים מלא בעברית עם הסעיפים הבאים:
 
 ## 1. מצב נוכחי — עייפות / ערנות / כושר
-ניתוח קצר (3-5 משפטים) על המצב הנוכחי.
+ניתוח קצר (3-5 משפטים) על המצב הנוכחי. אם יש היסטוריה, ציין מגמות.
 
 ## 2. ניתוח שבוע שעבר
 פירוט לכל אימון: מה היה טוב, מה לשפר. כולל ניתוח zones, קצב דופק.
+אם יש ציות לתוכנית — העריך את הביצוע מול ההמלצה.
 
 ## 3. תוכנית שבוע הבא
 לכל יום: ריצה / מנוחה / כוח. לריצות: zone, מרחק, קצב יעד בדקות:שניות לק"מ.
 
 ## 4. אזהרות וסיכונים
-ACWR, ramp rate, דריפט, כל דגל אדום רלוונטי.
+ACWR, ramp rate, דריפט, עומס נוירומוסקולרי, כל דגל אדום רלוונטי.
+
+## 5. מגמות כושר
+EF, VO2max, קדנס, VDOT — מה השתנה? לאן פנים? מה המשמעות לאימון?
 """
 
 
@@ -330,6 +704,15 @@ def main():
     readiness = get_readiness(daily)
     prs = compute_prs(activities)
 
+    print("מחשב מגמות כושר...")
+    trends = compute_fitness_trends(activities, global_max_hr, weeks=8)
+    print(f"EF={trends['ef']['current']}  VO2max={trends['vo2max']['current']}  VDOT={trends['vdot']['estimate']}")
+
+    print("מחשב עומס כוח...")
+    strength = compute_strength_metrics(activities, days=7)
+    nm_atl = compute_neuromuscular_atl(activities, date.today())
+    print(f"כוח: {strength['session_count']} אימונים, עומס={strength['total_load']}  NM-ATL={nm_atl}")
+
     metrics = {
         "load": load_metrics,
         "zones": zones,
@@ -337,15 +720,26 @@ def main():
         "readiness": readiness,
         "prs": prs,
         "global_max_hr": global_max_hr,
+        "trends": trends,
+        "strength": strength,
+        "nm_atl": nm_atl,
     }
 
     print(f"CTL={load_metrics['ctl']}  ATL={load_metrics['atl']}  ACWR={load_metrics['acwr']}")
+
+    print("טוען היסטוריה...")
+    history = load_history()
+    compliance = compute_compliance(history, last_week)
+    if compliance.get("available"):
+        print(f"ציות שבוע שעבר: {compliance.get('km_compliance_pct', '?')}% ({compliance.get('compliance_level', '?')})")
+    else:
+        print(f"ציות: {compliance.get('reason', 'לא זמין')}")
 
     print("טוען בסיס ידע...")
     knowledge_base = load_knowledge_base()
 
     system_prompt = SYSTEM_PROMPT_TEMPLATE.format(knowledge_base=knowledge_base)
-    user_prompt = build_user_prompt(metrics)
+    user_prompt = build_user_prompt(metrics, history, compliance)
 
     print("קורא ל-Claude Opus (streaming)...")
     client = anthropic.Anthropic()
@@ -367,7 +761,146 @@ def main():
     report_content = f"# דוח מאמן — {timestamp}\n\n{full_response}\n"
     REPORT_FILE.write_text(report_content, encoding="utf-8")
 
+    # ── Save to history ──────────────────────────────────────────────────────
+    plan_json = extract_plan_json(full_response)
+    if not plan_json:
+        print("⚠️  לא נמצא בלוק PLAN_JSON בדוח — היסטוריה תישמר ללא תוכנית.")
+    compliance_to_store = {k: v for k, v in compliance.items() if k != "available"}
+    history_entry = {
+        "week_of": current_week_monday(),
+        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "metrics": {
+            "ctl": load_metrics["ctl"],
+            "atl": load_metrics["atl"],
+            "tsb": load_metrics["tsb"],
+            "acwr": load_metrics["acwr"],
+            "ramp_rate_4w": load_metrics["ramp_rate_4w"],
+        },
+        "zones_28d": {
+            "easy_pct": zones.get("easy_pct"),
+            "hard_pct": zones.get("hard_pct"),
+        },
+        "week_actual": {
+            "run_count": last_week["count"],
+            "total_km": last_week["total_km"],
+            "total_load": last_week.get("total_load", 0),
+        },
+        "recommended_plan": plan_json,
+        "compliance": compliance_to_store,
+    }
+    save_history_entry(history_entry)
+    print(f"היסטוריה עודכנה: {HISTORY_FILE}")
+
     print(f"הדוח נשמר: {REPORT_FILE}")
+
+    # ── Interactive chat ─────────────────────────────────────────────────────
+    print("\nרוצה לשוחח עם המאמן? (Enter = כן | q = לא)")
+    try:
+        answer = input().strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        answer = "q"
+    if answer not in CHAT_EXIT_PHRASES:
+        chat_mode(client, knowledge_base, full_response)
+
+
+# ── Interactive Chat Mode ─────────────────────────────────────────────────────
+
+CHAT_EXIT_PHRASES = {"quit", "exit", "q", "יציאה", "סיום", "bye"}
+
+CHAT_SYSTEM = """
+אתה מאמן ריצה אישי. יש לך את הדוח השבועי המלא בזיכרון.
+ענה בצורה קצרה וישירה — זוהי שיחה, לא דוח.
+אם המתאמן מספר על שינוי (עייפות, כאב, שינוי בתוכנית) — עדכן את ההמלצה בהתאם לנתונים.
+תמיד ספק תשובה קונקרטית: מה לעשות היום/מחר/השבוע.
+"""
+
+
+def _stream_chat_response(client: "anthropic.Anthropic", messages: list[dict], system: str) -> str:
+    """Stream a chat response, return full text."""
+    from rich.live import Live
+    from rich.markdown import Markdown
+
+    full_text = ""
+    with Live("", refresh_per_second=15, vertical_overflow="visible") as live:
+        with client.messages.stream(
+            model="claude-opus-4-8",
+            max_tokens=1024,
+            system=system,
+            messages=messages,
+        ) as stream:
+            for text in stream.text_stream:
+                full_text += text
+                live.update(Markdown(full_text))
+    return full_text
+
+
+def chat_mode(client: "anthropic.Anthropic", knowledge_base: str, report_text: str) -> None:
+    """
+    Interactive REPL after weekly report generation.
+    Report injected as first assistant message — Claude 'remembers' it.
+    Conversation history kept in-memory; prompt-cached system prompt reduces cost.
+    """
+    try:
+        from rich.console import Console
+        from rich.panel import Panel
+        from rich.markdown import Markdown
+        from rich.prompt import Prompt
+    except ImportError:
+        print("\n[rich לא מותקן — מריץ בלי עיצוב. pip install rich]\n")
+        Console = None  # type: ignore
+
+    console = Console() if Console else None
+
+    # System: coach persona + knowledge base (cached prefix)
+    system = f"{CHAT_SYSTEM}\n\n## בסיס הידע שלך\n{knowledge_base}"
+
+    # Seed history: report is the first assistant turn
+    messages: list[dict] = [
+        {"role": "user", "content": "צור את הדוח השבועי שלי."},
+        {"role": "assistant", "content": report_text},
+    ]
+
+    if console:
+        console.print(Panel(
+            "[bold cyan]מצב שיחה עם המאמן[/]\n"
+            "[dim]שאל שאלות, דווח על שינויים, קבל התאמות לתוכנית.\n"
+            "כתוב [bold]quit[/] או [bold]יציאה[/] לסיום.[/]",
+            border_style="cyan"
+        ))
+    else:
+        print("\n=== מצב שיחה עם המאמן ===")
+        print("(quit / יציאה לסיום)\n")
+
+    while True:
+        try:
+            if console:
+                user_input = Prompt.ask("[bold yellow]אתה[/]").strip()
+            else:
+                user_input = input("\nאתה: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            break
+
+        if not user_input or user_input.lower() in CHAT_EXIT_PHRASES:
+            break
+
+        messages.append({"role": "user", "content": user_input})
+
+        if console:
+            console.print("[bold green]מאמן:[/]")
+        else:
+            print("\nמאמן:")
+
+        response = _stream_chat_response(client, messages, system)
+        messages.append({"role": "assistant", "content": response})
+
+        # Keep history bounded: seed (2) + last 20 turns = 22 messages max
+        if len(messages) > 22:
+            messages = messages[:2] + messages[-20:]
+
+    if console:
+        console.print("[dim]השיחה הסתיימה.[/]")
+    else:
+        print("\nהשיחה הסתיימה.")
 
 
 if __name__ == "__main__":
