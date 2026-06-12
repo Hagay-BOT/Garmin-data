@@ -709,6 +709,115 @@ def main():
 
     print(f"הדוח נשמר: {REPORT_FILE}")
 
+    # ── Interactive chat ─────────────────────────────────────────────────────
+    print("\nרוצה לשוחח עם המאמן? (Enter = כן | q = לא)")
+    try:
+        answer = input().strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        answer = "q"
+    if answer not in CHAT_EXIT_PHRASES:
+        chat_mode(client, knowledge_base, full_response)
+
+
+# ── Interactive Chat Mode ─────────────────────────────────────────────────────
+
+CHAT_EXIT_PHRASES = {"quit", "exit", "q", "יציאה", "סיום", "bye"}
+
+CHAT_SYSTEM = """
+אתה מאמן ריצה אישי. יש לך את הדוח השבועי המלא בזיכרון.
+ענה בצורה קצרה וישירה — זוהי שיחה, לא דוח.
+אם המתאמן מספר על שינוי (עייפות, כאב, שינוי בתוכנית) — עדכן את ההמלצה בהתאם לנתונים.
+תמיד ספק תשובה קונקרטית: מה לעשות היום/מחר/השבוע.
+"""
+
+
+def _stream_chat_response(client: "anthropic.Anthropic", messages: list[dict], system: str) -> str:
+    """Stream a chat response, return full text."""
+    from rich.live import Live
+    from rich.markdown import Markdown
+
+    full_text = ""
+    with Live("", refresh_per_second=15, vertical_overflow="visible") as live:
+        with client.messages.stream(
+            model="claude-opus-4-8",
+            max_tokens=1024,
+            system=system,
+            messages=messages,
+        ) as stream:
+            for text in stream.text_stream:
+                full_text += text
+                live.update(Markdown(full_text))
+    return full_text
+
+
+def chat_mode(client: "anthropic.Anthropic", knowledge_base: str, report_text: str) -> None:
+    """
+    Interactive REPL after weekly report generation.
+    Report injected as first assistant message — Claude 'remembers' it.
+    Conversation history kept in-memory; prompt-cached system prompt reduces cost.
+    """
+    try:
+        from rich.console import Console
+        from rich.panel import Panel
+        from rich.markdown import Markdown
+        from rich.prompt import Prompt
+    except ImportError:
+        print("\n[rich לא מותקן — מריץ בלי עיצוב. pip install rich]\n")
+        Console = None  # type: ignore
+
+    console = Console() if Console else None
+
+    # System: coach persona + knowledge base (cached prefix)
+    system = f"{CHAT_SYSTEM}\n\n## בסיס הידע שלך\n{knowledge_base}"
+
+    # Seed history: report is the first assistant turn
+    messages: list[dict] = [
+        {"role": "user", "content": "צור את הדוח השבועי שלי."},
+        {"role": "assistant", "content": report_text},
+    ]
+
+    if console:
+        console.print(Panel(
+            "[bold cyan]מצב שיחה עם המאמן[/]\n"
+            "[dim]שאל שאלות, דווח על שינויים, קבל התאמות לתוכנית.\n"
+            "כתוב [bold]quit[/] או [bold]יציאה[/] לסיום.[/]",
+            border_style="cyan"
+        ))
+    else:
+        print("\n=== מצב שיחה עם המאמן ===")
+        print("(quit / יציאה לסיום)\n")
+
+    while True:
+        try:
+            if console:
+                user_input = Prompt.ask("[bold yellow]אתה[/]").strip()
+            else:
+                user_input = input("\nאתה: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            break
+
+        if not user_input or user_input.lower() in CHAT_EXIT_PHRASES:
+            break
+
+        messages.append({"role": "user", "content": user_input})
+
+        if console:
+            console.print("[bold green]מאמן:[/]")
+        else:
+            print("\nמאמן:")
+
+        response = _stream_chat_response(client, messages, system)
+        messages.append({"role": "assistant", "content": response})
+
+        # Keep history bounded: seed (2) + last 20 turns = 22 messages max
+        if len(messages) > 22:
+            messages = messages[:2] + messages[-20:]
+
+    if console:
+        console.print("[dim]השיחה הסתיימה.[/]")
+    else:
+        print("\nהשיחה הסתיימה.")
+
 
 if __name__ == "__main__":
     main()
