@@ -357,6 +357,75 @@ def compute_prs(activities: list) -> dict:
     return prs
 
 
+# ── Strength Training ────────────────────────────────────────────────────────
+
+STRENGTH_TYPES = {
+    "strength_training", "jump_rope", "pilates",
+    "indoor_cardio", "stair_climbing",
+}
+
+
+def compute_strength_metrics(activities: list, days: int = 7) -> dict:
+    """Summarise strength/neuromuscular sessions for the last N days."""
+    cutoff = (date.today() - timedelta(days=days)).isoformat()
+    sessions = [
+        a for a in activities
+        if a.get("activity_type") in STRENGTH_TYPES
+        and a.get("date", "") >= cutoff
+    ]
+    sessions_sorted = sorted(sessions, key=lambda x: x["date"])
+
+    total_load = sum(a.get("exercise_load") or 0 for a in sessions)
+    total_min = sum((a.get("duration_sec") or 0) / 60 for a in sessions)
+
+    last = sessions_sorted[-1] if sessions_sorted else None
+    days_since_last = None
+    if last:
+        last_d = date.fromisoformat(last["date"])
+        days_since_last = (date.today() - last_d).days
+
+    return {
+        "session_count": len(sessions),
+        "total_load": round(total_load, 1),
+        "total_min": round(total_min),
+        "days_since_last": days_since_last,
+        "last_session_date": last["date"] if last else None,
+        "last_session_load": round(last.get("exercise_load") or 0, 1) if last else None,
+        "sessions": [
+            {
+                "date": s["date"],
+                "type": s["activity_type"],
+                "duration_min": round((s.get("duration_sec") or 0) / 60),
+                "load": round(s.get("exercise_load") or 0, 1),
+            }
+            for s in sessions_sorted
+        ],
+    }
+
+
+def compute_neuromuscular_atl(activities: list, reference_date: date) -> float:
+    """
+    7-day EWA of strength load — parallel neuromuscular fatigue track.
+    Research: strength load decays with ~48-hour half-life; 7-day EWA is a good proxy.
+    """
+    k7 = 1.0 / 7
+    daily: dict[str, float] = {}
+    for a in activities:
+        if a.get("activity_type") in STRENGTH_TYPES:
+            d = a.get("date")
+            load = a.get("exercise_load") or 0.0
+            if d and load > 0:
+                daily[d] = daily.get(d, 0.0) + load
+
+    nm_atl = 0.0
+    day = date(2024, 1, 1)
+    while day <= reference_date:
+        load = daily.get(day.isoformat(), 0.0)
+        nm_atl = nm_atl + (load - nm_atl) * k7
+        day += timedelta(days=1)
+    return round(nm_atl, 1)
+
+
 # ── History & Memory ────────────────────────────────────────────────────────
 
 def current_week_monday() -> str:
@@ -497,6 +566,8 @@ SYSTEM_PROMPT_TEMPLATE = """
 6. כל תוכנית שבוע חייבת לכלול ימים, קצב, מרחק, zone.
 7. בניתוח שבוע שעבר — התייחס לציות לתוכנית שהמלצת בשבוע הקודם (אם קיימת).
 8. בניתוח מגמות — הצבע על שינויים חיוביים או שליליים ביחס לשבועות קודמים.
+9. אם Neuromuscular ATL > 15 או "days_since_last" < 2 — אל תמליץ על ריצות מהירות/אינטרוולים יום לאחר אימון כוח.
+10. כלול אימוני כוח בתוכנית השבועית — קבע ימים שבהם הכוח ישורת עם הריצה (לא על ימי Z2/שחזור).
 
 ## פורמט חובה — בסיום הדוח
 בסיום הדוח (אחרי כל הסעיפים), הוסף בדיוק את הבלוק הבא (JSON תקני):
@@ -575,6 +646,12 @@ def build_user_prompt(metrics: dict, history: list[dict], compliance: dict) -> s
 ### Max HR (מדוד מנתוני גרמין)
 {metrics['global_max_hr']} bpm
 
+### אימוני כוח — שבוע שעבר
+{json.dumps(metrics['strength'], ensure_ascii=False, indent=2)}
+
+### עומס נוירומוסקולרי (Neuromuscular ATL, 7 יום)
+{metrics['nm_atl']} (לעומת Aerobic ATL: {metrics['load']['atl']})
+
 ### מגמות כושר (8 שבועות אחרונים)
 {_format_trends(metrics['trends'])}
 
@@ -593,7 +670,7 @@ def build_user_prompt(metrics: dict, history: list[dict], compliance: dict) -> s
 לכל יום: ריצה / מנוחה / כוח. לריצות: zone, מרחק, קצב יעד בדקות:שניות לק"מ.
 
 ## 4. אזהרות וסיכונים
-ACWR, ramp rate, דריפט, כל דגל אדום רלוונטי.
+ACWR, ramp rate, דריפט, עומס נוירומוסקולרי, כל דגל אדום רלוונטי.
 
 ## 5. מגמות כושר
 EF, VO2max, קדנס, VDOT — מה השתנה? לאן פנים? מה המשמעות לאימון?
@@ -631,6 +708,11 @@ def main():
     trends = compute_fitness_trends(activities, global_max_hr, weeks=8)
     print(f"EF={trends['ef']['current']}  VO2max={trends['vo2max']['current']}  VDOT={trends['vdot']['estimate']}")
 
+    print("מחשב עומס כוח...")
+    strength = compute_strength_metrics(activities, days=7)
+    nm_atl = compute_neuromuscular_atl(activities, date.today())
+    print(f"כוח: {strength['session_count']} אימונים, עומס={strength['total_load']}  NM-ATL={nm_atl}")
+
     metrics = {
         "load": load_metrics,
         "zones": zones,
@@ -639,6 +721,8 @@ def main():
         "prs": prs,
         "global_max_hr": global_max_hr,
         "trends": trends,
+        "strength": strength,
+        "nm_atl": nm_atl,
     }
 
     print(f"CTL={load_metrics['ctl']}  ATL={load_metrics['atl']}  ACWR={load_metrics['acwr']}")
