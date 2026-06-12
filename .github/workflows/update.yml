@@ -2,7 +2,8 @@ name: Update Garmin Dashboard
 
 on:
   schedule:
-    - cron: '0 6 * * *'
+    # 3x/day — 06:00, 14:00, 22:00 UTC (09:00, 17:00, 01:00 Israel time)
+    - cron: '0 6,14,22 * * *'
   workflow_dispatch:
 
 permissions:
