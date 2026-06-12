@@ -133,6 +133,141 @@ def compute_zone_distribution(activities: list, days: int = 28) -> dict:
     }
 
 
+# ── Fitness Trends ───────────────────────────────────────────────────────────
+
+def compute_efficiency_factor(run: dict) -> float | None:
+    """
+    EF = speed_m_per_min / avg_hr  (TrainingPeaks standard)
+    Only meaningful for Z2 runs (aerobic base work).
+    Higher EF over time = improving aerobic fitness.
+    """
+    pace = run.get("pace_sec_per_km")
+    avg_hr = run.get("avg_hr")
+    if not pace or not avg_hr or avg_hr <= 0:
+        return None
+    speed_m_per_min = 1000.0 / pace * 60.0
+    return round(speed_m_per_min / avg_hr, 4)
+
+
+def _linear_trend(values: list[float]) -> float | None:
+    """Slope of a simple linear regression (least squares)."""
+    n = len(values)
+    if n < 3:
+        return None
+    xs = list(range(n))
+    x_mean = sum(xs) / n
+    y_mean = sum(values) / n
+    num = sum((xs[i] - x_mean) * (values[i] - y_mean) for i in range(n))
+    den = sum((xs[i] - x_mean) ** 2 for i in range(n))
+    return round(num / den, 4) if den != 0 else None
+
+
+def compute_fitness_trends(activities: list, global_max_hr: float, weeks: int = 8) -> dict:
+    """
+    Compute 8-week trends for:
+    - Efficiency Factor (EF) on Z2 runs — rising = improving aerobic fitness
+    - VO2max trend from Garmin estimates
+    - Cadence trend across all runs
+    - VDOT estimate from best recent 5K/10K performance
+    """
+    cutoff = (date.today() - timedelta(weeks=weeks)).isoformat()
+    z2_lo = global_max_hr * 0.60
+    z2_hi = global_max_hr * 0.75  # slightly wider than strict Z2 to capture enough runs
+
+    all_runs = [
+        a for a in activities
+        if a.get("activity_type") in ("running", "treadmill_running", "trail_running")
+        and a.get("date", "") >= cutoff
+        and (a.get("distance_km") or 0) >= 3.0
+    ]
+    all_runs_sorted = sorted(all_runs, key=lambda x: x["date"])
+
+    # ── EF trend (Z2 runs only) ──────────────────────────────────────────
+    z2_runs = [
+        r for r in all_runs_sorted
+        if r.get("avg_hr") and z2_lo <= r["avg_hr"] <= z2_hi
+        and r.get("pace_sec_per_km")
+    ]
+    ef_values = [compute_efficiency_factor(r) for r in z2_runs]
+    ef_values = [v for v in ef_values if v is not None]
+    ef_trend = _linear_trend(ef_values)
+    ef_current = round(sum(ef_values[-3:]) / 3, 4) if len(ef_values) >= 3 else (ef_values[-1] if ef_values else None)
+
+    # ── VO2max trend ─────────────────────────────────────────────────────
+    vo2_runs = [(r["date"], r["vo2max"]) for r in all_runs_sorted if r.get("vo2max")]
+    vo2_values = [v for _, v in vo2_runs]
+    vo2_trend = _linear_trend(vo2_values)
+    vo2_current = vo2_values[-1] if vo2_values else None
+
+    # ── Cadence trend ────────────────────────────────────────────────────
+    cad_runs = [r for r in all_runs_sorted if r.get("cadence_spm")]
+    cad_values = [r["cadence_spm"] for r in cad_runs]
+    cad_trend = _linear_trend(cad_values)
+    cad_current = round(sum(cad_values[-4:]) / 4) if len(cad_values) >= 4 else (cad_values[-1] if cad_values else None)
+
+    # ── VDOT estimate ────────────────────────────────────────────────────
+    # Jack Daniels formula: VO2 = -4.60 + 0.182258*v + 0.000104*v^2
+    # %max = 0.8 + 0.1894393*e^(-0.012778*t) + 0.2989558*e^(-0.1932605*t)
+    # VDOT = VO2 / %max
+    import math
+    vdot = None
+    vdot_basis = None
+    for label, (lo, hi) in [("5K", (4.5, 5.5)), ("10K", (9.5, 10.5))]:
+        # Only use runs from last 90 days for VDOT (fitness must be current)
+        recent_cutoff = (date.today() - timedelta(days=90)).isoformat()
+        candidates = [
+            a for a in activities
+            if a.get("activity_type") in ("running", "treadmill_running")
+            and lo <= (a.get("distance_km") or 0) <= hi
+            and a.get("pace_sec_per_km")
+            and a.get("date", "") >= recent_cutoff
+        ]
+        if candidates:
+            best = min(candidates, key=lambda x: x["pace_sec_per_km"])
+            t_min = best["pace_sec_per_km"] * best["distance_km"] / 60.0
+            v = best["distance_km"] * 1000.0 / t_min  # m/min
+            vo2_at_pace = -4.60 + 0.182258 * v + 0.000104 * v ** 2
+            pct_max = (0.8 + 0.1894393 * math.exp(-0.012778 * t_min)
+                       + 0.2989558 * math.exp(-0.1932605 * t_min))
+            vdot_calc = round(vo2_at_pace / pct_max, 1)
+            if vdot is None or vdot_calc > vdot:
+                vdot = vdot_calc
+                pace_s = best["pace_sec_per_km"]
+                vdot_basis = f"{label} @ {pace_s // 60}:{pace_s % 60:02d}/km ({best['date']})"
+
+    return {
+        "ef": {
+            "current": ef_current,
+            "trend_slope": ef_trend,
+            "trend_direction": ("עולה ✓" if ef_trend and ef_trend > 0.0001 else
+                                "יורד ⚠" if ef_trend and ef_trend < -0.0001 else "יציב"),
+            "z2_runs_analyzed": len(z2_runs),
+            "note": "EF = מהירות(מ'/דק') / דופק — עלייה = שיפור אירובי",
+        },
+        "vo2max": {
+            "current": vo2_current,
+            "trend_slope": vo2_trend,
+            "trend_direction": ("עולה ✓" if vo2_trend and vo2_trend > 0.01 else
+                                "יורד ⚠" if vo2_trend and vo2_trend < -0.01 else "יציב"),
+            "readings_analyzed": len(vo2_values),
+        },
+        "cadence": {
+            "current_avg_spm": cad_current,
+            "trend_slope": cad_trend,
+            "trend_direction": ("עולה" if cad_trend and cad_trend > 0.1 else
+                                "יורד" if cad_trend and cad_trend < -0.1 else "יציב"),
+            "target_spm": 180,
+            "gap_to_target": round(180 - cad_current, 1) if cad_current else None,
+        },
+        "vdot": {
+            "estimate": vdot,
+            "basis": vdot_basis,
+            "note": "נוסחת Jack Daniels — מבוסס על ביצוע מירבי 90 יום אחרונים",
+        },
+        "weeks_analyzed": weeks,
+    }
+
+
 # ── Last Week Summary ────────────────────────────────────────────────────────
 
 def last_n_days_runs(activities: list, n: int = 7) -> list:
@@ -377,6 +512,24 @@ SYSTEM_PROMPT_TEMPLATE = """
 """
 
 
+# ── Trend Formatting ────────────────────────────────────────────────────────
+
+def _format_trends(trends: dict) -> str:
+    if not trends:
+        return "נתוני מגמות לא זמינים."
+    ef = trends.get("ef", {})
+    vo2 = trends.get("vo2max", {})
+    cad = trends.get("cadence", {})
+    vdot = trends.get("vdot", {})
+    lines = [
+        f"**Efficiency Factor (Z2 בלבד):** נוכחי={ef.get('current','?')} | מגמה={ef.get('trend_direction','?')} (slope={ef.get('trend_slope','?')}) | {ef.get('z2_runs_analyzed',0)} ריצות",
+        f"**VO2max (גרמין):** נוכחי={vo2.get('current','?')} | מגמה={vo2.get('trend_direction','?')} (slope={vo2.get('trend_slope','?')}) | {vo2.get('readings_analyzed',0)} מדידות",
+        f"**קדנס:** נוכחי={cad.get('current_avg_spm','?')} spm | מגמה={cad.get('trend_direction','?')} | פער מיעד 180: {cad.get('gap_to_target','?')} spm",
+        f"**VDOT (Jack Daniels):** {vdot.get('estimate','?')} | בסיס: {vdot.get('basis','?')}",
+    ]
+    return "\n".join(lines)
+
+
 # ── User Prompt ──────────────────────────────────────────────────────────────
 
 def build_user_prompt(metrics: dict, history: list[dict], compliance: dict) -> str:
@@ -422,6 +575,9 @@ def build_user_prompt(metrics: dict, history: list[dict], compliance: dict) -> s
 ### Max HR (מדוד מנתוני גרמין)
 {metrics['global_max_hr']} bpm
 
+### מגמות כושר (8 שבועות אחרונים)
+{_format_trends(metrics['trends'])}
+
 ---
 
 כתוב דוח אימונים מלא בעברית עם הסעיפים הבאים:
@@ -438,6 +594,9 @@ def build_user_prompt(metrics: dict, history: list[dict], compliance: dict) -> s
 
 ## 4. אזהרות וסיכונים
 ACWR, ramp rate, דריפט, כל דגל אדום רלוונטי.
+
+## 5. מגמות כושר
+EF, VO2max, קדנס, VDOT — מה השתנה? לאן פנים? מה המשמעות לאימון?
 """
 
 
@@ -468,6 +627,10 @@ def main():
     readiness = get_readiness(daily)
     prs = compute_prs(activities)
 
+    print("מחשב מגמות כושר...")
+    trends = compute_fitness_trends(activities, global_max_hr, weeks=8)
+    print(f"EF={trends['ef']['current']}  VO2max={trends['vo2max']['current']}  VDOT={trends['vdot']['estimate']}")
+
     metrics = {
         "load": load_metrics,
         "zones": zones,
@@ -475,6 +638,7 @@ def main():
         "readiness": readiness,
         "prs": prs,
         "global_max_hr": global_max_hr,
+        "trends": trends,
     }
 
     print(f"CTL={load_metrics['ctl']}  ATL={load_metrics['atl']}  ACWR={load_metrics['acwr']}")
