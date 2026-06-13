@@ -90,16 +90,18 @@ def main():
     workout_id = result.get("workoutId") or result.get("workoutid")
     print(f"✅ האימון הועלה. מזהה: {workout_id}")
 
-    tomorrow = (date.today() + timedelta(days=1)).isoformat()
-    print(f"מתזמן לתאריך {tomorrow}...")
-    sched = client.schedule_workout(workout_id, tomorrow)
+    target = date.today() + timedelta(days=1)
+    target_str = target.isoformat()
+    print(f"מתזמן לתאריך {target_str}...")
+    sched = client.schedule_workout(workout_id, target_str)
     print(f"✅ תוזמן. תגובת השרת: {json.dumps(sched, ensure_ascii=False)[:200]}")
 
     print("\nמאמת מול הלוח של גרמין...")
-    scheduled = client.get_scheduled_workouts()
-    print(f"מספר אימונים מתוזמנים: {len(scheduled) if scheduled else 0}")
+    scheduled = client.get_scheduled_workouts(target.year, target.month)
+    count = len(scheduled) if isinstance(scheduled, list) else len(scheduled or {})
+    print(f"נמצאו {count} פריטים בלוח לחודש {target.year}-{target.month:02d}")
 
-    print(f"\n🎯 הצלחה! בדוק באפליקציית Garmin Connect → Calendar → {tomorrow}")
+    print(f"\n🎯 הצלחה! בדוק באפליקציית Garmin Connect → Calendar → {target_str}")
     print(f"למחיקה: python push_workout_test.py --cleanup {workout_id}")
 
 
