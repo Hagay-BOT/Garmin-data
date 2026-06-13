@@ -99,12 +99,11 @@ def compute_segments(details: dict, seg_meters: float = 100.0) -> list[dict]:
 
         while dist >= boundary:
             seg_dur = (t - seg_start_time) if t is not None else None
-            # קצב מהמהירות הממוצעת; נפילה לחישוב מזמן רק אם אין מהירות
-            pace = _pace_from_speed(spd_sum, spd_n)
-            if pace is None and seg_dur and seg_dur > 0:
-                pace = round(seg_dur / (seg_meters / 1000.0))
-                if not (100 <= pace <= 3600):
-                    pace = None
+            # מעדיפים קצב מזמן-תנועה (כמו ה-laps של גרמין); נפילה למהירות
+            # רק כשהזמן לא הגיוני (קפיצת GPS / pause) — ואז למהירות הממוצעת.
+            pace_time = round(seg_dur / (seg_meters / 1000.0)) if seg_dur and seg_dur > 0 else None
+            pace_speed = _pace_from_speed(spd_sum, spd_n)
+            pace = pace_time if (pace_time and 100 <= pace_time <= 3600) else pace_speed
             segments.append({
                 "seg": seg_idx,
                 "distance_m": round(boundary),
