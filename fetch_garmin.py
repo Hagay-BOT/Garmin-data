@@ -25,6 +25,8 @@ START_DATE = "2024-01-01"
 end_date = date.today().isoformat()
 
 STRENGTH_TYPES = {"strength_training", "weightlifting", "fitness_equipment", "gym", "indoor_cardio"}
+# Activity types treated as a run (treadmill + trail included)
+RUN_TYPES = {"running", "treadmill_running", "trail_running"}
 
 def classify_quality_subtype(anaerobic_eff, max_hr, avg_hr, ascent_m, dist_km):
     """
@@ -81,7 +83,7 @@ def classify(type_key, aerobic_effect, anaerobic_effect=None,
     """
     if type_key in STRENGTH_TYPES:
         return "strength"
-    if type_key != "running":
+    if type_key not in RUN_TYPES:
         return "other"
 
     label = (training_effect_label or "").upper().strip()
@@ -180,7 +182,7 @@ for activity in activities:
     stamina_start = None
     stamina_end = None
 
-    if type_key == "running":
+    if type_key in RUN_TYPES:
         # Single-activity summary for recovery HR + stamina
         try:
             act_summary = client.get_activity(activity_id)

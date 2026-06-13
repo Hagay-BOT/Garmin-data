@@ -566,6 +566,7 @@ function weekBounds(offsetWeeks=0){
 
 // ── constants ──────────────────────────────────────────────────────────────
 const STRENGTH_TYPES=new Set(['strength_training','weightlifting','fitness_equipment','gym','indoor_cardio']);
+const RUN_TYPES=new Set(['running','treadmill_running','trail_running']);
 const CAT_LABELS={
   base_run:'ריצת בסיס', quality_tempo:'שינוי קצבים',
   quality_intervals:'אינטרוואלים', quality_hills:'עליות',
@@ -586,7 +587,7 @@ function inferCategory(a){
   if(a.category) return a.category;
   const t=a.activity_type||'';
   if(STRENGTH_TYPES.has(t)) return 'strength';
-  if(t==='running') return (a.aerobic_effect||0)>2.5?'quality_run':'base_run';
+  if(RUN_TYPES.has(t)) return (a.aerobic_effect||0)>2.5?'quality_run':'base_run';
   return 'other';
 }
 
@@ -1039,10 +1040,11 @@ function buildTable(tab){
   const cutoff=new Date(now.getFullYear(),now.getMonth()-2,1).toISOString().slice(0,10);
   const cCls={base_run:'cbase',quality_run:'cqual',quality_tempo:'cqual',quality_intervals:'cqual',quality_hills:'cqual',quality_segments:'cqual',strength:'cstr',other:'coth'};
 
+  const isRun=a=>a.category==='base_run'||isQuality(a.category)||RUN_TYPES.has(a.activity_type);
   let filtered;
-  if(tab==='runs') filtered=allActivities.filter(a=>a.category==='base_run'||isQuality(a.category));
+  if(tab==='runs') filtered=allActivities.filter(isRun);
   else if(tab==='strength') filtered=allActivities.filter(a=>a.category==='strength');
-  else filtered=allActivities.filter(a=>a.category==='other');
+  else filtered=allActivities.filter(a=>a.category==='other'&&!isRun(a));
   filtered=[...filtered].filter(a=>a.date>=cutoff).sort((a,b)=>b.date.localeCompare(a.date));
 
   const colCount=tab==='runs'?7:4;
