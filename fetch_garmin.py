@@ -401,5 +401,5 @@ output = {
 with open("data.json", "w", encoding="utf-8") as f:
     json.dump(output, f, ensure_ascii=False, indent=2)
 
-run_count = sum(1 for r in records if r["activity_type"] == "running")
+run_count = sum(1 for r in records if r["activity_type"] in RUN_TYPES)
 print(f"OK: Saved {len(records)} activities ({run_count} runs) to data.json")
