@@ -11,7 +11,8 @@ from typing import Any
 # שמות אפשריים לכל מדד (גרמין משתנה מעט בין דגמים/גרסאות)
 _DISTANCE_KEYS = ("sumDistance", "sumDistanceInMeters")
 _HR_KEYS = ("directHeartRate", "heartRate")
-_TIME_SEC_KEYS = ("sumElapsedDuration", "sumDuration", "sumMovingDuration", "directElapsedDuration")
+_SPEED_KEYS = ("directSpeed", "directGradeAdjustedSpeed")
+_TIME_SEC_KEYS = ("sumMovingDuration", "sumDuration", "sumElapsedDuration", "directElapsedDuration")
 _TIMESTAMP_KEYS = ("directTimestamp",)
 
 
@@ -43,9 +44,10 @@ def compute_segments(details: dict, seg_meters: float = 100.0) -> list[dict]:
 
     di = _find_index(descs, _DISTANCE_KEYS)
     hi = _find_index(descs, _HR_KEYS)
+    si = _find_index(descs, _SPEED_KEYS)
     ti = _find_index(descs, _TIME_SEC_KEYS)
     tsi = _find_index(descs, _TIMESTAMP_KEYS) if ti is None else None
-    if di is None or (ti is None and tsi is None):
+    if di is None or (si is None and ti is None and tsi is None):
         return []
 
     def _val(vals, idx):
@@ -59,45 +61,62 @@ def compute_segments(details: dict, seg_meters: float = 100.0) -> list[dict]:
         ts = _val(vals, tsi)
         return ts / 1000.0 if ts is not None else None  # ms → שניות
 
+    def _pace_from_speed(spd_sum, spd_n):
+        """קצב (שנ'/ק\"מ) מהמהירות הממוצעת — עמיד לעצירות ולרעשי GPS."""
+        if not spd_n:
+            return None
+        mean = spd_sum / spd_n                    # m/s
+        if mean <= 0:
+            return None
+        pace = round(1000.0 / mean)
+        return pace if 100 <= pace <= 3600 else None  # סינון ערכים לא אנושיים
+
     segments: list[dict] = []
     boundary = seg_meters
     seg_start_time = None
     seg_start_dist = 0.0
-    hr_sum = 0.0
-    hr_n = 0
+    hr_sum = hr_n = 0.0
+    spd_sum = spd_n = 0.0
     seg_idx = 1
 
     for s in samples:
         vals = s.get("metrics", [])
         dist = _val(vals, di)
-        t = _time_of(vals)
-        if dist is None or t is None:
+        if dist is None:
             continue
+        t = _time_of(vals)
         if seg_start_time is None:
-            seg_start_time = t
+            seg_start_time = t if t is not None else 0.0
 
         hr = _val(vals, hi)
         if hr is not None:
             hr_sum += hr
             hr_n += 1
+        spd = _val(vals, si)
+        if spd is not None and spd > 0:
+            spd_sum += spd
+            spd_n += 1
 
-        # חצינו גבול מקטע (יכול לחצות כמה גבולות אם הדגימה דלילה)
         while dist >= boundary:
-            seg_dist = boundary - seg_start_dist
-            seg_dur = t - seg_start_time
-            pace = round(seg_dur / (seg_dist / 1000.0)) if seg_dist > 0 and seg_dur > 0 else None
+            seg_dur = (t - seg_start_time) if t is not None else None
+            # קצב מהמהירות הממוצעת; נפילה לחישוב מזמן רק אם אין מהירות
+            pace = _pace_from_speed(spd_sum, spd_n)
+            if pace is None and seg_dur and seg_dur > 0:
+                pace = round(seg_dur / (seg_meters / 1000.0))
+                if not (100 <= pace <= 3600):
+                    pace = None
             segments.append({
                 "seg": seg_idx,
                 "distance_m": round(boundary),
                 "pace_sec_per_km": pace,
                 "avg_hr": round(hr_sum / hr_n) if hr_n else None,
-                "duration_sec": round(seg_dur, 1),
+                "duration_sec": round(seg_dur, 1) if seg_dur is not None else None,
             })
             seg_idx += 1
             seg_start_time = t
             seg_start_dist = boundary
             boundary += seg_meters
-            hr_sum = 0.0
-            hr_n = 0
+            hr_sum = hr_n = 0.0
+            spd_sum = spd_n = 0.0
 
     return segments
