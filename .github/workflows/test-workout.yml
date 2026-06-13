@@ -1,0 +1,40 @@
+name: Test — Push Workout to Garmin
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "mode: push (default) or cleanup"
+        required: false
+        default: "push"
+      workout_id:
+        description: "workout id to delete (only for cleanup)"
+        required: false
+        default: ""
+
+jobs:
+  push-workout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Push test workout to Garmin
+        if: ${{ github.event.inputs.mode != 'cleanup' }}
+        run: python push_workout_test.py
+        env:
+          GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+
+      - name: Cleanup test workout
+        if: ${{ github.event.inputs.mode == 'cleanup' }}
+        run: python push_workout_test.py --cleanup "${{ github.event.inputs.workout_id }}"
+        env:
+          GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
