@@ -89,6 +89,66 @@ def compute_ctl_atl(daily_load: dict[str, float], reference_date: date) -> dict:
     }
 
 
+# ── ACWR Risk Flag (Feature 3) ───────────────────────────────────────────────
+
+def acwr_status(acwr) -> dict:
+    """Map ACWR to a traffic-light injury-risk flag (Gabbett 2016 zones)."""
+    if acwr is None:
+        return {"flag": "⚪", "level": "לא זמין", "color": "gray",
+                "message": "אין מספיק נתונים לחישוב ACWR (CTL=0)."}
+    if acwr > 1.5:
+        return {"flag": "🔴", "level": "סכנה", "color": "red",
+                "message": f"ACWR={acwr} מעל 1.5 — אזור Spike של Gabbett. סיכון פציעה גבוה. הורד עומס מיד."}
+    if acwr > 1.3:
+        return {"flag": "🟡", "level": "זהירות", "color": "yellow",
+                "message": f"ACWR={acwr} בטווח 1.3–1.5 — סיכון מוגבר. אל תוסיף עומס השבוע."}
+    if acwr < 0.8:
+        return {"flag": "🔵", "level": "תת-אימון", "color": "blue",
+                "message": f"ACWR={acwr} מתחת 0.8 — תת-עומס (detraining). אפשר להעלות בהדרגה."}
+    return {"flag": "🟢", "level": "מיטבי", "color": "green",
+            "message": f"ACWR={acwr} בטווח הבטוח 0.8–1.3. המשך כך."}
+
+
+# ── Training Monotony (Feature 4) ─────────────────────────────────────────────
+
+def compute_training_monotony(daily_load: dict, reference_date: date, days: int = 7) -> dict:
+    """
+    Foster's monotony = mean(daily load) / SD(daily load) over the window,
+    counting rest days as 0. Strain = monotony × weekly load.
+    Thresholds: <1.5 good, 1.5–2.0 caution, >2.0 high injury/illness risk.
+    """
+    import statistics
+    loads = [daily_load.get((reference_date - timedelta(days=i)).isoformat(), 0.0)
+             for i in range(days)]
+    weekly_load = round(sum(loads), 1)
+    mean_load = sum(loads) / days
+    sd = statistics.pstdev(loads) if days > 1 else 0.0
+
+    if mean_load == 0:
+        return {"available": False, "monotony": None, "weekly_load": 0.0,
+                "strain": None, "flag": "⚪", "level": "לא זמין",
+                "message": "אין עומס בשבוע האחרון — לא ניתן לחשב מונוטוניות."}
+    if sd == 0:
+        return {"available": True, "monotony": None, "weekly_load": weekly_load,
+                "strain": None, "flag": "🔴", "level": "מקסימלי",
+                "message": "עומס זהה כל יום — מונוטוניות מקסימלית. הכנס ימי מנוחה ושונות."}
+
+    monotony = round(mean_load / sd, 2)
+    strain = round(monotony * weekly_load, 1)
+    if monotony > 2.0:
+        flag, level, msg = "🔴", "גבוה", (
+            f"מונוטוניות {monotony} מעל 2.0 — אימון חדגוני, סיכון פציעה/מחלה. "
+            "גוון: ימים קשים קשים, ימים קלים קלים.")
+    elif monotony > 1.5:
+        flag, level, msg = "🟡", "בינוני", (
+            f"מונוטוניות {monotony} בטווח 1.5–2.0 — שמור על שונות בין הימים.")
+    else:
+        flag, level, msg = "🟢", "טוב", (
+            f"מונוטוניות {monotony} מתחת 1.5 — חלוקה בריאה בין ימים קשים לקלים.")
+    return {"available": True, "monotony": monotony, "weekly_load": weekly_load,
+            "strain": strain, "flag": flag, "level": level, "message": msg}
+
+
 # ── Zone Distribution ────────────────────────────────────────────────────────
 
 def compute_zone_distribution(activities: list, days: int = 28) -> dict:
@@ -628,8 +688,14 @@ def build_user_prompt(metrics: dict, history: list[dict], compliance: dict) -> s
 - CTL (כושר כרוני, 42 יום): {metrics['load']['ctl']}
 - ATL (עייפות חריפה, 7 יום): {metrics['load']['atl']}
 - TSB (מאזן): {metrics['load']['tsb']}
-- ACWR (יחס עומס): {metrics['load']['acwr'] or 'לא ניתן לחשב (CTL=0)'}
+- ACWR (יחס עומס): {metrics['load']['acwr'] or 'לא ניתן לחשב (CTL=0)'} {metrics['acwr_status']['flag']} ({metrics['acwr_status']['level']})
+  → {metrics['acwr_status']['message']}
 - קצב עלייה ב-4 שבועות: {metrics['load']['ramp_rate_4w']}
+
+### מונוטוניות אימון (Foster) — 7 ימים
+- מונוטוניות: {metrics['monotony'].get('monotony', 'לא זמין')} {metrics['monotony'].get('flag', '')} ({metrics['monotony'].get('level', '')})
+- Strain (עומס×מונוטוניות): {metrics['monotony'].get('strain', 'לא זמין')}
+  → {metrics['monotony'].get('message', '')}
 
 ### ערנות / מוכנות (3 ימים אחרונים)
 {json.dumps(metrics['readiness'], ensure_ascii=False, indent=2)}
@@ -670,7 +736,8 @@ def build_user_prompt(metrics: dict, history: list[dict], compliance: dict) -> s
 לכל יום: ריצה / מנוחה / כוח. לריצות: zone, מרחק, קצב יעד בדקות:שניות לק"מ.
 
 ## 4. אזהרות וסיכונים
-ACWR, ramp rate, דריפט, עומס נוירומוסקולרי, כל דגל אדום רלוונטי.
+ACWR (כולל דגל הצבע 🔴/🟡/🟢), מונוטוניות אימון, ramp rate, דריפט, עומס נוירומוסקולרי, כל דגל אדום רלוונטי.
+אם דגל ה-ACWR אדום או צהוב — התייחס אליו ראשון. אם מונוטוניות מעל 2.0 — הזהר על חדגוניות.
 
 ## 5. מגמות כושר
 EF, VO2max, קדנס, VDOT — מה השתנה? לאן פנים? מה המשמעות לאימון?
@@ -698,6 +765,8 @@ def main():
     print("מחשב מדדי עומס...")
     daily_load = build_daily_load(activities)
     load_metrics = compute_ctl_atl(daily_load, date.today())
+    acwr_flag = acwr_status(load_metrics["acwr"])
+    monotony = compute_training_monotony(daily_load, date.today())
     zones = compute_zone_distribution(activities, days=28)
     last_week_runs = last_n_days_runs(activities, n=7)
     last_week = summarize_runs(last_week_runs)
@@ -715,6 +784,8 @@ def main():
 
     metrics = {
         "load": load_metrics,
+        "acwr_status": acwr_flag,
+        "monotony": monotony,
         "zones": zones,
         "last_week": last_week,
         "readiness": readiness,
@@ -725,7 +796,8 @@ def main():
         "nm_atl": nm_atl,
     }
 
-    print(f"CTL={load_metrics['ctl']}  ATL={load_metrics['atl']}  ACWR={load_metrics['acwr']}")
+    print(f"CTL={load_metrics['ctl']}  ATL={load_metrics['atl']}  ACWR={load_metrics['acwr']} {acwr_flag['flag']}")
+    print(f"מונוטוניות: {monotony.get('monotony')} {monotony.get('flag')}  Strain={monotony.get('strain')}")
 
     print("טוען היסטוריה...")
     history = load_history()

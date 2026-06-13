@@ -28,6 +28,32 @@ check("ATL positive", lm["atl"] > 0, f"ATL={lm['atl']}")
 check("ACWR sane", lm["acwr"] is None or 0 < lm["acwr"] < 5, f"ACWR={lm['acwr']}")
 check("TSB = CTL-ATL", abs(lm["tsb"] - (lm["ctl"]-lm["atl"])) < 0.2)
 
+# ACWR status (Feature 3)
+st_g = coach.acwr_status(1.0); st_y = coach.acwr_status(1.4)
+st_r = coach.acwr_status(1.7); st_b = coach.acwr_status(0.6)
+st_n = coach.acwr_status(None)
+check("ACWR green", st_g["flag"] == "🟢")
+check("ACWR yellow", st_y["flag"] == "🟡")
+check("ACWR red", st_r["flag"] == "🔴", st_r["level"])
+check("ACWR blue (under)", st_b["flag"] == "🔵")
+check("ACWR none-safe", st_n["flag"] == "⚪")
+live_acwr = coach.acwr_status(lm["acwr"])
+check("ACWR live flag present", live_acwr["flag"] in ("🟢","🟡","🔴","🔵","⚪"), f"{lm['acwr']} → {live_acwr['flag']}")
+
+# Training Monotony (Feature 4)
+mono = coach.compute_training_monotony(dl, date.today())
+check("monotony structure", "monotony" in mono and "flag" in mono, f"={mono.get('monotony')} {mono.get('flag')}")
+check("monotony non-negative", mono.get("monotony") is None or mono["monotony"] >= 0)
+# synthetic: identical loads → max monotony flag
+flat = {(date.today()-__import__('datetime').timedelta(days=i)).isoformat(): 50.0 for i in range(7)}
+mono_flat = coach.compute_training_monotony(flat, date.today())
+check("monotony flat→max risk", mono_flat["flag"] == "🔴", mono_flat["level"])
+# synthetic: varied loads → lower monotony
+import datetime as _dt
+varied = {(date.today()-_dt.timedelta(days=i)).isoformat(): v for i, v in enumerate([100,0,90,0,40,0,120])}
+mono_var = coach.compute_training_monotony(varied, date.today())
+check("monotony varied numeric", mono_var["monotony"] is not None and mono_var["monotony"] > 0, f"={mono_var['monotony']}")
+
 # Zones
 z = coach.compute_zone_distribution(acts, days=28)
 if z.get("available"):
@@ -65,7 +91,9 @@ comp = coach.compute_compliance(hist, lw)
 check("compliance no crash", "available" in comp)
 
 # Prompt building (the real integration — must not raise)
-metrics = {"load": lm, "zones": z, "last_week": lw, "readiness": rd, "prs": prs,
+metrics = {"load": lm, "acwr_status": coach.acwr_status(lm["acwr"]),
+           "monotony": coach.compute_training_monotony(dl, date.today()),
+           "zones": z, "last_week": lw, "readiness": rd, "prs": prs,
            "global_max_hr": gmax, "trends": tr, "strength": st, "nm_atl": nm}
 up = coach.build_user_prompt(metrics, hist, comp)
 check("user prompt builds", isinstance(up, str) and len(up) > 500, f"{len(up)} chars")
