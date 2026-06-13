@@ -1,0 +1,42 @@
+name: Backfill 100m Splits
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "diag (print only) or write (update data.json)"
+        required: false
+        default: "diag"
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run backfill (diagnostic)
+        if: ${{ github.event.inputs.mode != 'write' }}
+        run: python backfill_splits.py --diag
+        env:
+          GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+
+      - name: Run backfill (write + commit)
+        if: ${{ github.event.inputs.mode == 'write' }}
+        env:
+          GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+        run: |
+          python backfill_splits.py
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add data.json
+          git commit -m "Backfill 100m splits for last 2 quality runs" || echo "no changes"
+          git push
