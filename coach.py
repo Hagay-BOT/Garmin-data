@@ -25,6 +25,9 @@ HISTORY_FILE = BASE_DIR / "coach_history.json"
 HISTORY_WEEKS_TO_KEEP = 52
 HISTORY_WEEKS_TO_INJECT = 4
 
+# Activity types counted as "a run" — includes treadmill and trail runs
+RUN_TYPES = ("running", "treadmill_running", "trail_running")
+
 
 # ── Load data ────────────────────────────────────────────────────────────────
 
@@ -165,7 +168,7 @@ def compute_zone_distribution(activities: list, days: int = 28,
     cutoff = (date.today() - timedelta(days=days)).isoformat()
     runs = [
         a for a in activities
-        if a.get("activity_type") == "running"
+        if a.get("activity_type") in RUN_TYPES
         and a.get("date", "") >= cutoff
         and (a.get("distance_km") or 0) > 0.5
     ]
@@ -252,7 +255,7 @@ def compute_fitness_trends(activities: list, global_max_hr: float, weeks: int = 
 
     all_runs = [
         a for a in activities
-        if a.get("activity_type") in ("running", "treadmill_running", "trail_running")
+        if a.get("activity_type") in RUN_TYPES
         and a.get("date", "") >= cutoff
         and (a.get("distance_km") or 0) >= 3.0
     ]
@@ -293,7 +296,7 @@ def compute_fitness_trends(activities: list, global_max_hr: float, weeks: int = 
         recent_cutoff = (date.today() - timedelta(days=90)).isoformat()
         candidates = [
             a for a in activities
-            if a.get("activity_type") in ("running", "treadmill_running")
+            if a.get("activity_type") in RUN_TYPES
             and lo <= (a.get("distance_km") or 0) <= hi
             and a.get("pace_sec_per_km")
             and a.get("date", "") >= recent_cutoff
@@ -350,7 +353,7 @@ def last_n_days_runs(activities: list, n: int = 7) -> list:
     cutoff = (date.today() - timedelta(days=n)).isoformat()
     runs = [
         a for a in activities
-        if a.get("activity_type") == "running"
+        if a.get("activity_type") in RUN_TYPES
         and a.get("date", "") >= cutoff
         and (a.get("distance_km") or 0) > 0.5
     ]
@@ -418,7 +421,7 @@ def compute_prs(activities: list) -> dict:
     for label, (lo, hi) in distances.items():
         candidates = [
             a for a in activities
-            if a.get("activity_type") == "running"
+            if a.get("activity_type") in RUN_TYPES
             and lo <= (a.get("distance_km") or 0) <= hi
             and a.get("pace_sec_per_km")
         ]
