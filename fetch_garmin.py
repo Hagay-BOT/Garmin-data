@@ -23,6 +23,30 @@ except GarminConnectConnectionError as e:
 
 START_DATE = "2024-01-01"
 end_date = date.today().isoformat()
+OVERLAP_DAYS = 5  # re-process the last few days each run to catch edits / late syncs
+
+# ── Incremental: reuse existing data.json, only fetch what is new ──────────────
+existing_records: dict = {}
+existing_daily: dict = {}
+existing_max_hr = 0
+try:
+    with open("data.json", encoding="utf-8") as f:
+        _prev = json.load(f)
+    for _r in _prev.get("activities", []):
+        if _r.get("activity_id"):
+            existing_records[_r["activity_id"]] = _r
+    existing_daily = _prev.get("daily", {}) or {}
+    existing_max_hr = _prev.get("global_max_hr") or 0
+except (FileNotFoundError, json.JSONDecodeError):
+    pass
+
+if existing_records:
+    _latest = max((r.get("date") or "" for r in existing_records.values()))
+    fetch_start = (date.fromisoformat(_latest) - timedelta(days=OVERLAP_DAYS)).isoformat()
+    print(f"Incremental: {len(existing_records)} cached activities, fetching from {fetch_start}")
+else:
+    fetch_start = START_DATE
+    print(f"No cache — full fetch from {START_DATE}")
 
 STRENGTH_TYPES = {"strength_training", "weightlifting", "fitness_equipment", "gym", "indoor_cardio"}
 # Activity types treated as a run (treadmill + trail included)
@@ -107,12 +131,12 @@ def classify(type_key, aerobic_effect, anaerobic_effect=None,
     return "base_run"
 
 try:
-    activities = client.get_activities_by_date(START_DATE, end_date)
+    activities = client.get_activities_by_date(fetch_start, end_date)
 except Exception as e:
     print(f"ERROR: Failed to fetch activities — {e}", file=sys.stderr)
     sys.exit(1)
 
-global_max_hr = max((a.get("maxHR") or 0 for a in activities), default=180)
+global_max_hr = max([existing_max_hr] + [(a.get("maxHR") or 0) for a in activities]) or 180
 
 if not activities:
     print("WARNING: No activities found in range", file=sys.stderr)
@@ -297,6 +321,14 @@ for activity in activities:
         "laps": laps,
     })
 
+# ── Merge freshly-processed activities back into the cached set ───────────────
+_fetched_count = len(records)
+_merged = dict(existing_records)
+for _r in records:
+    _merged[_r["activity_id"]] = _r          # new/updated records override cache
+records = sorted(_merged.values(), key=lambda r: r.get("date") or "")
+print(f"Activities: {_fetched_count} fetched/updated, {len(records)} total")
+
 # נעליים / ציוד מגרמין קונקט
 shoes_output = []
 try:
@@ -315,13 +347,16 @@ try:
 except Exception:
     pass
 
-# שינה + Body Battery + קלוריות — כל ימי האימון + 14 הימים האחרונים
+# שינה + Body Battery + קלוריות — מצטבר: מטמון נשמר, נמשכים רק ימים חדשים + 14 אחרונים
 today_dt = date.today()
 last_14_days = {(today_dt - timedelta(days=i)).isoformat() for i in range(14)}
-unique_dates = sorted(set(r["date"] for r in records) | last_14_days)
-daily = {}
+daily = dict(existing_daily)  # reuse every previously-fetched day
+# Always refresh the last 14 days; fetch any new activity date not yet cached
+_candidate_dates = {r["date"] for r in records if r.get("date")} | last_14_days
+to_fetch = sorted(d for d in _candidate_dates if d in last_14_days or d not in existing_daily)
+print(f"Daily: fetching {len(to_fetch)} days (reusing {len(existing_daily)} cached)")
 
-for d in unique_dates:
+for d in to_fetch:
     sleep_score = None
     body_battery = None
     calories_resting = None
