@@ -54,8 +54,15 @@ varied = {(date.today()-_dt.timedelta(days=i)).isoformat(): v for i, v in enumer
 mono_var = coach.compute_training_monotony(varied, date.today())
 check("monotony varied numeric", mono_var["monotony"] is not None and mono_var["monotony"] > 0, f"={mono_var['monotony']}")
 
-# Zones
-z = coach.compute_zone_distribution(acts, days=28)
+# Zone helper
+check("zone index z2", coach._zone_index_from_pct(0.65) == 1)
+check("zone index z5", coach._zone_index_from_pct(0.95) == 4)
+
+# Zones (with avg_hr fallback enabled)
+z = coach.compute_zone_distribution(acts, days=28, global_max_hr=gmax)
+if z.get("available"):
+    check("zones fallback fields", "runs_measured" in z and "runs_estimated" in z,
+          f"measured={z.get('runs_measured')} estimated={z.get('runs_estimated')}")
 if z.get("available"):
     tot = z["z1_pct"]+z["z2_pct"]+z["z3_pct"]+z["z4_pct"]+z["z5_pct"]
     check("zones sum ~100%", abs(tot-100) < 1.0, f"sum={round(tot,1)}")

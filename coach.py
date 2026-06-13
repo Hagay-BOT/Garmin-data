@@ -59,16 +59,12 @@ def compute_ctl_atl(daily_load: dict[str, float], reference_date: date) -> dict:
     ctl_28_ago = 0.0
 
     # Walk day by day from earliest data to reference_date
-    start = date(2024, 1, 1)
-    day = start
-    days_walked = 0
-
+    day = date(2024, 1, 1)
     while day <= reference_date:
         ds = day.isoformat()
         load = daily_load.get(ds, 0.0)
         ctl = ctl + (load - ctl) * k42
         atl = atl + (load - atl) * k7
-        days_walked += 1
 
         # capture CTL 28 days before reference
         if day == reference_date - timedelta(days=28):
@@ -151,24 +147,43 @@ def compute_training_monotony(daily_load: dict, reference_date: date, days: int 
 
 # ── Zone Distribution ────────────────────────────────────────────────────────
 
-def compute_zone_distribution(activities: list, days: int = 28) -> dict:
+def _zone_index_from_pct(pct: float) -> int:
+    """Map %MaxHR to a zone index 0-4 (Z1<60, Z2 60-70, Z3 70-80, Z4 80-90, Z5>90)."""
+    for i, t in enumerate((0.60, 0.70, 0.80, 0.90)):
+        if pct < t:
+            return i
+    return 4
+
+
+def compute_zone_distribution(activities: list, days: int = 28,
+                              global_max_hr: float | None = None) -> dict:
     """
     Compute HR zone distribution (% of time) across the last N days of runs.
-    Only uses activities with actual hr_zones_sec data.
+    Uses real hr_zones_sec where available; for runs that lack it, falls back
+    to estimating from avg_hr vs global_max_hr (whole duration → avg_hr's zone).
     """
     cutoff = (date.today() - timedelta(days=days)).isoformat()
     runs = [
         a for a in activities
         if a.get("activity_type") == "running"
         and a.get("date", "") >= cutoff
-        and sum(a.get("hr_zones_sec") or [0]) > 0
+        and (a.get("distance_km") or 0) > 0.5
     ]
 
-    totals = [0, 0, 0, 0, 0]
+    totals = [0.0, 0.0, 0.0, 0.0, 0.0]
+    measured = 0
+    estimated = 0
     for run in runs:
         zones = run.get("hr_zones_sec") or [0, 0, 0, 0, 0]
-        for i in range(5):
-            totals[i] += zones[i]
+        if sum(zones) > 0:
+            for i in range(5):
+                totals[i] += zones[i]
+            measured += 1
+        elif global_max_hr and run.get("avg_hr") and run.get("duration_sec"):
+            # Fallback: bucket the whole run into the zone of its avg_hr
+            z = _zone_index_from_pct(run["avg_hr"] / global_max_hr)
+            totals[z] += run["duration_sec"]
+            estimated += 1
 
     total_sec = sum(totals)
     if total_sec == 0:
@@ -177,11 +192,12 @@ def compute_zone_distribution(activities: list, days: int = 28) -> dict:
     pcts = [round(t / total_sec * 100, 1) for t in totals]
     easy_pct = pcts[0] + pcts[1]   # Z1 + Z2
     hard_pct = pcts[3] + pcts[4]   # Z4 + Z5
-    z3_pct = pcts[2]
 
     return {
         "available": True,
-        "runs_analyzed": len(runs),
+        "runs_analyzed": measured + estimated,
+        "runs_measured": measured,
+        "runs_estimated": estimated,
         "z1_pct": pcts[0],
         "z2_pct": pcts[1],
         "z3_pct": pcts[2],
@@ -272,7 +288,7 @@ def compute_fitness_trends(activities: list, global_max_hr: float, weeks: int = 
     import math
     vdot = None
     vdot_basis = None
-    for label, (lo, hi) in [("5K", (4.5, 5.5)), ("10K", (9.5, 10.5))]:
+    for label, (lo, hi) in [("5K", (4.5, 5.5)), ("10K", (9.5, 10.5)), ("HM", (20.5, 21.5))]:
         # Only use runs from last 90 days for VDOT (fitness must be current)
         recent_cutoff = (date.today() - timedelta(days=90)).isoformat()
         candidates = [
@@ -777,7 +793,7 @@ def main():
     load_metrics = compute_ctl_atl(daily_load, date.today())
     acwr_flag = acwr_status(load_metrics["acwr"])
     monotony = compute_training_monotony(daily_load, date.today())
-    zones = compute_zone_distribution(activities, days=28)
+    zones = compute_zone_distribution(activities, days=28, global_max_hr=global_max_hr)
     last_week_runs = last_n_days_runs(activities, n=7)
     last_week = summarize_runs(last_week_runs)
     readiness = get_readiness(daily)
@@ -831,7 +847,10 @@ def main():
         model="claude-opus-4-8",
         max_tokens=4096,
         thinking={"type": "adaptive"},
-        system=system_prompt,
+        output_config={"effort": "high"},
+        # Cache the large knowledge-base system prompt (~12KB) across calls
+        system=[{"type": "text", "text": system_prompt,
+                 "cache_control": {"type": "ephemeral"}}],
         messages=[{"role": "user", "content": user_prompt}],
     ) as stream:
         for text in stream.text_stream:
@@ -907,7 +926,9 @@ def _stream_chat_response(client: "anthropic.Anthropic", messages: list[dict], s
         with client.messages.stream(
             model="claude-opus-4-8",
             max_tokens=1024,
-            system=system,
+            # Cache the coach-persona + knowledge-base prefix across chat turns
+            system=[{"type": "text", "text": system,
+                     "cache_control": {"type": "ephemeral"}}],
             messages=messages,
         ) as stream:
             for text in stream.text_stream:
