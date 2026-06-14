@@ -1,0 +1,38 @@
+{
+  "week_of": "2026-06-14",
+  "macro_week": 1,
+  "phase": "Base",
+  "goal_race": "15K @ 5:20",
+  "notes": "שבוע 1 Base. נפח קל אמיתי + סף ביום שני. כוח PPL: A×2,B×2,C×1. Long 9ק\"מ (ברך/קרסול).",
+  "sessions": [
+    { "date": "2026-06-14", "day": "ראשון",  "type": "strength", "key": "B" },
+    { "date": "2026-06-15", "day": "שני",    "type": "run", "subtype": "quality",
+      "name": "🏃 סף Tempo — 3 ק\"מ @ 5:10–5:15",
+      "desc": "1.4 ק\"מ חימום קל · 3 ק\"מ @ 5:10–5:15 (Z4) · 1 ק\"מ שחרור. שבוע 1 Base.",
+      "est_km": 5.5,
+      "steps": [
+        { "kind": "warmup",   "seconds": 540 },
+        { "kind": "interval", "seconds": 930 },
+        { "kind": "cooldown", "seconds": 360 }
+      ] },
+    { "date": "2026-06-16", "day": "שלישי",  "type": "run", "subtype": "easy",
+      "name": "🏃 קל Z2 — 5 ק\"מ @ 6:30–6:50",
+      "desc": "5 ק\"מ קל אמיתי, דופק 121–141. שיחה אפשרית.",
+      "est_km": 5.0,
+      "steps": [ { "kind": "interval", "seconds": 2000 } ] },
+    { "date": "2026-06-16", "day": "שלישי",  "type": "strength", "key": "A" },
+    { "date": "2026-06-17", "day": "רביעי",  "type": "strength", "key": "C" },
+    { "date": "2026-06-18", "day": "חמישי",  "type": "run", "subtype": "easy",
+      "name": "🏃 קל Z2 + strides — 5 ק\"מ",
+      "desc": "5 ק\"מ קל @ 6:30–6:50 + 4×100מ strides בסוף (חדות, לא מאמץ).",
+      "est_km": 5.0,
+      "steps": [ { "kind": "interval", "seconds": 1950 } ] },
+    { "date": "2026-06-18", "day": "חמישי",  "type": "strength", "key": "B" },
+    { "date": "2026-06-19", "day": "שישי",   "type": "strength", "key": "A" },
+    { "date": "2026-06-20", "day": "שבת",    "type": "run", "subtype": "long",
+      "name": "🏃 Long Run — 9 ק\"מ Z2 @ 6:30–6:50",
+      "desc": "9 ק\"מ קל יציב, דופק 121–141. שים לב לברך/קרסול — אם כואב, עצור.",
+      "est_km": 9.0,
+      "steps": [ { "kind": "interval", "seconds": 3510 } ] }
+  ]
+}

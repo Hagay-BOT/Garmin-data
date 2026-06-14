@@ -1,0 +1,50 @@
+name: Push Week Plan to Garmin
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "build (JSON only) | push (to Garmin calendar) | cleanup (delete created)"
+        required: false
+        default: "build"
+
+permissions:
+  contents: write
+
+jobs:
+  push-week:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build only (no credentials, no push)
+        if: ${{ github.event.inputs.mode == 'build' }}
+        run: python push_week.py --build-only
+
+      - name: Push full week to Garmin calendar
+        if: ${{ github.event.inputs.mode == 'push' }}
+        env:
+          GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+        run: |
+          python push_week.py --push
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add created_workouts.json || true
+          git commit -m "push-week: record created Garmin workout ids" || echo "no changes"
+          git pull --rebase origin main || true
+          git push || true
+
+      - name: Cleanup created workouts
+        if: ${{ github.event.inputs.mode == 'cleanup' }}
+        env:
+          GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+        run: python push_week.py --cleanup
