@@ -442,6 +442,44 @@
     </div>
   </div>
 
+  <!-- Macro Week Tracker (the journey) -->
+  <style>
+    .wkt-card{padding-bottom:.8rem}
+    .wkt-head{display:flex;align-items:baseline;gap:.5rem;flex-wrap:wrap}
+    .wkt-sub{font-size:.62rem;color:var(--t3);font-weight:400}
+    .wkt-trail{position:relative;height:140px;margin:.4rem 0 .2rem}
+    .wkt-runner{position:absolute;width:64px;height:76px;z-index:5;pointer-events:none;
+      left:-80px;top:0;transition:none}
+    .wkt-legend{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-top:.2rem}
+    .wkt-lg{display:flex;align-items:center;gap:.3rem;font-size:.6rem;color:var(--t3)}
+    .wkt-lg .d{width:9px;height:9px;border-radius:3px}
+    .wkt-lg.cur{color:var(--t1);font-weight:700}
+  </style>
+  <div class="card wkt-card" id="wk-tracker">
+    <div class="sec-title wkt-head">המסע לתחרות
+      <span class="wkt-sub">שבוע <b id="wkt-week">—</b>/14 · פאזת <b id="wkt-phase">—</b> · <b id="wkt-dtr">—</b> ימים לתחרות</span>
+    </div>
+    <div class="wkt-trail" id="wkt-trail">
+      <div class="wkt-runner" id="wkt-runner">
+        <svg width="64" height="76" viewBox="0 0 100 100">
+          <g id="wkt-bob">
+            <g id="wkt-armB"><line x1="50" y1="33" x2="50" y2="46" stroke-width="5" stroke-linecap="round"/>
+              <g id="wkt-forearmB"><line x1="50" y1="46" x2="50" y2="58" stroke-width="5" stroke-linecap="round"/></g></g>
+            <g id="wkt-legB"><line x1="46" y1="56" x2="46" y2="73" stroke-width="6.5" stroke-linecap="round"/>
+              <g id="wkt-shinB"><line x1="46" y1="73" x2="46" y2="90" stroke-width="6.5" stroke-linecap="round"/></g></g>
+            <line id="wkt-torso" x1="50" y1="33" x2="46" y2="56" stroke-width="7" stroke-linecap="round"/>
+            <circle id="wkt-head" cx="54" cy="24" r="7.5"/>
+            <g id="wkt-legF"><line x1="46" y1="56" x2="46" y2="73" stroke-width="6.5" stroke-linecap="round"/>
+              <g id="wkt-shinF"><line x1="46" y1="73" x2="46" y2="90" stroke-width="6.5" stroke-linecap="round"/></g></g>
+            <g id="wkt-armF"><line x1="50" y1="33" x2="50" y2="46" stroke-width="5" stroke-linecap="round"/>
+              <g id="wkt-forearmF"><line x1="50" y1="46" x2="50" y2="58" stroke-width="5" stroke-linecap="round"/></g></g>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <div class="wkt-legend" id="wkt-legend"></div>
+  </div>
+
   <!-- Week Compare -->
   <div class="wc-sec card">
     <div class="sec-title">השבוע מול שבוע שעבר</div>
@@ -1176,6 +1214,140 @@ function buildTable(tab){
     body.innerHTML=`<tr><td colspan="${colCount}" style="text-align:center;color:var(--t3);padding:1.75rem">אין נתונים</td></tr>`;
   }
 }
+
+// ── Macro Week Tracker (the journey) ─────────────────────────────────────────
+(function(){
+  const START="2026-06-15";              // יום שני, שבוע 1 במאקרו
+  const RACE="2026-09-20";
+  // 14 שבועות: [פאזה, צבע קדמי, צבע אחורי]
+  const PHASES=[
+    ...Array(5).fill(["Base","#34d399","rgba(52,211,153,.55)"]),
+    ...Array(5).fill(["Build","#fb923c","rgba(251,146,60,.55)"]),
+    ...Array(3).fill(["Peak","#f87171","rgba(248,113,113,.55)"]),
+    [["Taper"][0]||"Taper","#38bdf8","rgba(56,189,248,.55)"],
+  ].map((p,i)=>({week:i+1,phase:p[0],c:p[1],cb:p[2]}));
+  const PHASE_META={Base:"#34d399",Build:"#fb923c",Peak:"#f87171",Taper:"#38bdf8"};
+
+  function curWeek(){
+    const ms=24*3600*1000;
+    const today=new Date(); today.setHours(0,0,0,0);
+    const start=new Date(START+"T00:00:00");
+    let w=Math.floor((today-start)/(7*ms))+1;
+    return Math.max(1,Math.min(14,w));
+  }
+  function daysToRace(){
+    const ms=24*3600*1000;
+    const today=new Date(); today.setHours(0,0,0,0);
+    return Math.max(0,Math.round((new Date(RACE+"T00:00:00")-today)/ms));
+  }
+
+  const CUR=curWeek();
+  const curPhase=PHASES[CUR-1].phase;
+  document.getElementById("wkt-week").textContent=CUR;
+  document.getElementById("wkt-phase").textContent=curPhase;
+  document.getElementById("wkt-dtr").textContent=daysToRace();
+
+  // legend (mark current phase)
+  const seen=new Set();
+  document.getElementById("wkt-legend").innerHTML=PHASES.filter(p=>{
+    if(seen.has(p.phase))return false;seen.add(p.phase);return true;})
+    .map(p=>`<div class="wkt-lg ${p.phase===curPhase?'cur':''}"><span class="d" style="background:${p.c}"></span>${p.phase}</div>`).join("");
+
+  // recolor runner by current phase
+  const fc=PHASE_META[curPhase], bc=PHASES[CUR-1].cb;
+  const setStroke=(id,col)=>document.querySelectorAll("#"+id+" line").forEach(l=>l.setAttribute("stroke",col));
+  ["wkt-legF","wkt-shinF","wkt-armF","wkt-forearmF"].forEach(id=>setStroke(id,fc));
+  ["wkt-legB","wkt-shinB","wkt-armB","wkt-forearmB"].forEach(id=>setStroke(id,bc));
+  document.getElementById("wkt-torso").setAttribute("stroke",fc);
+  document.getElementById("wkt-head").setAttribute("fill",fc);
+
+  const trail=document.getElementById("wkt-trail");
+  const rbox=document.getElementById("wkt-runner");
+  const H=140; let pts=[],W;
+  const $=id=>document.getElementById(id);
+  const lerp=(a,b,m)=>a+(b-a)*m;
+  const rot=(el,a,cx,cy)=>el.setAttribute("transform",`rotate(${a.toFixed(1)} ${cx} ${cy})`);
+
+  function build(){
+    W=trail.clientWidth||600;
+    pts=[];for(let i=0;i<14;i++){const x=20+i*((W-52)/13);const y=H/2+Math.sin(i*0.9)*26;pts.push([x,y]);}
+    let d=`M ${pts[0][0]} ${pts[0][1]}`;
+    for(let i=1;i<14;i++){const a=pts[i-1],b=pts[i];const mx=(a[0]+b[0])/2;d+=` C ${mx} ${a[1]}, ${mx} ${b[1]}, ${b[0]} ${b[1]}`;}
+    let s=`<svg id="wkt-svg" width="100%" height="${H}" viewBox="0 0 ${W} ${H}" style="position:absolute;inset:0;z-index:1">
+      <path d="${d}" fill="none" stroke="rgba(255,255,255,.09)" stroke-width="6" stroke-linecap="round"/>`;
+    PHASES.forEach((p,i)=>{const on=p.week<=CUR;
+      s+=`<circle cx="${pts[i][0]}" cy="${pts[i][1]}" r="${i===0?7:5.5}" fill="${p.c}" opacity="${on?1:.35}" stroke="#0f1420" stroke-width="2"/>`;});
+    s+=`<text x="${pts[13][0]+11}" y="${pts[13][1]+6}" font-size="16">🏁</text></svg>`;
+    const old=$("wkt-svg"); if(old)old.remove();
+    trail.insertAdjacentHTML("afterbegin",s);
+  }
+  function yAt(x){
+    if(x<=pts[0][0])return pts[0][1];
+    for(let i=1;i<pts.length;i++){if(x<=pts[i][0]){const a=pts[i-1],b=pts[i];
+      const t=(x-a[0])/(b[0]-a[0]);return a[1]+(b[1]-a[1])*t;}}
+    return pts[pts.length-1][1];
+  }
+  const IDLE={tF:7,sF:4,tB:-7,sB:4,aF:9,fF:-14,aB:-9,fB:-14};
+  function pose(P){
+    rot($("wkt-legF"),P.tF,46,56);rot($("wkt-shinF"),P.sF,46,73);
+    rot($("wkt-legB"),P.tB,46,56);rot($("wkt-shinB"),P.sB,46,73);
+    rot($("wkt-armF"),P.aF,50,33);rot($("wkt-forearmF"),P.fF,50,46);
+    rot($("wkt-armB"),P.aB,50,33);rot($("wkt-forearmB"),P.fB,50,46);
+  }
+  function placeIdle(){
+    const tx=pts[CUR-1][0];
+    rbox.style.left=(tx-32)+"px"; rbox.style.top=(yAt(tx)-70)+"px";
+    pose(IDLE); $("wkt-bob").setAttribute("transform","translate(0 0)");
+  }
+
+  let raf,phase=0,m=1,t0,dur,sx,tx,running=false;
+  function frame(ts){
+    if(!t0)t0=ts; const el=ts-t0;
+    const tp=Math.min(1,el/dur), ease=1-Math.pow(1-tp,3);
+    const x=sx+(tx-sx)*ease;
+    rbox.style.left=(x-32)+"px"; rbox.style.top=(yAt(x)-70)+"px";
+    const moving=tp<1;
+    phase+=moving?0.34:0.34*m;
+    if(!moving)m=Math.max(0,m-0.025);
+    const tF=-26*Math.sin(phase),tB=-26*Math.sin(phase+Math.PI);
+    const sF=22+42*(0.5+0.5*Math.sin(phase+1.6)),sB=22+42*(0.5+0.5*Math.sin(phase+Math.PI+1.6));
+    const aF=20*Math.sin(phase),aB=20*Math.sin(phase+Math.PI);
+    const fF=-50+12*Math.sin(phase),fB=-50+12*Math.sin(phase+Math.PI);
+    const bobY=-3*(0.5-0.5*Math.cos(2*phase)), br=-1.2*(0.5+0.5*Math.sin(ts/600));
+    pose({tF:lerp(IDLE.tF,tF,m),sF:lerp(IDLE.sF,sF,m),tB:lerp(IDLE.tB,tB,m),sB:lerp(IDLE.sB,sB,m),
+      aF:lerp(IDLE.aF,aF,m),fF:lerp(IDLE.fF,fF,m),aB:lerp(IDLE.aB,aB,m),fB:lerp(IDLE.fB,fB,m)});
+    $("wkt-bob").setAttribute("transform",`translate(0 ${lerp(br,bobY,m).toFixed(2)})`);
+    if(m<=0&&!moving){running=false;idle();return;}
+    raf=requestAnimationFrame(frame);
+  }
+  function idle(){
+    function bl(ts){const br=-1.4*(0.5+0.5*Math.sin(ts/650));
+      pose(IDLE); $("wkt-bob").setAttribute("transform",`translate(0 ${br.toFixed(2)})`);
+      if(!running)raf=requestAnimationFrame(bl);}
+    raf=requestAnimationFrame(bl);
+  }
+  function run(){
+    cancelAnimationFrame(raf); build();
+    sx=pts[0][0]-50; tx=pts[CUR-1][0];
+    dur=Math.max(1100,Math.abs(tx-sx)*9);
+    phase=0;m=1;t0=null;running=true;
+    // מיקום התחלתי סינכרוני (לא תלוי ב-rAF)
+    rbox.style.left=(sx-32)+"px"; rbox.style.top=(yAt(sx)-70)+"px"; pose(IDLE);
+    raf=requestAnimationFrame(frame);
+  }
+
+  build();
+  placeIdle();   // ברירת מחדל בטוחה — הרץ עומד על השבוע הנוכחי
+  // הרץ רק כשנכנסים בפעם הראשונה (או כששינוי שבוע) — אחרת עומד
+  let lastSeen=null; try{lastSeen=localStorage.getItem("wkt_seen");}catch(e){}
+  if(lastSeen!==String(CUR)){
+    try{localStorage.setItem("wkt_seen",String(CUR));}catch(e){}
+    setTimeout(run,400);
+  }else{
+    placeIdle(); idle();
+  }
+  let rt; window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(()=>{build();if(!running)placeIdle();},150);});
+})();
 
 // ── load data ──────────────────────────────────────────────────────────────
 fetch('data.json')
