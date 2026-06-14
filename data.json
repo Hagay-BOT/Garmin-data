@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-06-13T23:12:52.314058+00:00",
+  "last_updated": "2026-06-14T09:38:52.829116+00:00",
   "activities": [
     {
       "activity_id": 13381622386,
@@ -113331,7 +113331,8 @@
         0
       ],
       "hr_drift_bpm": null,
-      "laps": []
+      "laps": [],
+      "splits_100m": []
     },
     {
       "activity_id": 23170600098,
@@ -114782,7 +114783,8 @@
         0
       ],
       "hr_drift_bpm": null,
-      "laps": []
+      "laps": [],
+      "splits_100m": []
     },
     {
       "activity_id": 23202498234,
@@ -114831,7 +114833,8 @@
         0
       ],
       "hr_drift_bpm": null,
-      "laps": []
+      "laps": [],
+      "splits_100m": []
     },
     {
       "activity_id": 23201480726,
@@ -114945,7 +114948,8 @@
           "avg_hr": 137.0,
           "cadence_spm": 125
         }
-      ]
+      ],
+      "splits_100m": []
     },
     {
       "activity_id": 23220500929,
@@ -114994,7 +114998,8 @@
         0
       ],
       "hr_drift_bpm": null,
-      "laps": []
+      "laps": [],
+      "splits_100m": []
     },
     {
       "activity_id": 23219411280,
@@ -115043,7 +115048,8 @@
         0
       ],
       "hr_drift_bpm": null,
-      "laps": []
+      "laps": [],
+      "splits_100m": []
     },
     {
       "activity_id": 23232714896,
@@ -115205,7 +115211,8 @@
           "avg_hr": 137.0,
           "cadence_spm": 167
         }
-      ]
+      ],
+      "splits_100m": []
     }
   ],
   "daily": {
@@ -117596,6 +117603,12 @@
       "body_battery_morning": 0,
       "calories_resting": 2119.0,
       "calories_active": 512.0
+    },
+    "2026-06-14": {
+      "sleep_score": 94,
+      "body_battery_morning": 42,
+      "calories_resting": 1015.0,
+      "calories_active": 6.0
     }
   },
   "shoes": [
