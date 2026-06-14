@@ -1,5 +1,5 @@
 // Service worker for the Garmin dashboard PWA
-const CACHE = 'garmin-dash-v1';
+const CACHE = 'garmin-dash-v2';
 const SHELL = [
   './',
   './index.html',
@@ -25,6 +25,23 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
+
+  // HTML shell (index.html / navigations): network-first so code updates always show
+  const isShell = e.request.mode === 'navigate'
+    || url.pathname.endsWith('/index.html')
+    || url.pathname === '/' || url.pathname.endsWith('/Garmin-data/');
+  if (isShell) {
+    e.respondWith(
+      fetch(e.request)
+        .then((r) => {
+          const copy = r.clone();
+          caches.open(CACHE).then((c) => c.put('./index.html', copy));
+          return r;
+        })
+        .catch(() => caches.match('./index.html'))
+    );
+    return;
+  }
 
   // data.json: network-first so training data stays fresh; fall back to cache offline
   if (url.pathname.endsWith('data.json')) {
