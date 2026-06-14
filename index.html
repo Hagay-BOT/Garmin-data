@@ -456,8 +456,8 @@
     .wkt-lg.cur{color:var(--t1);font-weight:700}
   </style>
   <div class="card wkt-card" id="wk-tracker">
-    <div class="sec-title wkt-head">המסע לתחרות
-      <span class="wkt-sub">שבוע <b id="wkt-week">—</b>/14 · פאזת <b id="wkt-phase">—</b> · <b id="wkt-dtr">—</b> ימים לתחרות</span>
+    <div class="sec-title wkt-head">המסע למטרה
+      <span class="wkt-sub">שבוע <b id="wkt-week">—</b>/14 · פאזת <b id="wkt-phase">—</b> · <b id="wkt-dtr">—</b> ימים למטרה</span>
     </div>
     <div class="wkt-trail" id="wkt-trail">
       <div class="wkt-runner" id="wkt-runner">
@@ -478,6 +478,39 @@
       </div>
     </div>
     <div class="wkt-legend" id="wkt-legend"></div>
+  </div>
+
+  <!-- Weekly Workout Plan -->
+  <style>
+    .wp-head{display:flex;align-items:baseline;justify-content:space-between;gap:.5rem;flex-wrap:wrap}
+    .wp-prog{font-size:.62rem;color:var(--t3);font-weight:600}
+    .wp-prog b{color:#34d399}
+    .wp-list{display:flex;flex-direction:column;gap:.42rem;margin-top:.6rem}
+    .wp-row{display:flex;align-items:center;gap:.7rem;padding:.6rem .7rem;border-radius:.7rem;
+      background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);
+      position:relative;overflow:hidden;transition:.25s}
+    .wp-row::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:3px;background:var(--acc)}
+    .wp-row.done{background:rgba(52,211,153,.07);border-color:rgba(52,211,153,.22)}
+    .wp-row.today{box-shadow:0 0 0 1px rgba(56,189,248,.35)}
+    .wp-day{flex-shrink:0;width:38px;text-align:center}
+    .wp-day .dn{font-size:.78rem;font-weight:800;line-height:1}
+    .wp-day .dd{font-size:.55rem;color:var(--t3);margin-top:.12rem}
+    .wp-main{flex:1;min-width:0}
+    .wp-name{font-size:.78rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .wp-sub{font-size:.6rem;color:var(--t3);margin-top:.1rem}
+    .wp-check{flex-shrink:0;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;
+      font-size:.8rem;font-weight:800;border:1.5px solid rgba(255,255,255,.16);color:var(--t3);transition:.3s}
+    .wp-row.done .wp-check{background:#34d399;border-color:#34d399;color:#04140d;
+      animation:wpPop .42s cubic-bezier(.2,1.4,.4,1)}
+    @keyframes wpPop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.18)}100%{transform:scale(1)}}
+    .wp-rest{opacity:.5}
+    .wp-none{font-size:.7rem;color:var(--t3);text-align:center;padding:1rem}
+  </style>
+  <div class="card wp-card" id="wp-card">
+    <div class="sec-title wp-head">אימוני השבוע
+      <span class="wp-prog" id="wp-prog"></span>
+    </div>
+    <div class="wp-list" id="wp-list"><div class="wp-none">טוען תוכנית…</div></div>
   </div>
 
   <!-- Week Compare -->
@@ -507,7 +540,7 @@
   <!-- Weekly stacked bars -->
   <div class="weekly-wrap card">
     <div class="sec-title">עומס שבועי — 8 שבועות <span style="font-size:.6rem;opacity:.45">(לחץ לפירוט)</span></div>
-    <div class="weekly-bars" id="weekly-bars"></div>
+    <div class="weekly-bars" id="weekly-bars" dir="ltr"></div>
     <div class="wk-legend">
       <div class="wl-item"><div class="wl-dot" style="background:#0ea5e9"></div>בסיס</div>
       <div class="wl-item"><div class="wl-dot" style="background:#22d3ee"></div>טמפו</div>
@@ -521,12 +554,6 @@
   <div class="gps-wrap card" id="gps-sec">
     <div class="sec-title">6 ריצות אחרונות — מסלול</div>
     <div class="gps-grid" id="gps-grid"></div>
-  </div>
-
-  <!-- PRs per Distance -->
-  <div class="chart-sec card" id="prs-sec">
-    <div class="sec-title">שיאים אישיים לפי מרחק</div>
-    <div class="prs-grid" id="prs-grid"></div>
   </div>
 
   <!-- Current Fitness & Training Paces -->
@@ -658,8 +685,8 @@ function buildDashboard(acts, globalMaxHR){
   buildHeatmap(allActivities);
   buildWeekly(allActivities);
   buildGPS(runs);
-  buildPRs(runs);
   buildFitness(runs);
+  buildWeekPlan(allActivities);
   buildZoneChart(runs, globalMaxHR);
   buildTable('runs');
 }
@@ -721,6 +748,48 @@ function buildFitness(runs){
         <div class="fit-pace-desc">${z.desc}</div>
       </div>`).join('')}
     </div>`;
+}
+
+// ── Weekly workout plan (auto-checks completed sessions) ────────────────────
+const WP_STR={A:'💪 כוח A — Push',B:'💪 כוח B — Pull',C:'🦵 כוח C — Legs'};
+const WP_DAYS=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+function buildWeekPlan(acts){
+  const list=document.getElementById('wp-list'), progEl=document.getElementById('wp-prog');
+  if(!list) return;
+  fetch('week_plan.json').then(r=>r.ok?r.json():null).then(plan=>{
+    if(!plan||!plan.sessions||!plan.sessions.length){
+      list.innerHTML='<div class="wp-none">אין תוכנית שבועית פעילה.</div>'; return;
+    }
+    const today=new Date(); today.setHours(0,0,0,0);
+    const todayStr=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    const byDate={};
+    acts.forEach(a=>{ if(a.date){ (byDate[a.date]=byDate[a.date]||[]).push(a); } });
+    const doneFor=s=>{
+      const day=byDate[s.date]||[];
+      if(s.type==='run') return day.some(a=>RUN_TYPES.has(a.activity_type));
+      if(s.type==='strength') return day.some(a=>STRENGTH_TYPES.has(a.activity_type));
+      return false;
+    };
+    let done=0;
+    const rows=plan.sessions.map(s=>{
+      const dt=new Date(s.date+'T00:00:00');
+      const dn=WP_DAYS[dt.getDay()];
+      const dd=`${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}`;
+      const isToday=s.date===todayStr;
+      const isDone=doneFor(s);
+      if(isDone) done++;
+      let name, sub, acc;
+      if(s.type==='run'){ name=s.name; sub=(s.est_km?s.est_km+' ק"מ · ':'')+'ריצה'; acc='#22d3ee'; }
+      else{ name=WP_STR[s.key]||('כוח '+s.key); sub='אימון כוח'; acc='#a78bfa'; }
+      return `<div class="wp-row ${isDone?'done':''} ${isToday?'today':''}" style="--acc:${acc}">
+        <div class="wp-day"><div class="dn">${dn}</div><div class="dd">${dd}</div></div>
+        <div class="wp-main"><div class="wp-name">${name}</div><div class="wp-sub">${sub}${isToday?' · היום':''}</div></div>
+        <div class="wp-check">${isDone?'✓':'○'}</div>
+      </div>`;
+    }).join('');
+    list.innerHTML=rows;
+    if(progEl) progEl.innerHTML=`<b>${done}</b>/${plan.sessions.length} הושלמו`;
+  }).catch(()=>{ list.innerHTML='<div class="wp-none">לא ניתן לטעון את התוכנית.</div>'; });
 }
 
 // ── hero ───────────────────────────────────────────────────────────────────
