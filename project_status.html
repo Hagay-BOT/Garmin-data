@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>סטטוס פרויקט — מאמן ריצה AI</title>
+<style>
+  :root {
+    --bg: #0a0e14; --panel: #131922; --panel2: #1a212c;
+    --border: #232b38; --txt: #e6edf3; --muted: #8b949e; --dim: #6e7681;
+    --done: #3fb950; --wip: #d29922; --todo: #6e7681; --blocked: #f85149;
+    --accent: #58a6ff; --purple: #a371f7;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(ellipse at top, #11161f 0%, var(--bg) 60%);
+    color: var(--txt);
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    min-height: 100vh; padding: 24px 18px 60px;
+  }
+  .wrap { max-width: 1000px; margin: 0 auto; }
+
+  /* HEADER */
+  header { text-align: center; margin-bottom: 28px; }
+  .kicker { font-size: 11px; letter-spacing: .2em; color: var(--dim); text-transform: uppercase; }
+  h1 { font-size: 26px; font-weight: 800; margin: 6px 0; letter-spacing: -.02em; }
+  .updated { font-size: 12px; color: var(--muted); }
+  .updated b { color: var(--accent); }
+
+  /* OVERALL RING */
+  .overall { display: flex; align-items: center; justify-content: center; gap: 26px;
+             margin: 22px 0 8px; flex-wrap: wrap; }
+  .ring { position: relative; width: 120px; height: 120px; }
+  .ring svg { transform: rotate(-90deg); }
+  .ring .pct { position: absolute; inset: 0; display: flex; flex-direction: column;
+               align-items: center; justify-content: center; }
+  .ring .pct .n { font-size: 30px; font-weight: 800; }
+  .ring .pct .l { font-size: 10px; color: var(--muted); }
+  .macro-box { background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+               padding: 14px 20px; min-width: 200px; }
+  .macro-box .ph { font-size: 13px; font-weight: 700; color: var(--purple); }
+  .macro-box .row { font-size: 12px; color: var(--muted); margin-top: 5px; }
+  .macro-box .row b { color: var(--txt); }
+
+  /* PIPELINE */
+  .section-title { font-size: 13px; font-weight: 700; color: var(--muted);
+                   letter-spacing: .08em; text-transform: uppercase; margin: 30px 0 14px; }
+  .pipeline { display: flex; flex-direction: column; gap: 0; }
+  .stage { display: flex; align-items: stretch; gap: 12px; }
+  .stage-rail { display: flex; flex-direction: column; align-items: center; width: 26px; flex-shrink: 0; }
+  .dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--border);
+         background: var(--panel); flex-shrink: 0; margin-top: 16px; z-index: 1; }
+  .dot.done { background: var(--done); border-color: var(--done); box-shadow: 0 0 10px rgba(63,185,80,.5); }
+  .dot.wip { background: var(--wip); border-color: var(--wip); box-shadow: 0 0 10px rgba(210,153,34,.5);
+             animation: pulse 1.8s infinite; }
+  .dot.todo { background: var(--panel); border-color: var(--todo); }
+  .dot.blocked { background: var(--blocked); border-color: var(--blocked); }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
+  .connector { width: 2px; flex: 1; background: var(--border); }
+  .stage:last-child .connector { display: none; }
+  .stage-card { flex: 1; background: var(--panel); border: 1px solid var(--border);
+                border-radius: 10px; padding: 12px 15px; margin-bottom: 10px; transition: .2s; }
+  .stage-card:hover { border-color: var(--accent); transform: translateX(-3px); }
+  .stage-head { display: flex; align-items: center; gap: 8px; }
+  .stage-head .ic { font-size: 16px; }
+  .stage-head .nm { font-size: 14px; font-weight: 700; flex: 1; }
+  .badge { font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 20px; }
+  .badge.done { background: rgba(63,185,80,.15); color: var(--done); }
+  .badge.wip { background: rgba(210,153,34,.15); color: var(--wip); }
+  .badge.todo { background: rgba(110,118,129,.15); color: var(--todo); }
+  .badge.blocked { background: rgba(248,81,73,.15); color: var(--blocked); }
+  .stage-sub { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+  .chip { font-size: 10px; padding: 2px 8px; border-radius: 5px; background: var(--panel2);
+          border: 1px solid var(--border); color: var(--muted); display: flex; align-items: center; gap: 4px; }
+  .chip .s { width: 6px; height: 6px; border-radius: 50%; }
+  .chip .s.done { background: var(--done); }
+  .chip .s.wip { background: var(--wip); }
+  .chip .s.todo { background: var(--todo); }
+  .chip .s.blocked { background: var(--blocked); }
+  .stage-bar { height: 4px; background: var(--panel2); border-radius: 3px; margin-top: 9px; overflow: hidden; }
+  .stage-bar > div { height: 100%; border-radius: 3px; background: var(--done); transition: width .6s; }
+
+  /* LEGEND + FOOTER */
+  .legend { display: flex; gap: 16px; justify-content: center; margin-top: 26px; flex-wrap: wrap; }
+  .lg { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+  .lg .s { width: 9px; height: 9px; border-radius: 50%; }
+  footer { text-align: center; margin-top: 24px; font-size: 11px; color: var(--dim); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">PROJECT STATUS</div>
+    <h1>🏃 מאמן ריצה AI — מבוסס Garmin</h1>
+    <div class="updated">עודכן לאחרונה: <b id="updated">—</b></div>
+  </header>
+
+  <div class="overall">
+    <div class="ring">
+      <svg width="120" height="120">
+        <circle cx="60" cy="60" r="52" fill="none" stroke="#232b38" stroke-width="10"/>
+        <circle id="ringFill" cx="60" cy="60" r="52" fill="none" stroke="#3fb950" stroke-width="10"
+                stroke-linecap="round" stroke-dasharray="327" stroke-dashoffset="327"/>
+      </svg>
+      <div class="pct"><span class="n" id="overallPct">0%</span><span class="l">הושלם</span></div>
+    </div>
+    <div class="macro-box" id="macroBox"></div>
+  </div>
+
+  <div class="section-title">צינור הפרויקט — מקור → שעון</div>
+  <div class="pipeline" id="pipeline"></div>
+
+  <div class="legend">
+    <div class="lg"><span class="s" style="background:var(--done)"></span>הושלם</div>
+    <div class="lg"><span class="s" style="background:var(--wip)"></span>בעבודה</div>
+    <div class="lg"><span class="s" style="background:var(--todo)"></span>לא התחיל</div>
+    <div class="lg"><span class="s" style="background:var(--blocked)"></span>חסום</div>
+  </div>
+
+  <footer>הקובץ מתעדכן תוך כדי העבודה על הפרויקט · נתונים בתוך הקובץ עצמו</footer>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════
+//  נתוני הסטטוס — מתעדכנים תוך כדי העבודה. ערוך את האובייקט הזה בלבד.
+// ═══════════════════════════════════════════════════════════════════════
+const PROJECT = {
+  updated: "2026-06-14",
+  macro: { week: 1, total: 14, phase: "Base", race: "15K @ 5:20", days_to_race: 98 },
+  stages: [
+    {
+      icon: "⌚", name: "מקור נתונים — Garmin", status: "done",
+      sub: "שליפה אינקרמנטלית מ-Garmin Connect (פעילויות, שינה, HRV, GPS, splits).",
+      items: [
+        { t: "fetch_garmin.py (delta fetch)", s: "done" },
+        { t: "100m splits לריצות איכות", s: "done" },
+        { t: "GitHub Actions 3×/יום", s: "done" },
+      ],
+    },
+    {
+      icon: "📚", name: "בסיס ידע — כללי האימון", status: "done",
+      sub: "כל הכללים בקבצים שהמאמן קורא לפני כל החלטה.",
+      items: [
+        { t: "user_profile.md (פרופיל מלא)", s: "done" },
+        { t: "macro_plan.json (14 שבועות)", s: "done" },
+        { t: "feedback_framework.md (3 לולאות)", s: "done" },
+        { t: "academic_research.md (56 מקורות)", s: "done" },
+      ],
+    },
+    {
+      icon: "🤖", name: "מנוע המאמן — coach.py", status: "done",
+      sub: "Claude Opus 4.8 — מחשב מדדים, מזהה שבוע במאקרו, בונה תוכנית.",
+      items: [
+        { t: "זיהוי שבוע במאקרו", s: "done" },
+        { t: "כושר מ-4 שבועות", s: "done" },
+        { t: "דגלים אדומים", s: "done" },
+        { t: "3 מצבים (בוקר/אחרי/שבועי)", s: "done" },
+      ],
+    },
+    {
+      icon: "🌐", name: "דשבורד PWA", status: "done",
+      sub: "אתר שמציג את כל הנתונים — מותקן כאפליקציה באייפון.",
+      items: [
+        { t: "index.html + גרפים", s: "done" },
+        { t: "VDOT + Daniels paces", s: "done" },
+        { t: "אייקון iOS", s: "done" },
+      ],
+    },
+    {
+      icon: "📲", name: "דחיפה לגרמין", status: "done",
+      sub: "תוכנית שבועית מלאה (ריצות + כוח) ללוח השעון — מאומת בפועל.",
+      items: [
+        { t: "push_week.py (ריצות+כוח)", s: "done" },
+        { t: "שיבוץ כוח PPL (שעה כל אחד)", s: "done" },
+        { t: "שער אישור + cleanup", s: "done" },
+      ],
+    },
+    {
+      icon: "⏰", name: "אוטומציה — 3 לולאות cron", status: "blocked",
+      sub: "בוקר / אחרי-אימון / שבועי. חסר רק מפתח API כדי להפעיל.",
+      items: [
+        { t: "workflows מוכנים", s: "done" },
+        { t: "effort חסכוני (low/med/high)", s: "done" },
+        { t: "הוספת ANTHROPIC_API_KEY", s: "blocked" },
+      ],
+    },
+  ],
+};
+// ═══════════════════════════════════════════════════════════════════════
+
+const RANK = { done: 1, wip: 0.5, blocked: 0.25, todo: 0 };
+
+function render() {
+  document.getElementById("updated").textContent = PROJECT.updated;
+
+  // macro box
+  const m = PROJECT.macro;
+  document.getElementById("macroBox").innerHTML = `
+    <div class="ph">פאזת ${m.phase} · שבוע ${m.week}/${m.total}</div>
+    <div class="row">יעד: <b>${m.race}</b></div>
+    <div class="row"><b>${m.days_to_race}</b> ימים לתחרות</div>`;
+
+  // overall %
+  let total = 0, score = 0;
+  PROJECT.stages.forEach(s => s.items.forEach(it => { total++; score += RANK[it.s] ?? 0; }));
+  const pct = Math.round(score / total * 100);
+  document.getElementById("overallPct").textContent = pct + "%";
+  const circ = 327;
+  document.getElementById("ringFill").style.strokeDashoffset = circ * (1 - pct / 100);
+
+  // pipeline
+  const labels = { done: "הושלם", wip: "בעבודה", todo: "לא התחיל", blocked: "חסום" };
+  document.getElementById("pipeline").innerHTML = PROJECT.stages.map(st => {
+    const tot = st.items.length;
+    const dn = st.items.filter(i => i.s === "done").length;
+    const barPct = Math.round(dn / tot * 100);
+    const chips = st.items.map(i =>
+      `<span class="chip"><span class="s ${i.s}"></span>${i.t}</span>`).join("");
+    return `
+      <div class="stage">
+        <div class="stage-rail">
+          <div class="dot ${st.status}"></div>
+          <div class="connector"></div>
+        </div>
+        <div class="stage-card">
+          <div class="stage-head">
+            <span class="ic">${st.icon}</span>
+            <span class="nm">${st.name}</span>
+            <span class="badge ${st.status}">${labels[st.status]}</span>
+          </div>
+          <div class="stage-sub">${st.sub}</div>
+          <div class="chips">${chips}</div>
+          <div class="stage-bar"><div style="width:${barPct}%"></div></div>
+        </div>
+      </div>`;
+  }).join("");
+}
+render();
+</script>
+</body>
+</html>
