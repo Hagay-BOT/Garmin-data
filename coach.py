@@ -21,6 +21,7 @@ DATA_FILE = BASE_DIR / "data.json"
 KB_DIR = BASE_DIR / "knowledge_base"
 REPORT_FILE = BASE_DIR / "coach_report.md"
 HISTORY_FILE = BASE_DIR / "coach_history.json"
+MACRO_FILE = BASE_DIR / "macro_plan.json"
 
 HISTORY_WEEKS_TO_KEEP = 52
 HISTORY_WEEKS_TO_INJECT = 4
@@ -34,6 +35,89 @@ RUN_TYPES = ("running", "treadmill_running", "trail_running")
 def load_data() -> dict:
     with open(DATA_FILE, encoding="utf-8") as f:
         return json.load(f)
+
+
+# ── Macro Plan (14-week periodization) ────────────────────────────────────────
+
+def load_macro_plan() -> dict | None:
+    """Read the structured 14-week macro plan (single source of truth)."""
+    if not MACRO_FILE.exists():
+        return None
+    try:
+        return json.loads(MACRO_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def get_macro_week(today: date | None = None) -> dict:
+    """
+    Locate where we are in the 14-week macro plan based on today's date.
+    Returns the current week's targets + phase + gate/deload flags, plus
+    weeks-to-race. This is the bridge between micro (weekly) and macro.
+    """
+    plan = load_macro_plan()
+    if not plan:
+        return {"status": "no_plan"}
+
+    today = today or date.today()
+    start = date.fromisoformat(plan["start_monday"])
+    weeks = plan["weeks"]
+    total = len(weeks)
+    race_date = date.fromisoformat(plan["race"]["date"])
+    days_to_race = (race_date - today).days
+
+    delta_days = (today - start).days
+    if delta_days < 0:
+        days_until_start = -delta_days
+        return {"status": "pre", "race": plan["race"], "total_weeks": total,
+                "days_until_start": days_until_start, "days_to_race": days_to_race,
+                "first_week": weeks[0]}
+
+    week_num = delta_days // 7 + 1
+    if week_num > total:
+        return {"status": "post", "race": plan["race"], "total_weeks": total,
+                "days_to_race": days_to_race}
+
+    wk = weeks[week_num - 1]
+    return {
+        "status": "active",
+        "week_num": week_num,
+        "total_weeks": total,
+        "phase": wk["phase"],
+        "target_km": wk["target_km"],
+        "long_run_km": wk["long_run_km"],
+        "quality": wk["quality"],
+        "deload": wk["deload"],
+        "gate": wk["gate"],
+        "focus": wk["focus"],
+        "days_to_race": days_to_race,
+        "weeks_to_race": max(0, total - week_num),
+        "race": plan["race"],
+    }
+
+
+def format_macro_for_prompt(macro: dict) -> str:
+    """Render the macro position as a compact markdown block for prompts."""
+    if not macro or macro.get("status") == "no_plan":
+        return "אין תוכנית מאקרו טעונה (macro_plan.json חסר)."
+    if macro.get("status") == "pre":
+        return (f"התוכנית עוד לא התחילה — מתחילה בעוד {macro['days_until_start']} ימים. "
+                f"תחרות בעוד {macro['days_to_race']} ימים.")
+    if macro.get("status") == "post":
+        return f"התוכנית הסתיימה. תחרות בעוד {macro['days_to_race']} ימים."
+    race = macro["race"]
+    gate = " 🔬 **שבוע גייט — הערכת מאקרו מחדש**" if macro["gate"] else ""
+    deload = " 🔻 **DELOAD**" if macro["deload"] else ""
+    return (
+        f"**מיקום במאקרו:** שבוע {macro['week_num']}/{macro['total_weeks']} · "
+        f"פאזת **{macro['phase']}**{deload}{gate}\n"
+        f"- יעד התחרות: {race['distance_km']} ק\"מ @ {race['goal_pace']}/ק\"מ "
+        f"({macro['days_to_race']} ימים, {macro['weeks_to_race']} שבועות לתחרות)\n"
+        f"- יעד נפח השבוע: ~{macro['target_km']} ק\"מ\n"
+        f"- Long run השבוע: עד {macro['long_run_km']} ק\"מ\n"
+        f"- אימון איכות מתוכנן: {macro['quality']}\n"
+        f"- מיקוד הפאזה: {macro['focus']}"
+    )
 
 
 # ── Training Load Metrics ────────────────────────────────────────────────────
@@ -347,6 +431,146 @@ def compute_fitness_trends(activities: list, global_max_hr: float, weeks: int = 
     }
 
 
+# ── 4-Week Fitness Assessment ─────────────────────────────────────────────────
+
+def _vdot_from_pace(distance_km: float, pace_sec_per_km: float) -> float | None:
+    """Jack Daniels VDOT from a single effort (distance + pace)."""
+    import math
+    if not distance_km or not pace_sec_per_km:
+        return None
+    t_min = pace_sec_per_km * distance_km / 60.0
+    if t_min <= 0:
+        return None
+    v = distance_km * 1000.0 / t_min  # m/min
+    vo2 = -4.60 + 0.182258 * v + 0.000104 * v ** 2
+    pct = (0.8 + 0.1894393 * math.exp(-0.012778 * t_min)
+           + 0.2989558 * math.exp(-0.1932605 * t_min))
+    return round(vo2 / pct, 1) if pct else None
+
+
+def compute_fitness_4week(activities: list, global_max_hr: float) -> dict:
+    """
+    Current-fitness snapshot from ALL runs in the last 28 days (not a single run).
+    This is the canonical fitness measure used at the macro reassessment gates.
+    """
+    cutoff = (date.today() - timedelta(days=28)).isoformat()
+    runs = [
+        a for a in activities
+        if a.get("activity_type") in RUN_TYPES
+        and a.get("date", "") >= cutoff
+        and (a.get("distance_km") or 0) >= 1.0
+    ]
+    if not runs:
+        return {"available": False, "runs": 0}
+
+    runs_sorted = sorted(runs, key=lambda x: x["date"])
+    total_km = sum(r.get("distance_km") or 0 for r in runs)
+    weekly_km = round(total_km / 4.0, 1)
+
+    # VDOT from the best single effort in the 4-week window (≥3 km, real pace)
+    vdot, vdot_basis = None, None
+    for r in runs_sorted:
+        if (r.get("distance_km") or 0) >= 3.0 and r.get("pace_sec_per_km"):
+            v = _vdot_from_pace(r["distance_km"], r["pace_sec_per_km"])
+            if v and (vdot is None or v > vdot):
+                vdot = v
+                p = r["pace_sec_per_km"]
+                vdot_basis = f"{r['distance_km']:.1f}ק\"מ @ {p//60}:{p%60:02d}/ק\"מ ({r['date']})"
+
+    # Threshold pace proxy = avg pace of runs whose avg_hr sits in Z4 (80–90% max)
+    z4_lo, z4_hi = global_max_hr * 0.80, global_max_hr * 0.90
+    thr_runs = [r for r in runs_sorted
+                if r.get("avg_hr") and z4_lo <= r["avg_hr"] <= z4_hi and r.get("pace_sec_per_km")]
+    thr_pace = None
+    if thr_runs:
+        avg = sum(r["pace_sec_per_km"] for r in thr_runs) / len(thr_runs)
+        thr_pace = f"{int(avg)//60}:{int(avg)%60:02d}/ק\"מ"
+
+    # EF on Z2 runs (aerobic efficiency)
+    z2_lo, z2_hi = global_max_hr * 0.60, global_max_hr * 0.75
+    z2_runs = [r for r in runs_sorted
+               if r.get("avg_hr") and z2_lo <= r["avg_hr"] <= z2_hi and r.get("pace_sec_per_km")]
+    ef_vals = [compute_efficiency_factor(r) for r in z2_runs]
+    ef_vals = [v for v in ef_vals if v is not None]
+    ef_avg = round(sum(ef_vals) / len(ef_vals), 4) if ef_vals else None
+
+    return {
+        "available": True,
+        "window_days": 28,
+        "runs": len(runs),
+        "weekly_km_avg": weekly_km,
+        "total_km": round(total_km, 1),
+        "vdot": vdot,
+        "vdot_basis": vdot_basis,
+        "threshold_pace": thr_pace,
+        "threshold_runs": len(thr_runs),
+        "ef_z2_avg": ef_avg,
+        "z2_runs": len(z2_runs),
+    }
+
+
+# ── Red Flags (deterministic detection) ───────────────────────────────────────
+
+def detect_red_flags(activities: list, metrics: dict) -> list[dict]:
+    """
+    Deterministic red-flag scan that feeds all three loops.
+    Each flag: {flag, severity (🔴/🟡), detail, action}.
+    """
+    flags: list[dict] = []
+    load = metrics.get("load", {})
+
+    # 1. ACWR spike
+    acwr = load.get("acwr")
+    if acwr is not None and acwr > 1.5:
+        flags.append({"flag": "ACWR spike", "severity": "🔴",
+                      "detail": f"ACWR={acwr} מעל 1.5 (Gabbett spike zone)",
+                      "action": "הורד עומס מיד. אל תוסיף ריצות קשות השבוע."})
+
+    # 2. Monotony
+    mono = metrics.get("monotony", {})
+    if mono.get("monotony") and mono["monotony"] > 2.0:
+        flags.append({"flag": "מונוטוניות גבוהה", "severity": "🟡",
+                      "detail": f"מונוטוניות={mono['monotony']} מעל 2.0",
+                      "action": "גוון: ימים קשים קשים, קלים קלים. הוסף יום מנוחה."})
+
+    # 3. Cardiac drift on the most recent run
+    recent = sorted(
+        [a for a in activities if a.get("activity_type") in RUN_TYPES and a.get("hr_drift_bpm") is not None],
+        key=lambda x: x["date"])
+    if recent:
+        last = recent[-1]
+        drift = last["hr_drift_bpm"]
+        if drift is not None and drift > 12:
+            flags.append({"flag": "Cardiac drift חריג", "severity": "🟡",
+                          "detail": f"drift +{drift} bpm בריצה {last['date']}",
+                          "action": "עייפות/חום/התייבשות. שקול יום קל מחר."})
+
+    # 4. Volume jump — last 7 days vs prior 7 days
+    def km_in_window(start_days, end_days):
+        lo = (date.today() - timedelta(days=start_days)).isoformat()
+        hi = (date.today() - timedelta(days=end_days)).isoformat()
+        return sum(a.get("distance_km") or 0 for a in activities
+                   if a.get("activity_type") in RUN_TYPES and hi < a.get("date", "") <= lo)
+    this_wk = km_in_window(0, 7)
+    prior_wk = km_in_window(7, 14)
+    if prior_wk > 5 and this_wk > prior_wk * 1.30:
+        flags.append({"flag": "קפיצת נפח", "severity": "🟡",
+                      "detail": f"נפח השבוע {this_wk:.0f} ק\"מ מול {prior_wk:.0f} בשבוע שעבר (>30%)",
+                      "action": "עלייה חדה מדי בנפח. רכך את השבוע הבא."})
+
+    # 5. Long run + knee/ankle rule (user-specific, from user_profile.md)
+    long_runs_7d = [a for a in activities
+                    if a.get("activity_type") in RUN_TYPES
+                    and (a.get("distance_km") or 0) >= 10
+                    and a.get("date", "") >= (date.today() - timedelta(days=7)).isoformat()]
+    if long_runs_7d:
+        flags.append({"flag": "Long run 10+ ק\"מ", "severity": "🟡",
+                      "detail": f"בוצעה ריצה ארוכה ({long_runs_7d[-1]['distance_km']:.1f} ק\"מ) השבוע",
+                      "action": "בדוק כאב ברך/קרסול. אם יש — הגבל את ה-long run הבא."})
+
+    return flags
+
+
 # ── Last Week Summary ────────────────────────────────────────────────────────
 
 def last_n_days_runs(activities: list, n: int = 7) -> list:
@@ -644,6 +868,8 @@ SYSTEM_PROMPT_TEMPLATE = """
 8. בניתוח מגמות — הצבע על שינויים חיוביים או שליליים ביחס לשבועות קודמים.
 9. אם Neuromuscular ATL > 15 או "days_since_last" < 2 — אל תמליץ על ריצות מהירות/אינטרוולים יום לאחר אימון כוח.
 10. כלול אימוני כוח בתוכנית השבועית — קבע ימים שבהם הכוח ישולב עם הריצה (לא על ימי Z2/שחזור).
+11. **חיבור למאקרו (קריטי):** תוכנית השבוע נגזרת מהמיקום בתוכנית 14 השבועות — נפח, מיקוד, ו-long run לפי יעדי הפאזה (Base/Build/Peak/Taper). אם שבוע deload — הורד נפח ~40% ושמור עצימות. אם שבוע גייט — ציין במפורש את הערכת ה-VDOT מ-4 השבועות והאם להאיץ/להאריך את הפאזה.
+12. **דגלים אדומים קודמים לכל:** אם יש דגל 🔴 — טפל בו לפני יעדי המאקרו. בטיחות לפני תוכנית.
 
 ## התאמת תוכנית לפי ביצוע בפועל (Adaptive)
 התוכנית חייבת להגיב למה שהמתאמן *באמת* עשה שבוע שעבר (שדה "ציות לתוכנית"):
@@ -701,8 +927,41 @@ def build_user_prompt(metrics: dict, history: list[dict], compliance: dict) -> s
         if compliance.get("available") else f"- {compliance.get('reason', 'לא זמין')}"
     )
 
+    macro_md = format_macro_for_prompt(metrics.get("macro", {}))
+
+    f4 = metrics.get("fitness_4week", {})
+    if f4.get("available"):
+        fitness_md = (
+            f"- VDOT (4 שבועות): {f4.get('vdot','?')} | בסיס: {f4.get('vdot_basis','?')}\n"
+            f"- נפח שבועי ממוצע: {f4.get('weekly_km_avg','?')} ק\"מ ({f4.get('runs')} ריצות ב-28 יום)\n"
+            f"- קצב סף משוער (Z4): {f4.get('threshold_pace','לא זמין')} ({f4.get('threshold_runs',0)} ריצות)\n"
+            f"- EF ממוצע (Z2): {f4.get('ef_z2_avg','?')} ({f4.get('z2_runs',0)} ריצות)"
+        )
+    else:
+        fitness_md = "אין מספיק ריצות ב-4 השבועות האחרונים למדידת כושר."
+
+    red_flags = metrics.get("red_flags", [])
+    if red_flags:
+        flags_md = "\n".join(
+            f"- {rf['severity']} **{rf['flag']}** — {rf['detail']} → {rf['action']}"
+            for rf in red_flags
+        )
+    else:
+        flags_md = "אין דגלים אדומים פעילים. ✓"
+
     return f"""
 ## נתוני האתלט — {date.today().isoformat()}
+
+### 🎯 מיקום בתוכנית המאקרו (חיבור מיקרו↔מאקרו)
+{macro_md}
+
+**חובה:** תוכנית השבוע חייבת להיגזר מהמיקום במאקרו למעלה — נפח, מיקוד, ו-long run לפי יעדי הפאזה, מותאמים לביצוע בפועל.
+
+### 📊 כושר נוכחי (נמדד מ-4 שבועות, לא אימון בודד)
+{fitness_md}
+
+### 🚩 דגלים אדומים
+{flags_md}
 
 ### היסטוריה — 4 שבועות אחרונים
 {history_md}
@@ -770,25 +1029,163 @@ EF, VO2max, קדנס, VDOT — מה השתנה? לאן פנים? מה המשמע
 """
 
 
-# ── Main ─────────────────────────────────────────────────────────────────────
+# ── Morning Readiness Loop ────────────────────────────────────────────────────
 
-def main():
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        print("שגיאה: ANTHROPIC_API_KEY לא מוגדר.")
-        print("הגדר את המשתנה לפני הרצה:")
-        print("  Windows:  $env:ANTHROPIC_API_KEY = 'sk-ant-...'")
-        print("  Linux/Mac: export ANTHROPIC_API_KEY='sk-ant-...'")
-        print("בסביבת GitHub Actions: הוסף כ-Secret בשם ANTHROPIC_API_KEY")
-        sys.exit(1)
+MORNING_SYSTEM = """
+אתה מאמן ריצה אישי. זוהי **בדיקת מוכנות בוקר** — לפני האימון של היום.
+תפקידך: להחליט אם להריץ את האימון המתוכנן כמו שהוא, או להקל עליו, לפי מוכנות הגוף הבוקר.
 
-    print("טוען נתוני גרמין...")
-    data = load_data()
+## בסיס הידע שלך
+{knowledge_base}
 
+## חוקים מחייבים
+1. אתה רשאי **רק להקל** — לקצר, להוריד עצימות, או להחליף למנוחה. **לעולם לא להוסיף עומס** או להחמיר אימון.
+2. אם המוכנות טובה (שינה תקינה, Body Battery גבוה) — אל תשנה. בצע כמתוכנן.
+3. אם המוכנות בינונית — הורד עצימות או קצר ב-20% אם היום אימון איכות.
+4. אם המוכנות נמוכה (שינה < 6ש' או Body Battery < 40) — החלף ל-Z2 קל או מנוחה.
+5. אם יש דגל אדום 🔴 — התייחס אליו ראשון.
+6. תשובה קצרה וקונקרטית: מה לעשות היום, בכמה מילים. לא דוח.
+
+## פורמט פלט (בסוף, JSON תקני):
+---MORNING_JSON---
+{{
+  "readiness_level": "ירוק | צהוב | אדום",
+  "adjustment_type": "none | easier | shorter | rest",
+  "planned": "<האימון שתוכנן>",
+  "adjusted": "<האימון שיבוצע בפועל>",
+  "reason": "<משפט אחד>"
+}}
+---END_MORNING---
+"""
+
+
+def build_morning_prompt(metrics: dict) -> str:
+    macro_md = format_macro_for_prompt(metrics.get("macro", {}))
+    red_flags = metrics.get("red_flags", [])
+    flags_md = "\n".join(
+        f"- {rf['severity']} {rf['flag']}: {rf['detail']} → {rf['action']}"
+        for rf in red_flags) or "אין דגלים אדומים. ✓"
+
+    return f"""
+## בדיקת בוקר — {date.today().isoformat()}
+
+### מיקום במאקרו (מה מתוכנן היום בפאזה)
+{macro_md}
+
+### מוכנות בוקר (3 ימים אחרונים — שינה / Body Battery)
+{json.dumps(metrics['readiness'], ensure_ascii=False, indent=2)}
+
+### עומס נוכחי
+- ATL (עייפות חריפה): {metrics['load']['atl']}
+- TSB (מאזן/רעננות): {metrics['load']['tsb']}
+- ACWR: {metrics['load']['acwr'] or 'לא זמין'} {metrics['acwr_status']['flag']}
+
+### דגלים אדומים
+{flags_md}
+
+---
+
+החלט: האם להריץ את אימון היום כמתוכנן, או להקל? תן הוראה קצרה וקונקרטית, וסיים בבלוק JSON.
+"""
+
+
+# ── Post-Workout Analysis Loop ────────────────────────────────────────────────
+
+POSTWORKOUT_SYSTEM = """
+אתה מאמן ריצה אישי. זוהי **אנליזת אחרי-אימון** — אחרי שהמתאמן סיים אימון היום.
+תפקידך לתת משוב מפורט על האימון, להתאים את אימון מחר, ולזהות דגלים אדומים.
+
+## בסיס הידע שלך
+{knowledge_base}
+
+## מבנה הניתוח (3 חלקים — חובה את כולם)
+### חלק א' — משוב מפורט
+- מתוכנן מול בוצע: מרחק, קצב, זונות דופק, משך.
+- איכות ביצוע: עמד בקצב היעד? cardiac drift? עקביות splits? דפוס pacing?
+- ציון compliance (0-100) ומה היה טוב / מה לשפר.
+- הקשר מאקרו: האם האימון תרם למטרת הפאזה הנוכחית?
+
+### חלק ב' — אדפטציה לאימון מחר
+- אם היום היה קשה מהצפוי → מחר קל יותר.
+- אם הוחמץ/קוצר → השלמה חלקית בלבד (לא 100%, מסכן ACWR).
+- אם היה קל וטוב → מחר כמתוכנן (אל תוסיף עומס).
+
+### חלק ג' — דגלים אדומים 🚩
+התייחס לדגלים שזוהו. כל כאב ברך/קרסול אחרי 10+ ק"מ = 🔴.
+
+## כללים
+1. ישיר וקונקרטי. מבוסס נתונים, לא ניחוש.
+2. אל תמציא נתון שלא קיים — כתוב "לא זמין".
+3. בטיחות לפני התקדמות.
+"""
+
+
+def build_postworkout_prompt(metrics: dict, workout: dict | None) -> str:
+    macro_md = format_macro_for_prompt(metrics.get("macro", {}))
+    red_flags = metrics.get("red_flags", [])
+    flags_md = "\n".join(
+        f"- {rf['severity']} {rf['flag']}: {rf['detail']} → {rf['action']}"
+        for rf in red_flags) or "אין דגלים אדומים. ✓"
+
+    if not workout:
+        workout_md = "לא נמצא אימון להיום בנתונים."
+    else:
+        p = workout.get("pace_sec_per_km")
+        pace_str = f"{p//60}:{p%60:02d}/ק\"מ" if p else "לא זמין"
+        zones = workout.get("hr_zones_sec") or [0, 0, 0, 0, 0]
+        workout_md = (
+            f"- תאריך: {workout['date']}\n"
+            f"- סוג: {workout.get('activity_type')} | קטגוריה: {workout.get('category','?')}\n"
+            f"- מרחק: {workout.get('distance_km')} ק\"מ | קצב ממוצע: {pace_str}\n"
+            f"- דופק ממוצע: {workout.get('avg_hr')} | מקס: {workout.get('max_hr')}\n"
+            f"- משך: {round((workout.get('duration_sec') or 0)/60)} דק'\n"
+            f"- cardiac drift: {workout.get('hr_drift_bpm','לא זמין')} bpm\n"
+            f"- זונות (שניות Z1-Z5): {zones}\n"
+            f"- 100m splits: {'כן ('+str(len(workout['splits_100m']))+' מקטעים)' if workout.get('splits_100m') else 'לא זמין'}"
+        )
+
+    return f"""
+## ניתוח אחרי אימון — {date.today().isoformat()}
+
+### מיקום במאקרו (מה הפאזה דרשה)
+{macro_md}
+
+### האימון שבוצע היום
+{workout_md}
+
+### דגלים אדומים שזוהו
+{flags_md}
+
+### עומס נוכחי
+- ATL: {metrics['load']['atl']} | TSB: {metrics['load']['tsb']} | ACWR: {metrics['load']['acwr'] or 'לא זמין'} {metrics['acwr_status']['flag']}
+
+---
+
+תן ניתוח ב-3 חלקים: (א) משוב מפורט, (ב) אדפטציה לאימון מחר, (ג) דגלים אדומים.
+"""
+
+
+def latest_workout_today(activities: list) -> dict | None:
+    """Return today's most recent run/strength workout, if any (for post-workout analysis)."""
+    today = date.today().isoformat()
+    todays = [a for a in activities if a.get("date") == today]
+    if not todays:
+        # Fall back to the single most recent workout overall
+        runs = sorted([a for a in activities if a.get("activity_type") in RUN_TYPES],
+                      key=lambda x: x.get("date", ""))
+        return runs[-1] if runs else None
+    runs = [a for a in todays if a.get("activity_type") in RUN_TYPES]
+    return (runs or todays)[-1]
+
+
+# ── Shared Metrics Builder ────────────────────────────────────────────────────
+
+def build_metrics(data: dict) -> dict:
+    """Compute the full metrics bundle shared by all three loops."""
     activities = data.get("activities", [])
     daily = data.get("daily", {})
     global_max_hr = data.get("global_max_hr") or 201.0
 
-    print("מחשב מדדי עומס...")
     daily_load = build_daily_load(activities)
     load_metrics = compute_ctl_atl(daily_load, date.today())
     acwr_flag = acwr_status(load_metrics["acwr"])
@@ -798,15 +1195,11 @@ def main():
     last_week = summarize_runs(last_week_runs)
     readiness = get_readiness(daily)
     prs = compute_prs(activities)
-
-    print("מחשב מגמות כושר...")
     trends = compute_fitness_trends(activities, global_max_hr, weeks=8)
-    print(f"EF={trends['ef']['current']}  VO2max={trends['vo2max']['current']}  VDOT={trends['vdot']['estimate']}")
-
-    print("מחשב עומס כוח...")
     strength = compute_strength_metrics(activities, days=7)
     nm_atl = compute_neuromuscular_atl(activities, date.today())
-    print(f"כוח: {strength['session_count']} אימונים, עומס={strength['total_load']}  NM-ATL={nm_atl}")
+    macro = get_macro_week(date.today())
+    fitness_4week = compute_fitness_4week(activities, global_max_hr)
 
     metrics = {
         "load": load_metrics,
@@ -820,81 +1213,126 @@ def main():
         "trends": trends,
         "strength": strength,
         "nm_atl": nm_atl,
+        "macro": macro,
+        "fitness_4week": fitness_4week,
     }
+    metrics["red_flags"] = detect_red_flags(activities, metrics)
+    return metrics
 
-    print(f"CTL={load_metrics['ctl']}  ATL={load_metrics['atl']}  ACWR={load_metrics['acwr']} {acwr_flag['flag']}")
-    print(f"מונוטוניות: {monotony.get('monotony')} {monotony.get('flag')}  Strain={monotony.get('strain')}")
 
-    print("טוען היסטוריה...")
-    history = load_history()
-    compliance = compute_compliance(history, last_week)
-    if compliance.get("available"):
-        print(f"ציות שבוע שעבר: {compliance.get('km_compliance_pct', '?')}% ({compliance.get('compliance_level', '?')})")
-    else:
-        print(f"ציות: {compliance.get('reason', 'לא זמין')}")
-
-    print("טוען בסיס ידע...")
-    knowledge_base = load_knowledge_base()
-
-    system_prompt = SYSTEM_PROMPT_TEMPLATE.format(knowledge_base=knowledge_base)
-    user_prompt = build_user_prompt(metrics, history, compliance)
-
-    print("קורא ל-Claude Opus (streaming)...")
-    client = anthropic.Anthropic()
-
-    full_response = ""
+def _stream_report(client, system_prompt: str, user_prompt: str, max_tokens: int = 4096) -> str:
+    """Stream a Claude response to stdout and return the full text."""
+    full = ""
     with client.messages.stream(
         model="claude-opus-4-8",
-        max_tokens=4096,
+        max_tokens=max_tokens,
         thinking={"type": "adaptive"},
         output_config={"effort": "high"},
-        # Cache the large knowledge-base system prompt (~12KB) across calls
         system=[{"type": "text", "text": system_prompt,
                  "cache_control": {"type": "ephemeral"}}],
         messages=[{"role": "user", "content": user_prompt}],
     ) as stream:
         for text in stream.text_stream:
             print(text, end="", flush=True)
-            full_response += text
+            full += text
+    return full
 
-    print("\n\nשומר דוח...")
+
+# ── Main ─────────────────────────────────────────────────────────────────────
+
+def main():
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        print("שגיאה: ANTHROPIC_API_KEY לא מוגדר.")
+        print("הגדר את המשתנה לפני הרצה:")
+        print("  Windows:  $env:ANTHROPIC_API_KEY = 'sk-ant-...'")
+        print("  Linux/Mac: export ANTHROPIC_API_KEY='sk-ant-...'")
+        print("בסביבת GitHub Actions: הוסף כ-Secret בשם ANTHROPIC_API_KEY")
+        sys.exit(1)
+
+    mode = sys.argv[1].lower() if len(sys.argv) > 1 else "weekly"
+    if mode not in ("weekly", "morning", "postworkout"):
+        print(f"מצב לא מוכר: {mode}. השתמש ב: weekly | morning | postworkout")
+        sys.exit(1)
+
+    print("טוען נתוני גרמין...")
+    data = load_data()
+
+    print("מחשב מדדים...")
+    metrics = build_metrics(data)
+    load_metrics = metrics["load"]
+    macro = metrics["macro"]
+    print(f"CTL={load_metrics['ctl']}  ATL={load_metrics['atl']}  ACWR={load_metrics['acwr']} {metrics['acwr_status']['flag']}")
+    if macro.get("status") == "active":
+        print(f"מאקרו: שבוע {macro['week_num']}/{macro['total_weeks']} · פאזת {macro['phase']}"
+              + (" · DELOAD" if macro['deload'] else "") + (" · גייט" if macro['gate'] else ""))
+    if metrics["red_flags"]:
+        print(f"🚩 {len(metrics['red_flags'])} דגלים אדומים")
+
+    print("טוען בסיס ידע...")
+    knowledge_base = load_knowledge_base()
+    client = anthropic.Anthropic()
+
+    if mode == "morning":
+        run_morning(client, knowledge_base, metrics)
+    elif mode == "postworkout":
+        run_postworkout(client, knowledge_base, metrics, data)
+    else:
+        run_weekly(client, knowledge_base, metrics)
+
+
+# ── Mode Runners ──────────────────────────────────────────────────────────────
+
+def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
+    """Weekly review — the macro-driven plan for next week. Saves history. Chat."""
+    history = load_history()
+    compliance = compute_compliance(history, metrics["last_week"])
+    if compliance.get("available"):
+        print(f"ציות שבוע שעבר: {compliance.get('km_compliance_pct', '?')}% ({compliance.get('compliance_level', '?')})")
+
+    system_prompt = SYSTEM_PROMPT_TEMPLATE.format(knowledge_base=knowledge_base)
+    user_prompt = build_user_prompt(metrics, history, compliance)
+
+    print("קורא ל-Claude Opus (weekly, streaming)...\n")
+    full_response = _stream_report(client, system_prompt, user_prompt, max_tokens=4096)
+
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
-    report_content = f"# דוח מאמן — {timestamp}\n\n{full_response}\n"
-    REPORT_FILE.write_text(report_content, encoding="utf-8")
+    REPORT_FILE.write_text(f"# דוח מאמן שבועי — {timestamp}\n\n{full_response}\n", encoding="utf-8")
 
-    # ── Save to history ──────────────────────────────────────────────────────
     plan_json = extract_plan_json(full_response)
     if not plan_json:
-        print("⚠️  לא נמצא בלוק PLAN_JSON בדוח — היסטוריה תישמר ללא תוכנית.")
+        print("\n⚠️  לא נמצא בלוק PLAN_JSON בדוח.")
+    load_metrics = metrics["load"]
     compliance_to_store = {k: v for k, v in compliance.items() if k != "available"}
+    macro = metrics["macro"]
     history_entry = {
         "week_of": current_week_monday(),
-        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "generated_at": timestamp,
+        "macro": {
+            "week_num": macro.get("week_num"),
+            "phase": macro.get("phase"),
+            "deload": macro.get("deload"),
+            "gate": macro.get("gate"),
+        },
         "metrics": {
-            "ctl": load_metrics["ctl"],
-            "atl": load_metrics["atl"],
-            "tsb": load_metrics["tsb"],
-            "acwr": load_metrics["acwr"],
+            "ctl": load_metrics["ctl"], "atl": load_metrics["atl"],
+            "tsb": load_metrics["tsb"], "acwr": load_metrics["acwr"],
             "ramp_rate_4w": load_metrics["ramp_rate_4w"],
         },
-        "zones_28d": {
-            "easy_pct": zones.get("easy_pct"),
-            "hard_pct": zones.get("hard_pct"),
-        },
+        "fitness_4week": metrics["fitness_4week"],
+        "zones_28d": {"easy_pct": metrics["zones"].get("easy_pct"),
+                      "hard_pct": metrics["zones"].get("hard_pct")},
         "week_actual": {
-            "run_count": last_week["count"],
-            "total_km": last_week["total_km"],
-            "total_load": last_week.get("total_load", 0),
+            "run_count": metrics["last_week"]["count"],
+            "total_km": metrics["last_week"]["total_km"],
+            "total_load": metrics["last_week"].get("total_load", 0),
         },
+        "red_flags": metrics["red_flags"],
         "recommended_plan": plan_json,
         "compliance": compliance_to_store,
     }
     save_history_entry(history_entry)
-    print(f"היסטוריה עודכנה: {HISTORY_FILE}")
+    print(f"\nהיסטוריה עודכנה: {HISTORY_FILE}\nהדוח נשמר: {REPORT_FILE}")
 
-    print(f"הדוח נשמר: {REPORT_FILE}")
-
-    # ── Interactive chat ─────────────────────────────────────────────────────
     print("\nרוצה לשוחח עם המאמן? (Enter = כן | q = לא)")
     try:
         answer = input().strip().lower()
@@ -902,6 +1340,29 @@ def main():
         answer = "q"
     if answer not in CHAT_EXIT_PHRASES:
         chat_mode(client, knowledge_base, full_response)
+
+
+def run_morning(client, knowledge_base: str, metrics: dict) -> None:
+    """Morning readiness check — adjust today's workout (easier only)."""
+    system_prompt = MORNING_SYSTEM.format(knowledge_base=knowledge_base)
+    user_prompt = build_morning_prompt(metrics)
+    print("בדיקת מוכנות בוקר (streaming)...\n")
+    full = _stream_report(client, system_prompt, user_prompt, max_tokens=1024)
+    out = BASE_DIR / "morning_report.md"
+    out.write_text(f"# בדיקת בוקר — {datetime.now():%Y-%m-%d %H:%M}\n\n{full}\n", encoding="utf-8")
+    print(f"\n\nנשמר: {out}")
+
+
+def run_postworkout(client, knowledge_base: str, metrics: dict, data: dict) -> None:
+    """Post-workout analysis — feedback + tomorrow adaptation + red flags."""
+    workout = latest_workout_today(data.get("activities", []))
+    system_prompt = POSTWORKOUT_SYSTEM.format(knowledge_base=knowledge_base)
+    user_prompt = build_postworkout_prompt(metrics, workout)
+    print("ניתוח אחרי אימון (streaming)...\n")
+    full = _stream_report(client, system_prompt, user_prompt, max_tokens=2048)
+    out = BASE_DIR / "postworkout_report.md"
+    out.write_text(f"# ניתוח אחרי אימון — {datetime.now():%Y-%m-%d %H:%M}\n\n{full}\n", encoding="utf-8")
+    print(f"\n\nנשמר: {out}")
 
 
 # ── Interactive Chat Mode ─────────────────────────────────────────────────────

@@ -1,0 +1,21 @@
+{
+  "race": { "distance_km": 15, "goal_pace": "5:20", "date": "2026-09-20" },
+  "start_monday": "2026-06-15",
+  "total_weeks": 14,
+  "weeks": [
+    { "week": 1,  "phase": "Base",  "target_km": 35, "long_run_km": 10, "quality": "1× Tempo קל (5:10/ק\"מ)", "deload": false, "gate": false, "focus": "נפח Z2, התחלה רגועה" },
+    { "week": 2,  "phase": "Base",  "target_km": 40, "long_run_km": 11, "quality": "1× Tempo (5:00–5:10)", "deload": false, "gate": false, "focus": "+10% נפח" },
+    { "week": 3,  "phase": "Base",  "target_km": 45, "long_run_km": 12, "quality": "1× Threshold קצר (4:50)", "deload": false, "gate": false, "focus": "מקס long run" },
+    { "week": 4,  "phase": "Base",  "target_km": 28, "long_run_km": 8,  "quality": "1× Tempo קל", "deload": true, "gate": true, "focus": "DELOAD + הערכת VDOT מ-4 שבועות" },
+    { "week": 5,  "phase": "Base",  "target_km": 48, "long_run_km": 12, "quality": "1× Threshold + strides", "deload": false, "gate": false, "focus": "שיא Base" },
+    { "week": 6,  "phase": "Build", "target_km": 45, "long_run_km": 12, "quality": "1× Threshold (4:45) + 1× Tempo", "deload": false, "gate": false, "focus": "התחלת Build — 3 ק\"מ @5:20 ב-long run" },
+    { "week": 7,  "phase": "Build", "target_km": 48, "long_run_km": 12, "quality": "2× Threshold", "deload": false, "gate": false, "focus": "4 ק\"מ @5:20 ב-long run" },
+    { "week": 8,  "phase": "Build", "target_km": 30, "long_run_km": 8,  "quality": "1× Threshold", "deload": true, "gate": true, "focus": "DELOAD + הערכה: 5:20 מרגיש קל יותר?" },
+    { "week": 9,  "phase": "Build", "target_km": 50, "long_run_km": 12, "quality": "2× Threshold (intervals 4:40)", "deload": false, "gate": false, "focus": "5 ק\"מ @5:20 ב-long run" },
+    { "week": 10, "phase": "Build", "target_km": 52, "long_run_km": 12, "quality": "Threshold + VO2max קצר", "deload": false, "gate": false, "focus": "שיא Build — 6 ק\"מ @5:20" },
+    { "week": 11, "phase": "Peak",  "target_km": 48, "long_run_km": 12, "quality": "VO2max (4:10) + race-pace run", "deload": false, "gate": false, "focus": "8 ק\"מ @5:20 ב-long run" },
+    { "week": 12, "phase": "Peak",  "target_km": 34, "long_run_km": 8,  "quality": "1× race-pace", "deload": true, "gate": true, "focus": "DELOAD + הערכה אחרונה, כיוון taper" },
+    { "week": 13, "phase": "Peak",  "target_km": 40, "long_run_km": 10, "quality": "race-pace simulation (10 ק\"מ @5:20)", "deload": false, "gate": false, "focus": "חזרה גנרלית" },
+    { "week": 14, "phase": "Taper", "target_km": 22, "long_run_km": 0,  "quality": "2× race-pace קצרים (2–3 ק\"מ @5:20)", "deload": false, "gate": false, "focus": "Taper — הורדת נפח 50%, תחרות בסוף השבוע 🏁" }
+  ]
+}
