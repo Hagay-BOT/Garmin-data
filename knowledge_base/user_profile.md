@@ -1,33 +1,105 @@
-# User Profile
+# User Profile — הגיא
 
-## Physical Stats
-- Age: 22
-- Weight: 77 kg
-- Height: 1.76 m
-- Sex: Male
-- Max HR (measured): derived from data.json `global_max_hr` field (currently 201 bpm)
+> קובץ זה הוא המקור המרכזי לנתוני המשתמש. קרא אותו לפני כל תוכנית אימון.
 
-## HR Zone Definitions (% of Max HR)
-- Zone 1 (Recovery):    < 60% MaxHR  — easy jog, active recovery
-- Zone 2 (Aerobic):     60–70% MaxHR — aerobic base, fat oxidation, conversational
-- Zone 3 (Tempo):       70–80% MaxHR — moderate effort, lactate threshold range
-- Zone 4 (Threshold):   80–90% MaxHR — hard effort, lactate threshold and above
-- Zone 5 (Anaerobic):   > 90% MaxHR  — sprint/VO2max, very high effort
+---
 
-## Derived Thresholds (at 201 bpm MaxHR)
-- Z1 ceiling: 121 bpm
-- Z2 range: 121–141 bpm
-- Z3 range: 141–161 bpm
-- Z4 range: 161–181 bpm
-- Z5 floor: 181 bpm
+## נתונים פיזיים בסיסיים
 
-## Training Background
-- Data available from January 2024 onwards via Garmin Connect
-- Activity types: running, strength training, occasional cycling
-- Running experience: recreational to amateur competitive
-- No known injuries on record (verify from recent activity notes)
+| פרמטר | ערך |
+|--------|-----|
+| גיל | 22 |
+| משקל | 77 ק"ג |
+| גובה | 1.76 מ' |
+| מין | זכר |
+| Max HR (נמדד) | 201 bpm (מ-data.json → `global_max_hr`) |
 
-## Performance Benchmarks
-- Extract from data.json: best pace per distance category (5K, 10K, HM)
-- Cadence typical: 170–180 spm (check recent average)
-- Aerobic efficiency: tracked via Z2 % and cardiac drift
+---
+
+## יעד תחרות
+
+| פרמטר | ערך |
+|--------|-----|
+| מרחק | 15 ק"מ |
+| טווח זמן | ~3 חודשים (ספטמבר 2026) |
+| קצב יעד | 5:20 דקות/ק"מ |
+| קצב נוכחי | 5:50–6:10 דקות/ק"מ (ריצות נוחות) |
+| פער לסגירה | ~30–50 שניות לק"מ |
+
+**המשמעות:** הגיא צריך לשפר את קצב הסף שלו ולבנות יכולת ריצה בקצב 5:20 לאורך 15 ק"מ מבלי "לפרוץ" לדופק גבוה. זה מחייב עיקר העבודה על Threshold ו-Zone 2.
+
+---
+
+## רקע ורמת ניסיון
+
+- **ניסיון:** 1–3 שנים (רמה בינונית)
+- **סוגי פעילות:** ריצה, אימוני כוח, רכיבה מזדמנת
+- **עקביות:** יכול להקדיש 7 ימים/שבוע (כולל active recovery)
+- **נפח שבועי נוכחי:** 30–50 ק"מ/שבוע
+
+---
+
+## אזורי דופק (% מ-Max HR = 201 bpm)
+
+| Zone | טווח | dpm | תיאור |
+|------|------|-----|--------|
+| Z1 — Recovery | < 60% | < 121 | ריצה קלה מאוד, warm-up |
+| Z2 — Aerobic | 60–70% | 121–141 | בסיס אירובי, fat oxidation, שיחה אפשרית |
+| Z3 — Tempo | 70–80% | 141–161 | מאמץ בינוני, אזור אפור — להימנע ממנו |
+| Z4 — Threshold | 80–90% | 161–181 | קשה, סף לקטט ומעלה |
+| Z5 — Anaerobic | > 90% | > 181 | VO2max, ספרינטים |
+
+**חשוב:** לפי Meixner 2025, שונות אישית >20% בזונות — לא לקחת את הגבולות כמוחלטים. בדוק cardiac drift ו-RPE בפועל.
+
+---
+
+## פציעות ומגבלות גופניות
+
+| אזור | תסמין | מתי מופיע |
+|------|--------|-----------|
+| ברכיים | כאב (כנראה overuse) | ריצות ארוכות 10+ ק"מ |
+| קרסול | כאב | ריצות ארוכות 10+ ק"מ |
+
+**כללי אימון בגלל זה:**
+1. **אין long run של יותר מ-12 ק"מ** עד שהכאב נבדק/מחלים — להגדיל בהדרגה של max 10% לשבוע.
+2. **תרגילי חיזוק ברכיים:** סקוואט חד-רגלי, wall sit, hip thrust — לפני כל ריצה.
+3. **תרגילי חיזוק קרסול:** calf raises, resistance band — 3×/שבוע.
+4. **לאחר ריצה ארוכה:** יום מנוחה מלא או active recovery בלבד.
+5. **אסור:** להעלות נפח וקשיות בו-זמנית. שבוע שמעלים נפח — מורידים עצימות, ולהפך.
+
+---
+
+## מבנה שבוע אימון מומלץ (עם 7 ימים)
+
+| יום | סוג |
+|-----|-----|
+| שני | כוח (Heavy) + ריצה Z2 קצרה (30–40 דק') |
+| שלישי | ריצת איכות — Threshold / Tempo |
+| רביעי | Active Recovery — כוח קל / רכיבה / ריצה Z1 20 דק' |
+| חמישי | אינטרוולים (VO2max / 5K pace) |
+| שישי | כוח (Plyometric) + Z2 קצרה |
+| שבת | Long Run — Z2, עד 12 ק"מ (בגלל הברכיים) |
+| ראשון | מנוחה מלאה |
+
+**יחס 80/20:** מתוך 6 ריצות — 4 ב-Z2, 2 איכות. בהתאם ל-Seiler 2006 ו-Stöggl 2014.
+
+---
+
+## ביצועי שיא (נשלפים מ-data.json)
+
+> ערכים אלו מתעדכנים אוטומטית מהנתונים בפועל. המאמן יקרא מ-data.json.
+
+- **5K PR:** חשב מ-`compute_prs()` ב-coach.py
+- **10K PR:** חשב מ-`compute_prs()` ב-coach.py
+- **קצב Z2 טיפוסי:** 6:00–6:30 דקות/ק"מ (בדופק 121–141 bpm)
+- **קדנס ממוצע:** 170–180 spm
+
+---
+
+## עקרונות מפתח עבור הגיא
+
+1. **הפער העיקרי הוא Threshold** — קצב 5:20 דורש סף לקטט חזק יותר.
+2. **Long run מוגבל ל-12 ק"מ** עד שהברכיים והקרסוליים מתחזקות.
+3. **כוח הוא חובה, לא אופציה** — ברכיים וקרסוליים חלשים → פציעות overuse.
+4. **Zone 2 חשוב** אבל לא לשכוח: רוב הנפח כבר ב-Z2. הבעיה היא חוסר עבודת סף.
+5. **7 ימי אימון עם recovery נכון** = עדיף על 5 ימים עצימים. הגוף מתאושש בזמן המנוחה.
