@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "weeks": [
+    {
+      "week_of": "2026-06-15",
+      "generated_at": "2026-06-14 (manual, week 1 kickoff)",
+      "macro": {
+        "week_num": 1,
+        "phase": "Base",
+        "deload": false,
+        "gate": false
+      },
+      "metrics": {
+        "ctl": 32.7,
+        "atl": 32.9,
+        "tsb": -0.3,
+        "acwr": 1.01,
+        "ramp_rate_4w": 9.7
+      },
+      "fitness_4week": {
+        "available": true,
+        "window_days": 28,
+        "runs": 9,
+        "weekly_km_avg": 15.3,
+        "total_km": 61.3,
+        "vdot": 36.9,
+        "vdot_basis": "6.3ק\"מ @ 5:13/ק\"מ (2026-06-08)",
+        "threshold_pace": "6:28/ק\"מ",
+        "threshold_runs": 2,
+        "ef_z2_avg": 1.1055,
+        "z2_runs": 4
+      },
+      "zones_28d": {
+        "easy_pct": 45.0,
+        "hard_pct": 30.9
+      },
+      "week_actual": {},
+      "red_flags": [
+        {
+          "flag": "קפיצת נפח",
+          "severity": "🟡",
+          "detail": "נפח השבוע 21 ק\"מ מול 12 בשבוע שעבר (>30%)",
+          "action": "עלייה חדה מדי בנפח. רכך את השבוע הבא."
+        }
+      ],
+      "recommended_plan": {
+        "run_count": 4,
+        "total_km_approx": 25.5,
+        "focus": "בסיס Base — נפח Z2 קל אמיתי + סף ביום שני",
+        "key_workout": "שני: Tempo 3 ק\"מ @ 5:10–5:15 | שבת: Long 10 ק\"מ Z2"
+      },
+      "compliance": {}
+    }
+  ]
+}
