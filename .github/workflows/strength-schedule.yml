@@ -1,0 +1,44 @@
+name: Schedule Strength Workouts
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "build (JSON only) | schedule-week (push to watch) | cleanup"
+        required: false
+        default: "build"
+      cleanup_id:
+        description: "workout id to delete (cleanup mode only)"
+        required: false
+        default: ""
+
+jobs:
+  strength:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build only (no credentials, no push)
+        if: ${{ github.event.inputs.mode == 'build' }}
+        run: python push_strength.py --build-only
+
+      - name: Schedule week to Garmin calendar
+        if: ${{ github.event.inputs.mode == 'schedule-week' }}
+        env:
+          GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+        run: python push_strength.py --schedule-week
+
+      - name: Cleanup a scheduled workout
+        if: ${{ github.event.inputs.mode == 'cleanup' }}
+        env:
+          GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+        run: python push_strength.py --cleanup "${{ github.event.inputs.cleanup_id }}"
