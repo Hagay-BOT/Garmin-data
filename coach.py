@@ -1220,14 +1220,16 @@ def build_metrics(data: dict) -> dict:
     return metrics
 
 
-def _stream_report(client, system_prompt: str, user_prompt: str, max_tokens: int = 4096) -> str:
-    """Stream a Claude response to stdout and return the full text."""
+def _stream_report(client, system_prompt: str, user_prompt: str,
+                   max_tokens: int = 4096, effort: str = "high") -> str:
+    """Stream a Claude response to stdout and return the full text.
+    effort tunes cost: 'low' (morning), 'medium' (post-workout), 'high' (weekly)."""
     full = ""
     with client.messages.stream(
         model="claude-opus-4-8",
         max_tokens=max_tokens,
         thinking={"type": "adaptive"},
-        output_config={"effort": "high"},
+        output_config={"effort": effort},
         system=[{"type": "text", "text": system_prompt,
                  "cache_control": {"type": "ephemeral"}}],
         messages=[{"role": "user", "content": user_prompt}],
@@ -1347,7 +1349,7 @@ def run_morning(client, knowledge_base: str, metrics: dict) -> None:
     system_prompt = MORNING_SYSTEM.format(knowledge_base=knowledge_base)
     user_prompt = build_morning_prompt(metrics)
     print("בדיקת מוכנות בוקר (streaming)...\n")
-    full = _stream_report(client, system_prompt, user_prompt, max_tokens=1024)
+    full = _stream_report(client, system_prompt, user_prompt, max_tokens=1024, effort="low")
     out = BASE_DIR / "morning_report.md"
     out.write_text(f"# בדיקת בוקר — {datetime.now():%Y-%m-%d %H:%M}\n\n{full}\n", encoding="utf-8")
     print(f"\n\nנשמר: {out}")
@@ -1359,7 +1361,7 @@ def run_postworkout(client, knowledge_base: str, metrics: dict, data: dict) -> N
     system_prompt = POSTWORKOUT_SYSTEM.format(knowledge_base=knowledge_base)
     user_prompt = build_postworkout_prompt(metrics, workout)
     print("ניתוח אחרי אימון (streaming)...\n")
-    full = _stream_report(client, system_prompt, user_prompt, max_tokens=2048)
+    full = _stream_report(client, system_prompt, user_prompt, max_tokens=2048, effort="medium")
     out = BASE_DIR / "postworkout_report.md"
     out.write_text(f"# ניתוח אחרי אימון — {datetime.now():%Y-%m-%d %H:%M}\n\n{full}\n", encoding="utf-8")
     print(f"\n\nנשמר: {out}")
