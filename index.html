@@ -316,6 +316,17 @@
     /* ── CHART SECTIONS ── */
     .chart-wrap { position:relative; height:205px; }
     .chart-sec { padding:1.3rem 1.4rem; margin-bottom:.75rem; }
+    .fit-live { font-size:.6rem; font-weight:500; color:#4ade80; opacity:.8; margin-right:.4rem; }
+    .fit-top { display:flex; align-items:baseline; gap:.6rem; margin:.2rem 0 1rem; flex-wrap:wrap; }
+    .fit-vdot { font-size:2.4rem; font-weight:800; color:#4ade80; line-height:1; }
+    .fit-vdot-lbl { font-size:.8rem; color:var(--muted,#9aa0a6); }
+    .fit-basis { font-size:.72rem; color:var(--muted,#9aa0a6); }
+    .fit-paces { display:grid; grid-template-columns:repeat(4,1fr); gap:.5rem; }
+    .fit-pace { background:rgba(127,127,127,.08); border-radius:10px; padding:.6rem .4rem; text-align:center; }
+    .fit-pace-name { font-size:.66rem; color:var(--muted,#9aa0a6); margin-bottom:.18rem; }
+    .fit-pace-val { font-size:1.02rem; font-weight:700; }
+    .fit-pace-desc { font-size:.58rem; color:var(--muted,#9aa0a6); margin-top:.12rem; }
+    .fit-none { color:var(--muted,#9aa0a6); font-size:.82rem; padding:.5rem 0; }
 
     /* ── PRs ── */
     .prs-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:.6rem; }
@@ -481,6 +492,12 @@
     <div class="prs-grid" id="prs-grid"></div>
   </div>
 
+  <!-- Current Fitness & Training Paces -->
+  <div class="chart-sec card" id="fitness-sec">
+    <div class="sec-title">כושר נוכחי וקצבי אימון <span class="fit-live">● מתעדכן מ-90 הימים האחרונים</span></div>
+    <div id="fitness-body"></div>
+  </div>
+
   <!-- HR Zone Distribution -->
   <div class="chart-sec card" id="zones-sec">
     <div class="sec-title">התפלגות HR Zones — 12 שבועות</div>
@@ -605,8 +622,68 @@ function buildDashboard(acts, globalMaxHR){
   buildWeekly(allActivities);
   buildGPS(runs);
   buildPRs(runs);
+  buildFitness(runs);
   buildZoneChart(runs, globalMaxHR);
   buildTable('runs');
+}
+
+// ── Current fitness (VDOT) + Daniels training paces ─────────────────────────
+function buildFitness(runs){
+  const body=document.getElementById('fitness-body');
+  if(!body) return;
+
+  // VDOT מ-90 הימים האחרונים בלבד — כושר נוכחי, לא שיא ישן
+  const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-90);
+  const cutoffStr=cutoff.toISOString().slice(0,10);
+  const buckets=[{label:'5K',lo:4.5,hi:5.5},{label:'10K',lo:9.5,hi:10.5},{label:'HM',lo:20.5,hi:21.5}];
+
+  let best=null; // {vdot, basis, date}
+  buckets.forEach(b=>{
+    const cands=runs.filter(r=>r.date>=cutoffStr && r.distance_km>=b.lo && r.distance_km<=b.hi && r.pace_sec_per_km)
+      .sort((a,b)=>a.pace_sec_per_km-b.pace_sec_per_km);
+    if(!cands.length) return;
+    const r=cands[0];
+    const tMin=r.pace_sec_per_km*r.distance_km/60;
+    const v=r.distance_km*1000/tMin; // m/min
+    const vo2=-4.60+0.182258*v+0.000104*v*v;
+    const pct=0.8+0.1894393*Math.exp(-0.012778*tMin)+0.2989558*Math.exp(-0.1932605*tMin);
+    const vdot=vo2/pct;
+    if(!best||vdot>best.vdot) best={vdot, basis:`${b.label} · ${fmtPace(r.pace_sec_per_km)} · ${fmtDate(r.date)}`};
+  });
+
+  if(!best){
+    body.innerHTML=`<div class="fit-none">אין ריצת 5K/10K/HM ב-90 הימים האחרונים לחישוב כושר נוכחי. רוץ מרחק מדיד וזה יתעדכן.</div>`;
+    return;
+  }
+
+  // קצב מ-VDOT ועצימות (%VO2max): פתרון משוואת Daniels ההפוכה
+  const paceFor=(frac)=>{
+    const vo2=frac*best.vdot;
+    // 0.000104 v^2 + 0.182258 v - (4.60+vo2) = 0
+    const a=0.000104, b=0.182258, c=-(4.60+vo2);
+    const v=(-b+Math.sqrt(b*b-4*a*c))/(2*a); // m/min
+    return Math.round(60000/v); // sec/km
+  };
+  const zones=[
+    {name:'קל (E)',frac:0.72,desc:'בסיס אירובי'},
+    {name:'מרתון (M)',frac:0.84,desc:'קצב ארוך'},
+    {name:'סף (T)',frac:0.875,desc:'טמפו'},
+    {name:'אינטרוול (I)',frac:0.985,desc:'VO₂max'},
+  ];
+
+  body.innerHTML=`
+    <div class="fit-top">
+      <span class="fit-vdot">${best.vdot.toFixed(1)}</span>
+      <span class="fit-vdot-lbl">VDOT</span>
+      <span class="fit-basis">· מבוסס על ${best.basis}</span>
+    </div>
+    <div class="fit-paces">
+      ${zones.map(z=>`<div class="fit-pace">
+        <div class="fit-pace-name">${z.name}</div>
+        <div class="fit-pace-val">${fmtPace(paceFor(z.frac))}</div>
+        <div class="fit-pace-desc">${z.desc}</div>
+      </div>`).join('')}
+    </div>`;
 }
 
 // ── hero ───────────────────────────────────────────────────────────────────

@@ -610,20 +610,17 @@ def format_history_for_prompt(history: list[dict]) -> str:
 # ── Knowledge Base ───────────────────────────────────────────────────────────
 
 def load_knowledge_base() -> str:
-    kb_files = [
-        "user_profile.md",
-        "load_management.md",
-        "polarized_training.md",
-        "running_economy.md",
-        "recovery_protocols.md",
-        "periodization.md",
-    ]
+    """קורא את כל קובצי ה-.md בתיקיית הידע. user_profile.md ראשון; השאר א\"ב.
+    כל קובץ מחקר מאומת שמוסיפים לתיקייה נכנס אוטומטית — אין רשימה קבועה."""
+    if not KB_DIR.exists():
+        return ""
+    md_files = sorted(KB_DIR.glob("*.md"))
+    # user_profile תמיד ראשון (הקשר על הספורטאי לפני התיאוריה)
+    md_files.sort(key=lambda p: (p.name != "user_profile.md", p.name))
     parts = []
-    for fname in kb_files:
-        path = KB_DIR / fname
-        if path.exists():
-            content = path.read_text(encoding="utf-8")
-            parts.append(f"## {fname}\n\n{content}")
+    for path in md_files:
+        content = path.read_text(encoding="utf-8")
+        parts.append(f"## {path.name}\n\n{content}")
     return "\n\n---\n\n".join(parts)
 
 
