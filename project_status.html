@@ -3,240 +3,330 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>סטטוס פרויקט — מאמן ריצה AI</title>
+<title>המעבדה — מפת הפרויקטים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0e14; --panel: #131922; --panel2: #1a212c;
-    --border: #232b38; --txt: #e6edf3; --muted: #8b949e; --dim: #6e7681;
-    --done: #3fb950; --wip: #d29922; --todo: #6e7681; --blocked: #f85149;
-    --accent: #58a6ff; --purple: #a371f7;
+  :root{
+    --void:#05060a; --void2:#0a0d16; --ink:#eef2f8; --mut:#8a93a6; --dim:#565f73;
+    --line:#1a2132; --glass:rgba(18,23,36,.72);
+    --done:#46e0a0; --wip:#ffd166; --todo:#5a6478; --blocked:#ff6b7a;
+    --halo:#6ea8ff;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: radial-gradient(ellipse at top, #11161f 0%, var(--bg) 60%);
-    color: var(--txt);
-    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
-    min-height: 100vh; padding: 24px 18px 60px;
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--void); color:var(--ink);
+    font-family:"Heebo",system-ui,sans-serif;
+    overflow:hidden; position:relative;
   }
-  .wrap { max-width: 1000px; margin: 0 auto; }
+  /* ── deep-space atmosphere ── */
+  .bg{position:fixed;inset:0;z-index:0;
+    background:
+      radial-gradient(1200px 700px at 72% 18%, rgba(70,110,200,.16), transparent 60%),
+      radial-gradient(900px 600px at 20% 85%, rgba(70,224,160,.10), transparent 60%),
+      radial-gradient(1400px 900px at 50% 50%, #0a0e1a 0%, #05060a 70%);}
+  .grain{position:fixed;inset:0;z-index:1;opacity:.045;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  #stars{position:fixed;inset:0;z-index:1;pointer-events:none}
+  .star{position:absolute;border-radius:50%;background:#cfe0ff;animation:tw var(--d) ease-in-out infinite alternate}
+  @keyframes tw{from{opacity:.15}to{opacity:.9}}
 
-  /* HEADER */
-  header { text-align: center; margin-bottom: 28px; }
-  .kicker { font-size: 11px; letter-spacing: .2em; color: var(--dim); text-transform: uppercase; }
-  h1 { font-size: 26px; font-weight: 800; margin: 6px 0; letter-spacing: -.02em; }
-  .updated { font-size: 12px; color: var(--muted); }
-  .updated b { color: var(--accent); }
+  /* ── header ── */
+  header{position:relative;z-index:5;text-align:center;padding:26px 16px 6px}
+  .eyebrow{font-size:11px;letter-spacing:.42em;color:var(--dim);text-transform:uppercase}
+  h1{font-family:"Frank Ruhl Libre",serif;font-weight:900;font-size:34px;
+     letter-spacing:-.01em;margin:4px 0 2px;
+     background:linear-gradient(180deg,#fff,#9fb4d8);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-size:12.5px;color:var(--mut)}
+  .sub b{color:var(--halo)}
 
-  /* OVERALL RING */
-  .overall { display: flex; align-items: center; justify-content: center; gap: 26px;
-             margin: 22px 0 8px; flex-wrap: wrap; }
-  .ring { position: relative; width: 120px; height: 120px; }
-  .ring svg { transform: rotate(-90deg); }
-  .ring .pct { position: absolute; inset: 0; display: flex; flex-direction: column;
-               align-items: center; justify-content: center; }
-  .ring .pct .n { font-size: 30px; font-weight: 800; }
-  .ring .pct .l { font-size: 10px; color: var(--muted); }
-  .macro-box { background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
-               padding: 14px 20px; min-width: 200px; }
-  .macro-box .ph { font-size: 13px; font-weight: 700; color: var(--purple); }
-  .macro-box .row { font-size: 12px; color: var(--muted); margin-top: 5px; }
-  .macro-box .row b { color: var(--txt); }
+  /* ── constellation stage ── */
+  #space{position:relative;z-index:4;width:100%;height:calc(100vh - 110px);}
+  #links{position:absolute;inset:0;z-index:2;pointer-events:none}
+  .node{position:absolute;z-index:3;transform:translate(-50%,-50%);
+    display:flex;flex-direction:column;align-items:center;gap:9px;cursor:pointer}
+  .node .floaty{animation:float var(--fd) ease-in-out infinite;animation-delay:var(--delay)}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
 
-  /* PIPELINE */
-  .section-title { font-size: 13px; font-weight: 700; color: var(--muted);
-                   letter-spacing: .08em; text-transform: uppercase; margin: 30px 0 14px; }
-  .pipeline { display: flex; flex-direction: column; gap: 0; }
-  .stage { display: flex; align-items: stretch; gap: 12px; }
-  .stage-rail { display: flex; flex-direction: column; align-items: center; width: 26px; flex-shrink: 0; }
-  .dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--border);
-         background: var(--panel); flex-shrink: 0; margin-top: 16px; z-index: 1; }
-  .dot.done { background: var(--done); border-color: var(--done); box-shadow: 0 0 10px rgba(63,185,80,.5); }
-  .dot.wip { background: var(--wip); border-color: var(--wip); box-shadow: 0 0 10px rgba(210,153,34,.5);
-             animation: pulse 1.8s infinite; }
-  .dot.todo { background: var(--panel); border-color: var(--todo); }
-  .dot.blocked { background: var(--blocked); border-color: var(--blocked); }
-  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
-  .connector { width: 2px; flex: 1; background: var(--border); }
-  .stage:last-child .connector { display: none; }
-  .stage-card { flex: 1; background: var(--panel); border: 1px solid var(--border);
-                border-radius: 10px; padding: 12px 15px; margin-bottom: 10px; transition: .2s; }
-  .stage-card:hover { border-color: var(--accent); transform: translateX(-3px); }
-  .stage-head { display: flex; align-items: center; gap: 8px; }
-  .stage-head .ic { font-size: 16px; }
-  .stage-head .nm { font-size: 14px; font-weight: 700; flex: 1; }
-  .badge { font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 20px; }
-  .badge.done { background: rgba(63,185,80,.15); color: var(--done); }
-  .badge.wip { background: rgba(210,153,34,.15); color: var(--wip); }
-  .badge.todo { background: rgba(110,118,129,.15); color: var(--todo); }
-  .badge.blocked { background: rgba(248,81,73,.15); color: var(--blocked); }
-  .stage-sub { font-size: 11.5px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
-  .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
-  .chip { font-size: 10px; padding: 2px 8px; border-radius: 5px; background: var(--panel2);
-          border: 1px solid var(--border); color: var(--muted); display: flex; align-items: center; gap: 4px; }
-  .chip .s { width: 6px; height: 6px; border-radius: 50%; }
-  .chip .s.done { background: var(--done); }
-  .chip .s.wip { background: var(--wip); }
-  .chip .s.todo { background: var(--todo); }
-  .chip .s.blocked { background: var(--blocked); }
-  .stage-bar { height: 4px; background: var(--panel2); border-radius: 3px; margin-top: 9px; overflow: hidden; }
-  .stage-bar > div { height: 100%; border-radius: 3px; background: var(--done); transition: width .6s; }
+  .orb{position:relative;width:var(--sz);height:var(--sz);border-radius:50%;
+    display:grid;place-items:center;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+  .orb .ring{position:absolute;inset:-7px;transform:rotate(-90deg)}
+  .orb .core{position:absolute;inset:8px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--c1), var(--c2) 70%);
+    box-shadow:0 0 36px -4px var(--glow), inset 0 0 24px rgba(255,255,255,.12);
+    display:grid;place-items:center}
+  .orb .ic{font-size:calc(var(--sz)*.34);filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
+  .orb .pulse{position:absolute;inset:0;border-radius:50%;border:1px solid var(--glow);
+    opacity:0;animation:ripple 3.2s ease-out infinite;animation-delay:var(--delay)}
+  @keyframes ripple{0%{transform:scale(.85);opacity:.55}100%{transform:scale(1.5);opacity:0}}
+  .node:hover .orb{transform:scale(1.08)}
 
-  /* LEGEND + FOOTER */
-  .legend { display: flex; gap: 16px; justify-content: center; margin-top: 26px; flex-wrap: wrap; }
-  .lg { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
-  .lg .s { width: 9px; height: 9px; border-radius: 50%; }
-  footer { text-align: center; margin-top: 24px; font-size: 11px; color: var(--dim); }
+  .pctTag{position:absolute;bottom:-2px;right:-2px;background:var(--void2);
+    border:1px solid var(--line);border-radius:999px;font-size:10px;font-weight:700;
+    padding:2px 7px;color:var(--ink)}
+  .label{text-align:center}
+  .label .nm{font-family:"Frank Ruhl Libre",serif;font-weight:700;font-size:15px}
+  .label .tg{font-size:11px;color:var(--mut);margin-top:1px}
+  .statusPill{display:inline-flex;align-items:center;gap:5px;font-size:10px;
+    color:var(--mut);margin-top:3px}
+  .statusPill .d{width:7px;height:7px;border-radius:50%}
+
+  /* hub */
+  .hub .core{background:radial-gradient(circle at 38% 30%,#fff5d6,#ffb347 60%,#c77b1e);
+    box-shadow:0 0 70px -2px rgba(255,180,80,.65), inset 0 0 30px rgba(255,255,255,.25)}
+  .ghost .core{background:transparent;border:2px dashed var(--line);box-shadow:none}
+  .ghost .ic{opacity:.5}
+  .ghost .label .nm{color:var(--dim)}
+
+  /* ── detail overlay ── */
+  .scrim{position:fixed;inset:0;z-index:20;background:rgba(3,4,8,.72);
+    backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .3s}
+  .scrim.on{opacity:1;pointer-events:auto}
+  .panel{position:fixed;z-index:21;top:50%;right:50%;transform:translate(50%,-46%) scale(.96);
+    width:min(560px,92vw);max-height:86vh;overflow-y:auto;
+    background:linear-gradient(180deg,rgba(20,26,40,.96),rgba(11,15,24,.97));
+    border:1px solid var(--line);border-radius:22px;padding:24px;
+    box-shadow:0 40px 120px -20px rgba(0,0,0,.8), 0 0 0 1px rgba(110,168,255,.06);
+    opacity:0;pointer-events:none;transition:opacity .32s, transform .32s cubic-bezier(.2,.8,.2,1)}
+  .panel.on{opacity:1;pointer-events:auto;transform:translate(50%,-50%) scale(1)}
+  .pHead{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+  .pHead .pOrb{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-size:24px;flex-shrink:0;
+    background:radial-gradient(circle at 35% 30%,var(--c1),var(--c2) 70%);box-shadow:0 0 30px -6px var(--glow)}
+  .pHead .pName{font-family:"Frank Ruhl Libre",serif;font-weight:900;font-size:23px}
+  .pHead .pTag{font-size:12px;color:var(--mut)}
+  .close{position:absolute;top:16px;left:16px;width:32px;height:32px;border-radius:50%;
+    border:1px solid var(--line);background:var(--void2);color:var(--mut);cursor:pointer;font-size:16px;
+    display:grid;place-items:center;transition:.2s}
+  .close:hover{color:var(--ink);border-color:var(--halo)}
+  .pMeta{display:flex;gap:18px;margin:14px 0 18px;padding:13px 16px;
+    background:rgba(110,168,255,.05);border:1px solid var(--line);border-radius:14px}
+  .pMeta .m{flex:1}
+  .pMeta .m .v{font-family:"Frank Ruhl Libre",serif;font-weight:700;font-size:20px}
+  .pMeta .m .l{font-size:10.5px;color:var(--mut);margin-top:1px}
+
+  .stage{display:flex;gap:12px;align-items:stretch}
+  .rail{display:flex;flex-direction:column;align-items:center;width:18px;flex-shrink:0}
+  .sdot{width:13px;height:13px;border-radius:50%;border:2px solid var(--line);background:var(--void2);margin-top:14px;z-index:1}
+  .sdot.done{background:var(--done);border-color:var(--done);box-shadow:0 0 9px rgba(70,224,160,.6)}
+  .sdot.wip{background:var(--wip);border-color:var(--wip);box-shadow:0 0 9px rgba(255,209,102,.6);animation:bk 1.6s infinite}
+  .sdot.blocked{background:var(--blocked);border-color:var(--blocked);box-shadow:0 0 9px rgba(255,107,122,.6)}
+  @keyframes bk{0%,100%{opacity:1}50%{opacity:.35}}
+  .rail .ln{width:2px;flex:1;background:var(--line)}
+  .stage:last-child .ln{display:none}
+  .scard{flex:1;padding:11px 0 13px}
+  .scard .sh{display:flex;align-items:center;gap:8px}
+  .scard .sh .si{font-size:15px}
+  .scard .sh .sn{font-weight:700;font-size:14px;flex:1}
+  .b{font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:999px}
+  .b.done{background:rgba(70,224,160,.14);color:var(--done)}
+  .b.wip{background:rgba(255,209,102,.14);color:var(--wip)}
+  .b.blocked{background:rgba(255,107,122,.14);color:var(--blocked)}
+  .b.todo{background:rgba(90,100,120,.16);color:var(--todo)}
+  .scard .ss{font-size:11.5px;color:var(--mut);margin-top:4px;line-height:1.55}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+  .chip{font-size:10px;padding:2px 8px;border-radius:6px;background:var(--void2);
+    border:1px solid var(--line);color:var(--mut);display:flex;align-items:center;gap:5px}
+  .chip .cd{width:6px;height:6px;border-radius:50%}
+  .legend{position:fixed;z-index:5;bottom:14px;right:50%;transform:translateX(50%);
+    display:flex;gap:14px;flex-wrap:wrap;justify-content:center;
+    background:var(--glass);border:1px solid var(--line);border-radius:999px;padding:8px 18px;backdrop-filter:blur(8px)}
+  .lg{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--mut)}
+  .lg .d{width:8px;height:8px;border-radius:50%}
+  .hint{position:fixed;bottom:14px;right:16px;z-index:5;font-size:10.5px;color:var(--dim)}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div class="kicker">PROJECT STATUS</div>
-    <h1>🏃 מאמן ריצה AI — מבוסס Garmin</h1>
-    <div class="updated">עודכן לאחרונה: <b id="updated">—</b></div>
-  </header>
+<div class="bg"></div><div class="grain"></div><div id="stars"></div>
 
-  <div class="overall">
-    <div class="ring">
-      <svg width="120" height="120">
-        <circle cx="60" cy="60" r="52" fill="none" stroke="#232b38" stroke-width="10"/>
-        <circle id="ringFill" cx="60" cy="60" r="52" fill="none" stroke="#3fb950" stroke-width="10"
-                stroke-linecap="round" stroke-dasharray="327" stroke-dashoffset="327"/>
-      </svg>
-      <div class="pct"><span class="n" id="overallPct">0%</span><span class="l">הושלם</span></div>
-    </div>
-    <div class="macro-box" id="macroBox"></div>
-  </div>
+<header>
+  <div class="eyebrow">THE LAB · המעבדה</div>
+  <h1>מפת הפרויקטים</h1>
+  <div class="sub">לחץ על כוכב לפירוט · עודכן <b id="upd">—</b></div>
+</header>
 
-  <div class="section-title">צינור הפרויקט — מקור → שעון</div>
-  <div class="pipeline" id="pipeline"></div>
-
-  <div class="legend">
-    <div class="lg"><span class="s" style="background:var(--done)"></span>הושלם</div>
-    <div class="lg"><span class="s" style="background:var(--wip)"></span>בעבודה</div>
-    <div class="lg"><span class="s" style="background:var(--todo)"></span>לא התחיל</div>
-    <div class="lg"><span class="s" style="background:var(--blocked)"></span>חסום</div>
-  </div>
-
-  <footer>הקובץ מתעדכן תוך כדי העבודה על הפרויקט · נתונים בתוך הקובץ עצמו</footer>
+<div id="space">
+  <svg id="links"></svg>
 </div>
 
+<div class="legend">
+  <div class="lg"><span class="d" style="background:var(--done)"></span>הושלם</div>
+  <div class="lg"><span class="d" style="background:var(--wip)"></span>בעבודה</div>
+  <div class="lg"><span class="d" style="background:var(--todo)"></span>לא התחיל</div>
+  <div class="lg"><span class="d" style="background:var(--blocked)"></span>חסום</div>
+</div>
+
+<div class="scrim" id="scrim" onclick="closePanel()"></div>
+<div class="panel" id="panel"></div>
+
 <script>
-// ═══════════════════════════════════════════════════════════════════════
-//  נתוני הסטטוס — מתעדכנים תוך כדי העבודה. ערוך את האובייקט הזה בלבד.
-// ═══════════════════════════════════════════════════════════════════════
-const PROJECT = {
-  updated: "2026-06-14",
-  macro: { week: 1, total: 14, phase: "Base", race: "15K @ 5:20", days_to_race: 98 },
-  stages: [
-    {
-      icon: "⌚", name: "מקור נתונים — Garmin", status: "done",
-      sub: "שליפה אינקרמנטלית מ-Garmin Connect (פעילויות, שינה, HRV, GPS, splits).",
-      items: [
-        { t: "fetch_garmin.py (delta fetch)", s: "done" },
-        { t: "100m splits לריצות איכות", s: "done" },
-        { t: "GitHub Actions 3×/יום", s: "done" },
-      ],
-    },
-    {
-      icon: "📚", name: "בסיס ידע — כללי האימון", status: "done",
-      sub: "כל הכללים בקבצים שהמאמן קורא לפני כל החלטה.",
-      items: [
-        { t: "user_profile.md (פרופיל מלא)", s: "done" },
-        { t: "macro_plan.json (14 שבועות)", s: "done" },
-        { t: "feedback_framework.md (3 לולאות)", s: "done" },
-        { t: "academic_research.md (56 מקורות)", s: "done" },
-      ],
-    },
-    {
-      icon: "🤖", name: "מנוע המאמן — coach.py", status: "done",
-      sub: "Claude Opus 4.8 — מחשב מדדים, מזהה שבוע במאקרו, בונה תוכנית.",
-      items: [
-        { t: "זיהוי שבוע במאקרו", s: "done" },
-        { t: "כושר מ-4 שבועות", s: "done" },
-        { t: "דגלים אדומים", s: "done" },
-        { t: "3 מצבים (בוקר/אחרי/שבועי)", s: "done" },
-      ],
-    },
-    {
-      icon: "🌐", name: "דשבורד PWA", status: "done",
-      sub: "אתר שמציג את כל הנתונים — מותקן כאפליקציה באייפון.",
-      items: [
-        { t: "index.html + גרפים", s: "done" },
-        { t: "VDOT + Daniels paces", s: "done" },
-        { t: "אייקון iOS", s: "done" },
-      ],
-    },
-    {
-      icon: "📲", name: "דחיפה לגרמין", status: "done",
-      sub: "תוכנית שבועית מלאה (ריצות + כוח) ללוח השעון — מאומת בפועל.",
-      items: [
-        { t: "push_week.py (ריצות+כוח)", s: "done" },
-        { t: "שיבוץ כוח PPL (שעה כל אחד)", s: "done" },
-        { t: "שער אישור + cleanup", s: "done" },
-      ],
-    },
-    {
-      icon: "⏰", name: "אוטומציה — 3 לולאות cron", status: "blocked",
-      sub: "בוקר / אחרי-אימון / שבועי. חסר רק מפתח API כדי להפעיל.",
-      items: [
-        { t: "workflows מוכנים", s: "done" },
-        { t: "effort חסכוני (low/med/high)", s: "done" },
-        { t: "הוספת ANTHROPIC_API_KEY", s: "blocked" },
-      ],
-    },
-  ],
-};
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+//  נתוני הפרויקטים — ערוך כאן בלבד. כל פרויקט = כוכב במפה.
+//  להוספת פרויקט עתידי: הוסף אובייקט למערך PROJECTS.
+// ═══════════════════════════════════════════════════════════════════
+const META = { updated: "2026-06-14" };
 
-const RANK = { done: 1, wip: 0.5, blocked: 0.25, todo: 0 };
+const PROJECTS = [
+  {
+    id: "garmin", name: "מאמן ריצה AI", icon: "🏃", status: "wip",
+    tagline: "אימון מבוסס Garmin",
+    c1:"#7fe3ff", c2:"#2f7fd0", glow:"rgba(80,170,255,.7)", size: 150,
+    meta: [
+      { v:"שבוע 1/14", l:"פאזת Base" },
+      { v:"15K @ 5:20", l:"יעד תחרות" },
+      { v:"98 ימים", l:"לתחרות" },
+    ],
+    stages: [
+      { icon:"⌚", name:"מקור נתונים — Garmin", status:"done",
+        sub:"שליפה אינקרמנטלית: פעילויות, שינה, HRV, GPS, splits.",
+        items:[{t:"fetch_garmin.py",s:"done"},{t:"100m splits",s:"done"},{t:"Actions 3×/יום",s:"done"}] },
+      { icon:"📚", name:"בסיס ידע — כללי האימון", status:"done",
+        sub:"כל הכללים בקבצים שהמאמן קורא לפני כל החלטה.",
+        items:[{t:"user_profile",s:"done"},{t:"macro_plan (14 שב')",s:"done"},{t:"feedback_framework",s:"done"},{t:"56 מקורות מחקר",s:"done"}] },
+      { icon:"🤖", name:"מנוע המאמן — coach.py", status:"done",
+        sub:"Claude Opus 4.8 — מדדים, שבוע במאקרו, תוכנית.",
+        items:[{t:"שבוע במאקרו",s:"done"},{t:"כושר 4 שבועות",s:"done"},{t:"דגלים אדומים",s:"done"},{t:"3 מצבים",s:"done"}] },
+      { icon:"🌐", name:"דשבורד PWA", status:"done",
+        sub:"אתר מותקן כאפליקציה באייפון.",
+        items:[{t:"גרפים + VDOT",s:"done"},{t:"Daniels paces",s:"done"},{t:"אייקון iOS",s:"done"}] },
+      { icon:"📲", name:"דחיפה לגרמין", status:"done",
+        sub:"תוכנית שבועית (ריצות+כוח) ללוח — מאומת בפועל.",
+        items:[{t:"push_week.py",s:"done"},{t:"כוח PPL (שעה)",s:"done"},{t:"שער אישור+cleanup",s:"done"}] },
+      { icon:"⏰", name:"אוטומציה — 3 לולאות", status:"blocked",
+        sub:"בוקר/אחרי-אימון/שבועי. חסר רק מפתח API.",
+        items:[{t:"workflows מוכנים",s:"done"},{t:"effort חסכוני",s:"done"},{t:"ANTHROPIC_API_KEY",s:"blocked"}] },
+    ],
+  },
+  // ── פרויקט עתידי (placeholder) ──
+  { id:"future", ghost:true, name:"פרויקט הבא", icon:"＋", status:"todo",
+    tagline:"מחכה לרעיון", size:108, meta:[], stages:[] },
+];
+// ═══════════════════════════════════════════════════════════════════
 
-function render() {
-  document.getElementById("updated").textContent = PROJECT.updated;
+const RANK={done:1,wip:.5,blocked:.25,todo:0};
+const LBL={done:"הושלם",wip:"בעבודה",todo:"לא התחיל",blocked:"חסום"};
+const DOTC={done:"var(--done)",wip:"var(--wip)",todo:"var(--todo)",blocked:"var(--blocked)"};
 
-  // macro box
-  const m = PROJECT.macro;
-  document.getElementById("macroBox").innerHTML = `
-    <div class="ph">פאזת ${m.phase} · שבוע ${m.week}/${m.total}</div>
-    <div class="row">יעד: <b>${m.race}</b></div>
-    <div class="row"><b>${m.days_to_race}</b> ימים לתחרות</div>`;
-
-  // overall %
-  let total = 0, score = 0;
-  PROJECT.stages.forEach(s => s.items.forEach(it => { total++; score += RANK[it.s] ?? 0; }));
-  const pct = Math.round(score / total * 100);
-  document.getElementById("overallPct").textContent = pct + "%";
-  const circ = 327;
-  document.getElementById("ringFill").style.strokeDashoffset = circ * (1 - pct / 100);
-
-  // pipeline
-  const labels = { done: "הושלם", wip: "בעבודה", todo: "לא התחיל", blocked: "חסום" };
-  document.getElementById("pipeline").innerHTML = PROJECT.stages.map(st => {
-    const tot = st.items.length;
-    const dn = st.items.filter(i => i.s === "done").length;
-    const barPct = Math.round(dn / tot * 100);
-    const chips = st.items.map(i =>
-      `<span class="chip"><span class="s ${i.s}"></span>${i.t}</span>`).join("");
-    return `
-      <div class="stage">
-        <div class="stage-rail">
-          <div class="dot ${st.status}"></div>
-          <div class="connector"></div>
-        </div>
-        <div class="stage-card">
-          <div class="stage-head">
-            <span class="ic">${st.icon}</span>
-            <span class="nm">${st.name}</span>
-            <span class="badge ${st.status}">${labels[st.status]}</span>
-          </div>
-          <div class="stage-sub">${st.sub}</div>
-          <div class="chips">${chips}</div>
-          <div class="stage-bar"><div style="width:${barPct}%"></div></div>
-        </div>
-      </div>`;
-  }).join("");
+function progressOf(p){
+  if(!p.stages.length) return 0;
+  let t=0,s=0; p.stages.forEach(st=>st.items.forEach(i=>{t++;s+=RANK[i.s]??0}));
+  return t?Math.round(s/t*100):0;
 }
-render();
+
+// starfield
+(function(){
+  const sf=document.getElementById("stars"),N=110,f=document.createDocumentFragment();
+  for(let i=0;i<N;i++){const s=document.createElement("div");s.className="star";
+    const sz=Math.random()*2+.5;
+    s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;width:${sz}px;height:${sz}px;--d:${(Math.random()*3+1.5).toFixed(2)}s`;
+    f.appendChild(s);}
+  sf.appendChild(f);
+})();
+
+document.getElementById("upd").textContent=META.updated;
+
+const space=document.getElementById("space");
+const svg=document.getElementById("links");
+const C=327; // ring circumference (r=52)
+
+function layout(){
+  // clear nodes (keep svg)
+  [...space.querySelectorAll(".node")].forEach(n=>n.remove());
+  const W=space.clientWidth,H=space.clientHeight;
+  const cx=W/2,cy=H/2;
+  svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  svg.innerHTML="";
+
+  // hub at center
+  const hub=document.createElement("div");
+  hub.className="node hub";
+  hub.style.cssText=`left:${cx}px;top:${cy}px`;
+  hub.innerHTML=`<div class="floaty" style="--fd:7s;--delay:0s">
+    <div class="orb" style="--sz:96px;--glow:rgba(255,180,80,.6)">
+      <div class="core"><span class="ic">🛰️</span></div>
+    </div></div>
+    <div class="label"><div class="nm">המעבדה</div><div class="tg">${PROJECTS.filter(p=>!p.ghost).length} פרויקטים פעילים</div></div>`;
+  space.appendChild(hub);
+
+  // place projects on a ring
+  const R=Math.min(W,H)*0.32;
+  const n=PROJECTS.length;
+  PROJECTS.forEach((p,i)=>{
+    const ang=(-90 + i*(360/n)) * Math.PI/180;
+    const x=cx+R*Math.cos(ang), y=cy+R*Math.sin(ang);
+    const pct=progressOf(p);
+    const sz=p.size||120;
+
+    // link line hub→node
+    const ln=document.createElementNS("http://www.w3.org/2000/svg","line");
+    ln.setAttribute("x1",cx);ln.setAttribute("y1",cy);
+    ln.setAttribute("x2",x);ln.setAttribute("y2",y);
+    ln.setAttribute("stroke", p.ghost?"#1a2132":"rgba(110,168,255,.35)");
+    ln.setAttribute("stroke-width", p.ghost?"1":"1.5");
+    ln.setAttribute("stroke-dasharray", p.ghost?"4 6":"3 7");
+    if(!p.ghost){const an=document.createElementNS("http://www.w3.org/2000/svg","animate");
+      an.setAttribute("attributeName","stroke-dashoffset");an.setAttribute("from","0");an.setAttribute("to","-40");
+      an.setAttribute("dur","2.4s");an.setAttribute("repeatCount","indefinite");ln.appendChild(an);}
+    svg.appendChild(ln);
+
+    const node=document.createElement("div");
+    node.className="node"+(p.ghost?" ghost":"");
+    node.style.cssText=`left:${x}px;top:${y}px`;
+    const ringStroke=p.ghost?"":`<svg class="ring" width="${sz}" height="${sz}" viewBox="0 0 ${sz} ${sz}">
+        <circle cx="${sz/2}" cy="${sz/2}" r="${sz/2-7}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="4"/>
+        <circle cx="${sz/2}" cy="${sz/2}" r="${sz/2-7}" fill="none" stroke="${DOTC[p.status]}" stroke-width="4"
+          stroke-linecap="round" stroke-dasharray="${2*Math.PI*(sz/2-7)}"
+          stroke-dashoffset="${2*Math.PI*(sz/2-7)*(1-pct/100)}"/></svg>`;
+    node.innerHTML=`<div class="floaty" style="--fd:${(5.5+i*0.9).toFixed(1)}s;--delay:${(i*0.6).toFixed(1)}s">
+        <div class="orb" style="--sz:${sz}px;--c1:${p.c1||'#222'};--c2:${p.c2||'#111'};--glow:${p.glow||'rgba(120,120,140,.3)'}">
+          ${ringStroke}
+          ${p.ghost?'':'<span class="pulse"></span>'}
+          <div class="core"><span class="ic">${p.icon}</span></div>
+          ${p.ghost?'':`<span class="pctTag">${pct}%</span>`}
+        </div>
+      </div>
+      <div class="label">
+        <div class="nm">${p.name}</div>
+        <div class="tg">${p.tagline}</div>
+        ${p.ghost?'':`<div class="statusPill"><span class="d" style="background:${DOTC[p.status]}"></span>${LBL[p.status]}</div>`}
+      </div>`;
+    if(!p.ghost) node.onclick=()=>openPanel(p.id);
+    else node.onclick=()=>{};
+    space.appendChild(node);
+  });
+}
+
+function openPanel(id){
+  const p=PROJECTS.find(x=>x.id===id); if(!p)return;
+  const pct=progressOf(p);
+  const meta=p.meta.map(m=>`<div class="m"><div class="v">${m.v}</div><div class="l">${m.l}</div></div>`).join("");
+  const stages=p.stages.map(st=>{
+    const chips=st.items.map(i=>`<span class="chip"><span class="cd" style="background:${DOTC[i.s]}"></span>${i.t}</span>`).join("");
+    return `<div class="stage"><div class="rail"><div class="sdot ${st.status}"></div><div class="ln"></div></div>
+      <div class="scard"><div class="sh"><span class="si">${st.icon}</span><span class="sn">${st.name}</span>
+      <span class="b ${st.status}">${LBL[st.status]}</span></div>
+      <div class="ss">${st.sub}</div><div class="chips">${chips}</div></div></div>`;
+  }).join("");
+  document.getElementById("panel").innerHTML=`
+    <button class="close" onclick="closePanel()">✕</button>
+    <div class="pHead">
+      <div class="pOrb" style="--c1:${p.c1};--c2:${p.c2};--glow:${p.glow}">${p.icon}</div>
+      <div><div class="pName">${p.name}</div><div class="pTag">${p.tagline} · ${pct}% הושלם</div></div>
+    </div>
+    <div class="pMeta">${meta}</div>
+    ${stages}`;
+  document.getElementById("scrim").classList.add("on");
+  document.getElementById("panel").classList.add("on");
+}
+function closePanel(){
+  document.getElementById("scrim").classList.remove("on");
+  document.getElementById("panel").classList.remove("on");
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closePanel()});
+
+layout();
+let rt; window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(layout,150)});
 </script>
 </body>
 </html>
