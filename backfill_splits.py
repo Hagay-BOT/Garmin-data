@@ -14,8 +14,9 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 from splits import compute_segments, descriptor_types
 
-# שתי ריצות האיכות האחרונות (08.06 tempo, 25.05 intervals)
-DEFAULT_IDS = [23170600098, 23003018530]
+# ריצת הטמפו (08.06) — זרם נתונים תקין. ריצת האינטרוולים (25.05) הושמטה:
+# הזרם המפורט שלה פגום ב-API של גרמין (מכסה רק ~4.3 מתוך 6.9 ק"מ).
+DEFAULT_IDS = [23170600098]
 
 
 def login():

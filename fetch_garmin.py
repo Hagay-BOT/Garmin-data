@@ -4,6 +4,7 @@ import sys
 import time
 from datetime import date, datetime, timezone, timedelta
 from garminconnect import Garmin, GarminConnectAuthenticationError, GarminConnectConnectionError
+from splits import compute_segments
 
 email = os.environ.get("GARMIN_EMAIL")
 password = os.environ.get("GARMIN_PASSWORD")
@@ -162,6 +163,7 @@ for activity in activities:
     hr_drift_bpm = None
     temperature = None
     laps = []
+    splits_100m = []
 
     # Extra fields from activity summary
     max_speed = activity.get("maxSpeed", 0)
@@ -191,6 +193,11 @@ for activity in activities:
     total_ascent_m = round(ascent_raw) if ascent_raw else None
     total_descent_m = round(descent_raw) if descent_raw else None
     training_effect_label = activity.get("trainingEffectLabel")
+
+    category = classify(type_key, aerobic_effect, anaerobic_effect,
+                        activity.get("maxHR"), activity.get("averageHR"),
+                        activity.get("elevationGain"), distance_km,
+                        training_effect_label)
 
     # HR zones from batch summary fields (seconds per zone, direct from Garmin)
     hr_zones_sec = [
@@ -248,6 +255,10 @@ for activity in activities:
                     hr_drift_bpm = round(
                         sum(hr_vals[-third:]) / third - sum(hr_vals[:third]) / third, 1
                     )
+
+            # מקטעי 100מ' — רק לריצות איכות (לראות אינטרוולים קצרים)
+            if str(category).startswith("quality_"):
+                splits_100m = compute_segments(details, seg_meters=100.0)
         except Exception:
             pass
 
@@ -276,13 +287,7 @@ for activity in activities:
         "date": activity.get("startTimeLocal", "")[:10],
         "start_time": activity.get("startTimeLocal", ""),
         "activity_type": type_key,
-        "category": classify(type_key, aerobic_effect,
-                             anaerobic_effect,
-                             activity.get("maxHR"),
-                             activity.get("averageHR"),
-                             activity.get("elevationGain"),
-                             distance_km,
-                             training_effect_label),
+        "category": category,
         "distance_km": distance_km,
         "duration_sec": int(activity.get("duration", 0)),
         "pace_sec_per_km": pace_sec_per_km,
@@ -319,6 +324,7 @@ for activity in activities:
         "hr_zones_sec": hr_zones_sec,
         "hr_drift_bpm": hr_drift_bpm,
         "laps": laps,
+        "splits_100m": splits_100m,
     })
 
 # ── Merge freshly-processed activities back into the cached set ───────────────
