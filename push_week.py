@@ -31,11 +31,11 @@ CREATED_FILE = BASE / "created_workouts.json"
 
 STRENGTH_SPORT = {"sportTypeId": 5, "sportTypeKey": "strength_training", "displayOrder": 5}
 STRENGTH_DEFS = {
-    "A": {"name": "💪 כוח A — Push (חזה/יד אחורית/כתפיים)", "minutes": 45,
+    "A": {"name": "💪 כוח A — Push (חזה/יד אחורית/כתפיים)", "minutes": 60,
           "desc": "Push: חזה, יד אחורית, כתפיים. פלג גוף עליון."},
-    "B": {"name": "💪 כוח B — Pull (גב/יד קדמית)", "minutes": 45,
+    "B": {"name": "💪 כוח B — Pull (גב/יד קדמית)", "minutes": 60,
           "desc": "Pull: גב, יד קדמית. פלג גוף עליון."},
-    "C": {"name": "🦵 כוח C — Legs (רגליים)", "minutes": 50,
+    "C": {"name": "🦵 כוח C — Legs (רגליים)", "minutes": 60,
           "desc": "רגליים: סקוואט, hip thrust, calf raises, חיזוק ברך/קרסול."},
 }
 
