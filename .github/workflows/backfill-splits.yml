@@ -8,6 +8,9 @@ on:
         required: false
         default: "diag"
 
+permissions:
+  contents: write
+
 jobs:
   backfill:
     runs-on: ubuntu-latest
