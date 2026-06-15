@@ -1098,6 +1098,13 @@ def build_morning_prompt(metrics: dict) -> str:
         f"- {rf['severity']} {rf['flag']}: {rf['detail']} → {rf['action']}"
         for rf in red_flags) or "אין דגלים אדומים. ✓"
 
+    rw = metrics.get("run_weather")
+    if rw and "error" not in rw:
+        weather_md = (f"\n### היכן לרוץ היום (מזג אוויר)\n"
+                      f"{rw['verdict']} — {rw['message']}")
+    else:
+        weather_md = ""
+
     rt = metrics.get("readiness_today", {})
     if rt.get("is_stale"):
         today_md = (
@@ -1124,6 +1131,7 @@ def build_morning_prompt(metrics: dict) -> str:
 
 ### הקשר — מוכנות 3 ימים אחרונים (מגמה בלבד)
 {json.dumps(metrics['readiness'], ensure_ascii=False, indent=2)}
+{weather_md}
 
 ### עומס נוכחי
 - ATL (עייפות חריפה): {metrics['load']['atl']}
@@ -1269,7 +1277,28 @@ def build_metrics(data: dict) -> dict:
         "fitness_4week": fitness_4week,
     }
     metrics["red_flags"] = detect_red_flags(activities, metrics)
+    metrics["run_weather"] = _today_run_weather()
     return metrics
+
+
+def _today_run_weather() -> dict | None:
+    """אם מתוכננת ריצה היום — המלצת מיקום (חוץ/חדר כושר) לפי מזג אוויר.
+    מבדיל ארוכה/קצרה. נכשל בשקט אם אין רשת/מודול/תוכנית."""
+    try:
+        import weather
+        wp_file = BASE_DIR / "week_plan.json"
+        if not wp_file.exists():
+            return None
+        wp = json.loads(wp_file.read_text(encoding="utf-8"))
+        today = date.today().isoformat()
+        for s in wp.get("sessions", []):
+            if s.get("date") == today and s.get("type") == "run":
+                is_long = s.get("subtype") == "long"
+                when = today + ("T08:00" if is_long else "T07:00")
+                return weather.recommend(when, is_long)
+    except Exception:
+        return None
+    return None
 
 
 def _stream_report(client, system_prompt: str, user_prompt: str,
