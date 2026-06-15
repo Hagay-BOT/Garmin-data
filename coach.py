@@ -841,6 +841,92 @@ def extract_plan_json(report_text: str) -> dict:
         return {}
 
 
+# ── Structured Week Plan (the bridge to Garmin + calendar) ────────────────────
+
+WEEK_DAY_NAMES = ["שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת", "ראשון"]  # Mon..Sun
+
+
+def _pace_to_sec(pace: str) -> int:
+    """'5:10' → 310 שניות/ק"מ. ברירת מחדל 360 אם לא תקין."""
+    try:
+        m, s = pace.split(":")
+        return int(m) * 60 + int(s)
+    except Exception:
+        return 360
+
+
+def extract_week_plan(report_text: str) -> dict:
+    """חילוץ בלוק WEEK_PLAN_JSON שה-AI כותב בסוף הדוח."""
+    import re
+    match = re.search(r"---WEEK_PLAN_JSON---\s*(.*?)\s*---END_WEEK_PLAN---",
+                      report_text, re.DOTALL)
+    if not match:
+        return {}
+    try:
+        return json.loads(match.group(1))
+    except Exception:
+        return {}
+
+
+def materialize_week_plan(raw: dict) -> dict:
+    """
+    ממיר את התוכנית המובנית של ה-AI ל-week_plan.json מלא:
+    מוסיף שמות-ימים, תיאורים, ו-steps לריצות (חימום/עיקר/שחרור) — מה שגרמין צריך.
+    """
+    if not raw or not raw.get("sessions"):
+        return {}
+    out = {
+        "week_of": raw.get("week_of", ""),
+        "macro_week": raw.get("macro_week"),
+        "phase": raw.get("phase", ""),
+        "goal_race": "15K @ 5:20",
+        "notes": raw.get("notes", "נוצר אוטומטית מהסקירה השבועית."),
+        "sessions": [],
+    }
+    for s in raw["sessions"]:
+        d = s.get("date", "")
+        try:
+            day = WEEK_DAY_NAMES[date.fromisoformat(d).weekday()]
+        except Exception:
+            day = ""
+        if s.get("type") == "run":
+            est_km = float(s.get("est_km") or 5)
+            pace_sec = _pace_to_sec(s.get("pace", "6:30"))
+            total = int(est_km * pace_sec)
+            sub = s.get("subtype", "easy")
+            if sub == "long":
+                steps = [{"kind": "interval", "seconds": total}]
+            else:
+                # חימום ~9 דק' + עיקר + שחרור ~6 דק'
+                main = max(300, total - 540 - 360)
+                steps = [
+                    {"kind": "warmup", "seconds": 540},
+                    {"kind": "interval", "seconds": main},
+                    {"kind": "cooldown", "seconds": 360},
+                ]
+            out["sessions"].append({
+                "date": d, "day": day, "type": "run", "subtype": sub,
+                "name": s.get("name", "🏃 ריצה"),
+                "desc": s.get("desc", s.get("name", "")),
+                "est_km": est_km, "steps": steps,
+            })
+        else:
+            out["sessions"].append({
+                "date": d, "day": day, "type": "strength", "key": s.get("key", "A"),
+            })
+    return out
+
+
+def save_week_plan(raw: dict) -> bool:
+    """שומר week_plan.json מהתוכנית המובנית. מחזיר True אם נשמר."""
+    full = materialize_week_plan(raw)
+    if not full.get("sessions"):
+        return False
+    (BASE_DIR / "week_plan.json").write_text(
+        json.dumps(full, ensure_ascii=False, indent=2), encoding="utf-8")
+    return True
+
+
 def format_history_for_prompt(history: list[dict]) -> str:
     """Convert stored JSON history to a compact markdown block for prompt injection.
     JSON for storage, markdown for prompts — 15-34% fewer tokens than raw JSON."""
@@ -924,6 +1010,26 @@ SYSTEM_PROMPT_TEMPLATE = """
   "key_workout": "<תיאור קצר של האימון המרכזי>"
 }}
 ---END_PLAN---
+
+## פורמט חובה שני — תוכנית מובנה לשבוע הבא
+אחרי בלוק ה-PLAN_JSON, הוסף בלוק שני עם **כל אימוני השבוע הבא** לפי הסכמה הזו.
+זהו הקובץ שיוזן אוטומטית לגרמין וליומן — דייק בו.
+- ריצות: type=run, subtype=easy/quality/long, name קצר, est_km, pace בפורמט "m:ss".
+- כוח: type=strength, key=A/B/C (A=Push, B=Pull, C=Legs). פיצול PPL לפי הפרופיל.
+- כבד את כל הכללים: ריצה בבוקר/כוח בערב, רגליים (C) רחוק מאיכות/לונג, long ≤12 ק"מ, 80/20.
+- date = תאריך מלא YYYY-MM-DD. week_of = יום ראשון של השבוע הבא.
+
+---WEEK_PLAN_JSON---
+{{
+  "week_of": "<YYYY-MM-DD>",
+  "macro_week": <מספר שבוע במאקרו>,
+  "phase": "<Base/Build/Peak/Taper>",
+  "sessions": [
+    {{"date": "<YYYY-MM-DD>", "type": "strength", "key": "B"}},
+    {{"date": "<YYYY-MM-DD>", "type": "run", "subtype": "quality", "name": "סף 3 ק\"מ @ 5:10", "est_km": 5.5, "pace": "5:10"}}
+  ]
+}}
+---END_WEEK_PLAN---
 """
 
 
@@ -1384,6 +1490,16 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
     plan_json = extract_plan_json(full_response)
     if not plan_json:
         print("\n⚠️  לא נמצא בלוק PLAN_JSON בדוח.")
+
+    # ── כתיבת week_plan.json המובנה (הגשר לגרמין + יומן) ──────────────────
+    raw_week = extract_week_plan(full_response)
+    if raw_week and save_week_plan(raw_week):
+        n = len(raw_week.get("sessions", []))
+        print(f"✅ week_plan.json עודכן — {n} אימונים לשבוע {raw_week.get('week_of','?')}.")
+        print("   → זורם אוטומטית ליומן. לגרמין: דורש אישורך (push_week.py).")
+    else:
+        print("⚠️  לא נמצא WEEK_PLAN_JSON תקין — week_plan.json לא עודכן.")
+
     load_metrics = metrics["load"]
     compliance_to_store = {k: v for k, v in compliance.items() if k != "available"}
     macro = metrics["macro"]
