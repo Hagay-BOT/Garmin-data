@@ -396,6 +396,14 @@ for d in to_fetch:
         stats = client.get_stats(d)
         calories_resting = stats.get("bmrKilocalories")
         calories_active = stats.get("activeKilocalories")
+        # Body Battery בהתעוררות — מקור אמין יותר מהסדרה הזמנית.
+        wake_bb = (stats.get("bodyBatteryAtWakeTime")
+                   or stats.get("bodyBatteryHighestValue"))
+        if isinstance(wake_bb, (int, float)):
+            body_battery = wake_bb
+        if os.environ.get("BB_DEBUG") and d == to_fetch[-1]:
+            print("BB_DEBUG stats battery keys:",
+                  {k: v for k, v in stats.items() if "attery" in k})
     except Exception:
         pass
     time.sleep(0.3)
