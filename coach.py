@@ -568,13 +568,15 @@ def detect_red_flags(activities: list, metrics: dict) -> list[dict]:
                       "detail": f"בוצעה ריצה ארוכה ({long_runs_7d[-1]['distance_km']:.1f} ק\"מ) השבוע",
                       "action": "בדוק כאב ברך/קרסול. אם יש — הגבל את ה-long run הבא."})
 
-    # 6. אי-התאמה סובייקטיבית — מפרשים RPE/Feel מול מה שתוכנן (לא מול סיווג אוטומטי)
+    # 6. אי-התאמה סובייקטיבית — Feel הוא סיגנל מוכנות בלבד; דגל רק עם אישור אובייקטיבי.
+    #    "הרגשתי חלש" ≠ "אימון גרוע" — שופטים לפי התוצאה (קצב מול מתוכנן), לא לפי ההרגשה.
     planned_by_date = {}
     try:
         wp = json.loads((BASE_DIR / "week_plan.json").read_text(encoding="utf-8"))
         for s in wp.get("sessions", []):
             if s.get("type") == "run":
-                planned_by_date[s["date"]] = s.get("subtype", "easy")
+                planned_by_date[s["date"]] = {"subtype": s.get("subtype", "easy"),
+                                              "pace": s.get("pace")}
     except Exception:
         pass
 
@@ -584,23 +586,29 @@ def detect_red_flags(activities: list, metrics: dict) -> list[dict]:
                   and (a.get("rpe") is not None or a.get("feel") is not None)]
     for r in rated_runs[-1:]:
         rpe, feel = r.get("rpe"), r.get("feel")
-        planned = planned_by_date.get(r["date"])  # easy / quality / long / None
+        p = planned_by_date.get(r["date"], {})
+        planned = p.get("subtype")
         weak = (feel is not None and feel <= 2)
         is_quality = planned == "quality" or str(r.get("category", "")).startswith("quality")
+        # האם הקצב בפועל נפל מתחת למתוכנן (>5% אטי) — סימן אובייקטיבי לתת-ביצוע
+        actual = r.get("pace_sec_per_km")
+        planned_sec = _pace_to_sec(p["pace"]) if p.get("pace") else None
+        underperformed = bool(actual and planned_sec and actual > planned_sec * 1.05)
+
         if not is_quality and planned in ("easy", "long", None):
-            # ריצה קלה שהרגישה קשה → תת-התאוששות
-            if (rpe is not None and rpe >= 6) or weak:
+            # ריצה קלה: RPE גבוה (אובייקטיבי) = בעיה. Feel חלש לבד לא מספיק.
+            if rpe is not None and rpe >= 7:
                 flags.append({
                     "flag": "מאמץ נתפס גבוה בריצה קלה", "severity": "🟡",
-                    "detail": f"ריצה קלה ({r['date']}) — RPE {rpe}/10, Feel {feel}/5. הגוף עבד קשה על אימון קל.",
+                    "detail": f"ריצה קלה ({r['date']}) — RPE {rpe}/10. מאמץ גבוה על אימון קל.",
                     "action": "סימן לתת-התאוששות. הקל בימים הקרובים.",
                 })
-        elif is_quality and weak:
-            # איכות שתוכננה אך הרגישה חלשה → ייתכן שנפגעה מעייפות
+        elif is_quality and weak and underperformed:
+            # איכות: דגל רק אם הרגיש חלש *וגם* הקצב נפל מתחת למתוכנן
             flags.append({
-                "flag": "איכות שהרגישה חלשה", "severity": "🟡",
-                "detail": f"אימון איכות ({r['date']}) — Feel {feel}/5, RPE {rpe}/10. תכננת איכות אך הגוף הרגיש חלש.",
-                "action": "ייתכן שהאיכות נפגעה מעייפות — בדוק התאוששות לפני האיכות הבאה.",
+                "flag": "איכות שהרגישה חלשה + תת-ביצוע", "severity": "🟡",
+                "detail": f"אימון איכות ({r['date']}) — Feel {feel}/5, וגם הקצב נפל מתחת למתוכנן. צירוף שמעיד על עייפות.",
+                "action": "בדוק התאוששות לפני האיכות הבאה.",
             })
 
     return flags
@@ -1321,6 +1329,12 @@ POSTWORKOUT_SYSTEM = """
 
 ## בסיס הידע שלך
 {knowledge_base}
+
+## פירוש RPE ו-Feel (חשוב!)
+- **Feel = סיגנל מוכנות סובייקטיבי, לא מדד איכות.** "הרגיש חלש" ≠ "אימון גרוע".
+- שפוט את האימון לפי **התוצאה האובייקטיבית** (קצב מול מתוכנן, דופק, drift) — לא לפי ההרגשה.
+- אם הרגיש חלש אבל **ביצע טוב** (עמד/שיפר קצב, דופק סביר) → זה **חיובי** (דחף דרך תחושה, הגוף היה מסוגל). אל תזהיר.
+- דאגה רק כש**גם** ההרגשה חלשה **וגם** הביצוע נפל (קצב אטי מהמתוכנן/דופק גבוה). RPE נמוך בקצב מהיר = כושר טוב.
 
 ## מבנה הניתוח (3 חלקים — חובה את כולם)
 ### חלק א' — משוב מפורט
