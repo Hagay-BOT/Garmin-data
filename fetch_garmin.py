@@ -308,8 +308,12 @@ for activity in activities:
         "start_time": activity.get("startTimeLocal", ""),
         "activity_type": type_key,
         "category": category,
-        "rpe": perceived_exertion,
-        "feel": workout_feel,
+        # RPE 0-10 (גרמין שומר ×10), Feel 1-5 (0/25/50/75/100)
+        "rpe": (round(perceived_exertion / 10, 1)
+                if isinstance(perceived_exertion, (int, float)) and perceived_exertion > 10
+                else perceived_exertion),
+        "feel": ({0: 1, 25: 2, 50: 3, 75: 4, 100: 5}.get(workout_feel, workout_feel)
+                 if isinstance(workout_feel, (int, float)) else workout_feel),
         "distance_km": distance_km,
         "duration_sec": int(activity.get("duration", 0)),
         "pace_sec_per_km": pace_sec_per_km,

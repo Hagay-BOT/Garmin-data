@@ -568,6 +568,21 @@ def detect_red_flags(activities: list, metrics: dict) -> list[dict]:
                       "detail": f"בוצעה ריצה ארוכה ({long_runs_7d[-1]['distance_km']:.1f} ק\"מ) השבוע",
                       "action": "בדוק כאב ברך/קרסול. אם יש — הגבל את ה-long run הבא."})
 
+    # 6. אי-התאמה סובייקטיבית: ריצה קלה שהרגישה קשה (RPE גבוה / Feel חלש)
+    recent_easy = [a for a in activities
+                   if a.get("activity_type") in RUN_TYPES
+                   and str(a.get("category", "")).startswith("base")
+                   and a.get("date", "") >= (date.today() - timedelta(days=4)).isoformat()
+                   and (a.get("rpe") is not None or a.get("feel") is not None)]
+    for r in recent_easy[-1:]:
+        rpe, feel = r.get("rpe"), r.get("feel")
+        if (rpe is not None and rpe >= 6) or (feel is not None and feel <= 2):
+            flags.append({
+                "flag": "מאמץ נתפס גבוה בריצה קלה", "severity": "🟡",
+                "detail": f"ריצה קלה ({r['date']}) — RPE {rpe}/10, Feel {feel}/5. הגוף עבד קשה על אימון שאמור היה להיות קל.",
+                "action": "סימן לתת-התאוששות. הקל בימים הקרובים, ושקול שאת הקצב הקל היה צריך להיות אטי יותר.",
+            })
+
     return flags
 
 
@@ -1329,6 +1344,8 @@ def build_postworkout_prompt(metrics: dict, workout: dict | None) -> str:
             f"- דופק ממוצע: {workout.get('avg_hr')} | מקס: {workout.get('max_hr')}\n"
             f"- משך: {round((workout.get('duration_sec') or 0)/60)} דק'\n"
             f"- cardiac drift: {workout.get('hr_drift_bpm','לא זמין')} bpm\n"
+            f"- 🧠 דירוג סובייקטיבי: RPE {workout.get('rpe','—')}/10 · Feel {workout.get('feel','—')}/5 "
+            f"(השווה לדופק/קצב — אי-התאמה = סימן עייפות)\n"
             f"- זונות (שניות Z1-Z5): {zones}\n"
             f"- 100m splits: {'כן ('+str(len(workout['splits_100m']))+' מקטעים)' if workout.get('splits_100m') else 'לא זמין'}"
         )
