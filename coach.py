@@ -568,19 +568,39 @@ def detect_red_flags(activities: list, metrics: dict) -> list[dict]:
                       "detail": f"בוצעה ריצה ארוכה ({long_runs_7d[-1]['distance_km']:.1f} ק\"מ) השבוע",
                       "action": "בדוק כאב ברך/קרסול. אם יש — הגבל את ה-long run הבא."})
 
-    # 6. אי-התאמה סובייקטיבית: ריצה קלה שהרגישה קשה (RPE גבוה / Feel חלש)
-    recent_easy = [a for a in activities
-                   if a.get("activity_type") in RUN_TYPES
-                   and str(a.get("category", "")).startswith("base")
-                   and a.get("date", "") >= (date.today() - timedelta(days=4)).isoformat()
-                   and (a.get("rpe") is not None or a.get("feel") is not None)]
-    for r in recent_easy[-1:]:
+    # 6. אי-התאמה סובייקטיבית — מפרשים RPE/Feel מול מה שתוכנן (לא מול סיווג אוטומטי)
+    planned_by_date = {}
+    try:
+        wp = json.loads((BASE_DIR / "week_plan.json").read_text(encoding="utf-8"))
+        for s in wp.get("sessions", []):
+            if s.get("type") == "run":
+                planned_by_date[s["date"]] = s.get("subtype", "easy")
+    except Exception:
+        pass
+
+    rated_runs = [a for a in activities
+                  if a.get("activity_type") in RUN_TYPES
+                  and a.get("date", "") >= (date.today() - timedelta(days=4)).isoformat()
+                  and (a.get("rpe") is not None or a.get("feel") is not None)]
+    for r in rated_runs[-1:]:
         rpe, feel = r.get("rpe"), r.get("feel")
-        if (rpe is not None and rpe >= 6) or (feel is not None and feel <= 2):
+        planned = planned_by_date.get(r["date"])  # easy / quality / long / None
+        weak = (feel is not None and feel <= 2)
+        is_quality = planned == "quality" or str(r.get("category", "")).startswith("quality")
+        if not is_quality and planned in ("easy", "long", None):
+            # ריצה קלה שהרגישה קשה → תת-התאוששות
+            if (rpe is not None and rpe >= 6) or weak:
+                flags.append({
+                    "flag": "מאמץ נתפס גבוה בריצה קלה", "severity": "🟡",
+                    "detail": f"ריצה קלה ({r['date']}) — RPE {rpe}/10, Feel {feel}/5. הגוף עבד קשה על אימון קל.",
+                    "action": "סימן לתת-התאוששות. הקל בימים הקרובים.",
+                })
+        elif is_quality and weak:
+            # איכות שתוכננה אך הרגישה חלשה → ייתכן שנפגעה מעייפות
             flags.append({
-                "flag": "מאמץ נתפס גבוה בריצה קלה", "severity": "🟡",
-                "detail": f"ריצה קלה ({r['date']}) — RPE {rpe}/10, Feel {feel}/5. הגוף עבד קשה על אימון שאמור היה להיות קל.",
-                "action": "סימן לתת-התאוששות. הקל בימים הקרובים, ושקול שאת הקצב הקל היה צריך להיות אטי יותר.",
+                "flag": "איכות שהרגישה חלשה", "severity": "🟡",
+                "detail": f"אימון איכות ({r['date']}) — Feel {feel}/5, RPE {rpe}/10. תכננת איכות אך הגוף הרגיש חלש.",
+                "action": "ייתכן שהאיכות נפגעה מעייפות — בדוק התאוששות לפני האיכות הבאה.",
             })
 
     return flags
