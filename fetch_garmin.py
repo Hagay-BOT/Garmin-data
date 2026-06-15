@@ -377,9 +377,19 @@ for d in to_fetch:
         pass
     try:
         bb_data = client.get_body_battery(d, d)
-        if bb_data:
-            vals = [b.get("charged", 0) for b in bb_data if b.get("charged") is not None]
-            body_battery = max(vals) if vals else None
+        # רמת ה-BD האמיתית נמצאת ב-bodyBatteryValuesArray (לא בשדה "charged"!).
+        # השיא היומי ≈ הערך בהתעוררות, כי הסוללה מגיעה לשיא אחרי טעינת הלילה.
+        levels = []
+        for day in (bb_data or []):
+            for entry in (day.get("bodyBatteryValuesArray") or []):
+                lvl = None
+                if isinstance(entry, (list, tuple)) and len(entry) >= 3:
+                    lvl = entry[2]                      # [timestamp, status, level, ...]
+                elif isinstance(entry, dict):
+                    lvl = entry.get("level") or entry.get("bodyBatteryLevel")
+                if isinstance(lvl, (int, float)):
+                    levels.append(lvl)
+        body_battery = max(levels) if levels else None
     except Exception:
         pass
     try:
