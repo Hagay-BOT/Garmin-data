@@ -208,6 +208,14 @@ for activity in activities:
         round(activity.get("hrTimeInZone_5") or 0),
     ]
 
+    # RPE (מאמץ נתפס) ו-Feel (הרגשה) — אם דורגו בגרמין בסוף האימון
+    perceived_exertion = (activity.get("perceivedExertion")
+                          if activity.get("perceivedExertion") is not None
+                          else activity.get("directWorkoutRpe"))
+    workout_feel = (activity.get("feel")
+                    if activity.get("feel") is not None
+                    else activity.get("directWorkoutFeel"))
+
     # Recovery HR and stamina come from summaryDTO of get_activity()
     recovery_hr = None
     stamina_start = None
@@ -221,6 +229,18 @@ for activity in activities:
             recovery_hr = summary_dto.get("recoveryHeartRate")
             stamina_start = summary_dto.get("beginPotentialStamina")
             stamina_end = summary_dto.get("endPotentialStamina")
+            # RPE/Feel — נסה גם מ-summaryDTO אם חסר בפעילות
+            if perceived_exertion is None:
+                perceived_exertion = (summary_dto.get("directWorkoutRpe")
+                                      or summary_dto.get("perceivedExertion"))
+            if workout_feel is None:
+                workout_feel = (summary_dto.get("directWorkoutFeel")
+                                if summary_dto.get("directWorkoutFeel") is not None
+                                else summary_dto.get("feel"))
+            if os.environ.get("RPE_DEBUG"):
+                hits = {k: v for k, v in {**activity, **summary_dto}.items()
+                        if any(t in k.lower() for t in ("rpe", "feel", "exert", "perceiv"))}
+                print(f"RPE_DEBUG {activity_id}: {hits}")
         except Exception:
             pass
 
@@ -288,6 +308,8 @@ for activity in activities:
         "start_time": activity.get("startTimeLocal", ""),
         "activity_type": type_key,
         "category": category,
+        "rpe": perceived_exertion,
+        "feel": workout_feel,
         "distance_km": distance_km,
         "duration_sec": int(activity.get("duration", 0)),
         "pace_sec_per_km": pace_sec_per_km,
