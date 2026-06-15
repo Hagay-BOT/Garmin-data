@@ -1,0 +1,35 @@
+name: Calendar Weather Refresh
+
+on:
+  schedule:
+    # שבת 07:00 ישראל (04:00 UTC) — תחזית לראשון/שני/שלישי
+    - cron: '0 4 * * 6'
+    # רביעי 20:00 ישראל (17:00 UTC) — תחזית לרביעי/חמישי/שישי/שבת
+    - cron: '0 17 * * 3'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Regenerate calendar ICS with fresh weather (≤3-day horizon)
+        run: python calendar_sync.py
+
+      - name: Commit calendar
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add calendar/training.ics
+          git diff --staged --quiet && echo "no changes" || git commit -m "calendar: refresh weather forecast $(date -u +%Y-%m-%d)"
+          git pull --rebase origin main || true
+          git push || true

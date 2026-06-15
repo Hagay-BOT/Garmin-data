@@ -58,7 +58,16 @@ def _utc(local_dt: datetime) -> str:
     return utc_dt.strftime("%Y%m%dT%H%M%SZ")
 
 
+# תחזית מהימנה רק עד 3 ימים קדימה — מעבר לכך מחכים לרענון הקרוב
+FORECAST_HORIZON_DAYS = 3
+
+
 def _weather_note(date_str: str, hour: str, is_long: bool) -> str:
+    days_out = (date.fromisoformat(date_str) - date.today()).days
+    if days_out < 0:
+        return ""                      # ריצה שעברה
+    if days_out > FORECAST_HORIZON_DAYS:
+        return "\\n\\n🌦️ התחזית תתעדכן ~3 ימים לפני הריצה."
     try:
         import weather
         rec = weather.recommend(f"{date_str}T{hour}", is_long)

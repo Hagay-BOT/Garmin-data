@@ -36,15 +36,12 @@ jobs:
           GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
 
-      - name: Generate calendar ICS (training plan + weather)
-        run: python calendar_sync.py
-
-      - name: Commit data.json + calendar
+      - name: Commit data.json
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data.json calendar/training.ics
-          git diff --staged --quiet && echo "No changes to commit" || git commit -m "chore: update running data + calendar $(date -u +%Y-%m-%d)"
+          git add data.json
+          git diff --staged --quiet && echo "No changes to commit" || git commit -m "chore: update running data $(date -u +%Y-%m-%d)"
           git pull --rebase origin main
           git push
 
