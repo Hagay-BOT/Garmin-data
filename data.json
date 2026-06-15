@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-06-15T09:08:39.903915+00:00",
+  "last_updated": "2026-06-15T10:50:19.987616+00:00",
   "activities": [
     {
       "activity_id": 13381622386,
@@ -114792,6 +114792,8 @@
       "start_time": "2026-06-10 19:19:03",
       "activity_type": "strength_training",
       "category": "strength",
+      "rpe": null,
+      "feel": null,
       "distance_km": null,
       "duration_sec": 3194,
       "pace_sec_per_km": null,
@@ -114842,6 +114844,8 @@
       "start_time": "2026-06-10 18:19:41",
       "activity_type": "treadmill_running",
       "category": "base_run",
+      "rpe": null,
+      "feel": null,
       "distance_km": 5.46,
       "duration_sec": 2132,
       "pace_sec_per_km": 390,
@@ -114957,6 +114961,8 @@
       "start_time": "2026-06-12 11:04:52",
       "activity_type": "pilates",
       "category": "other",
+      "rpe": null,
+      "feel": null,
       "distance_km": null,
       "duration_sec": 3680,
       "pace_sec_per_km": null,
@@ -115007,6 +115013,8 @@
       "start_time": "2026-06-12 08:42:21",
       "activity_type": "jump_rope",
       "category": "other",
+      "rpe": null,
+      "feel": null,
       "distance_km": null,
       "duration_sec": 2408,
       "pace_sec_per_km": null,
@@ -115057,6 +115065,8 @@
       "start_time": "2026-06-13 12:43:01",
       "activity_type": "treadmill_running",
       "category": "base_run",
+      "rpe": null,
+      "feel": null,
       "distance_km": 9.0,
       "duration_sec": 3839,
       "pace_sec_per_km": 427,
@@ -115220,6 +115230,8 @@
       "start_time": "2026-06-14 20:41:39",
       "activity_type": "strength_training",
       "category": "strength",
+      "rpe": null,
+      "feel": null,
       "distance_km": null,
       "duration_sec": 2470,
       "pace_sec_per_km": null,
@@ -115270,6 +115282,8 @@
       "start_time": "2026-06-15 07:18:46",
       "activity_type": "running",
       "category": "base_run",
+      "rpe": 40,
+      "feel": 25,
       "distance_km": 4.96,
       "duration_sec": 1791,
       "pace_sec_per_km": 361,
@@ -118535,8 +118549,8 @@
     "2026-06-15": {
       "sleep_score": 69,
       "body_battery_morning": 76,
-      "calories_resting": 912.0,
-      "calories_active": 411.0
+      "calories_resting": 1215.0,
+      "calories_active": 412.0
     }
   },
   "shoes": [
