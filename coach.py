@@ -633,6 +633,38 @@ def get_readiness(daily: dict) -> dict:
     return result
 
 
+def morning_readiness(daily: dict) -> dict:
+    """
+    Resolve TODAY's readiness explicitly, flagging stale data.
+    The morning loop must judge today's body — not silently use yesterday's.
+    A sleep_score of 0/None is treated as 'not synced yet', not a real value.
+    """
+    today = date.today().isoformat()
+    def valid(rec):
+        return bool(rec) and rec.get("sleep_score") not in (None, 0)
+
+    today_rec = daily.get(today)
+    has_today = valid(today_rec)
+
+    # Most recent day that actually has a real sleep score (for fallback context)
+    latest_date, latest_rec = None, None
+    for d in sorted(daily.keys(), reverse=True):
+        if valid(daily[d]):
+            latest_date, latest_rec = d, daily[d]
+            break
+
+    used_date = today if has_today else latest_date
+    used_rec = today_rec if has_today else latest_rec
+    return {
+        "today_date": today,
+        "has_today": has_today,
+        "is_stale": not has_today,
+        "used_date": used_date,
+        "sleep_score": (used_rec or {}).get("sleep_score") if used_rec else None,
+        "body_battery": (used_rec or {}).get("body_battery_morning") if used_rec else None,
+    }
+
+
 # ── Best Performances ────────────────────────────────────────────────────────
 
 def compute_prs(activities: list) -> dict:
@@ -1066,13 +1098,31 @@ def build_morning_prompt(metrics: dict) -> str:
         f"- {rf['severity']} {rf['flag']}: {rf['detail']} → {rf['action']}"
         for rf in red_flags) or "אין דגלים אדומים. ✓"
 
+    rt = metrics.get("readiness_today", {})
+    if rt.get("is_stale"):
+        today_md = (
+            f"⚠️ **נתוני המוכנות של היום ({rt.get('today_date')}) עדיין לא סונכרנו מגרמין.**\n"
+            f"הנתון האחרון הזמין הוא מ-{rt.get('used_date')}: "
+            f"שינה {rt.get('sleep_score')}, Body Battery {rt.get('body_battery')}.\n"
+            f"**אל תתבסס על נתון אתמול כאילו הוא של היום.** המלץ לסנכרן את השעון לפני החלטה סופית, "
+            f"ובינתיים תן הערכה זהירה בלבד."
+        )
+    else:
+        today_md = (
+            f"**מוכנות היום ({rt.get('today_date')}):** "
+            f"שינה **{rt.get('sleep_score')}** · Body Battery **{rt.get('body_battery')}**"
+        )
+
     return f"""
 ## בדיקת בוקר — {date.today().isoformat()}
 
 ### מיקום במאקרו (מה מתוכנן היום בפאזה)
 {macro_md}
 
-### מוכנות בוקר (3 ימים אחרונים — שינה / Body Battery)
+### מוכנות היום (זה מה שקובע את ההחלטה)
+{today_md}
+
+### הקשר — מוכנות 3 ימים אחרונים (מגמה בלבד)
 {json.dumps(metrics['readiness'], ensure_ascii=False, indent=2)}
 
 ### עומס נוכחי
@@ -1194,6 +1244,7 @@ def build_metrics(data: dict) -> dict:
     last_week_runs = last_n_days_runs(activities, n=7)
     last_week = summarize_runs(last_week_runs)
     readiness = get_readiness(daily)
+    readiness_today = morning_readiness(daily)
     prs = compute_prs(activities)
     trends = compute_fitness_trends(activities, global_max_hr, weeks=8)
     strength = compute_strength_metrics(activities, days=7)
@@ -1208,6 +1259,7 @@ def build_metrics(data: dict) -> dict:
         "zones": zones,
         "last_week": last_week,
         "readiness": readiness,
+        "readiness_today": readiness_today,
         "prs": prs,
         "global_max_hr": global_max_hr,
         "trends": trends,
