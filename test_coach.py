@@ -114,6 +114,37 @@ sample = 'דוח...\n---PLAN_JSON---\n{"run_count": 4, "total_km_approx": 29}\n-
 pj = coach.extract_plan_json(sample)
 check("PLAN_JSON extraction", pj.get("run_count") == 4, f"{pj}")
 
+# Reliability: load_data fallback on missing file
+import push_week
+_orig_data = coach.DATA_FILE
+try:
+    coach.DATA_FILE = "no_such_file_xyz.json"
+    fb = coach.load_data()
+    check("load_data fallback", fb == {"activities": [], "daily": {}}, f"{fb}")
+finally:
+    coach.DATA_FILE = _orig_data
+
+# Garmin workout validation
+good = {"date": "2026-06-22", "type": "run",
+        "steps": [{"kind": "interval", "seconds": 2000}]}
+try:
+    push_week.validate_workout(good)
+    check("validate_workout accepts valid", True)
+except Exception as e:
+    check("validate_workout accepts valid", False, str(e))
+
+def _expect_reject(sess, label):
+    try:
+        push_week.validate_workout(sess)
+        check(label, False, "לא נדחה")
+    except ValueError:
+        check(label, True)
+
+_expect_reject({"date": "x", "type": "run", "steps": [{"kind": "interval", "seconds": 0}]},
+               "validate_workout rejects zero-duration")
+_expect_reject({"date": "x", "type": "run", "steps": [{"kind": "bogus", "seconds": 100}]},
+               "validate_workout rejects unknown kind")
+
 print("\n" + ("="*40))
 if failures:
     print(f"❌ {len(failures)} FAILED: {failures}")

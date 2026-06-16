@@ -2,9 +2,13 @@ import os
 import json
 import sys
 import time
+import logging
 from datetime import date, datetime, timezone, timedelta
 from garminconnect import Garmin, GarminConnectAuthenticationError, GarminConnectConnectionError
 from splits import compute_segments
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger("fetch_garmin")
 
 email = os.environ.get("GARMIN_EMAIL")
 password = os.environ.get("GARMIN_PASSWORD")
@@ -279,8 +283,8 @@ for activity in activities:
             # מקטעי 100מ' — רק לריצות איכות (לראות אינטרוולים קצרים)
             if str(category).startswith("quality_"):
                 splits_100m = compute_segments(details, seg_meters=100.0)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("כשל בחישוב splits ל-%s: %s", activity_id, e)
 
         # Lap data via get_activity_splits (lapDTOs with averageRunCadence)
         try:
@@ -297,8 +301,8 @@ for activity in activities:
                     "avg_hr": lap.get("averageHR"),
                     "cadence_spm": round(cad_raw) if cad_raw else None,
                 })
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("כשל בפענוח נתוני הקפות/קצב ל-%s: %s", activity_id, e)
 
         time.sleep(0.5)
 
@@ -376,8 +380,8 @@ try:
                     "activity_count": g.get("totalActivities", 0),
                     "max_km": 700,
                 })
-except Exception:
-    pass
+except Exception as e:
+    logger.warning("כשל בשליפת נעליים (gear): %s", e)
 
 # שינה + Body Battery + קלוריות — מצטבר: מטמון נשמר, נמשכים רק ימים חדשים + 14 אחרונים
 today_dt = date.today()
@@ -403,8 +407,8 @@ for d in to_fetch:
         end_ts = sleep_dto.get("sleepEndTimestampLocal")
         if end_ts:
             sleep_end_time = datetime.fromtimestamp(end_ts / 1000).strftime("%H:%M")
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("כשל בקריאת נתוני שינה ל-%s: %s", d, e)
     try:
         bb_data = client.get_body_battery(d, d)
         # רמת ה-BD האמיתית נמצאת ב-bodyBatteryValuesArray (לא בשדה "charged"!).
@@ -420,8 +424,8 @@ for d in to_fetch:
                 if isinstance(lvl, (int, float)):
                     levels.append(lvl)
         body_battery = max(levels) if levels else None
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("כשל בקריאת Body Battery ל-%s: %s", d, e)
     try:
         stats = client.get_stats(d)
         calories_resting = stats.get("bmrKilocalories")

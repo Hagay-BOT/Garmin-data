@@ -79,6 +79,8 @@ def _weather_note(date_str: str, hour: str, is_long: bool) -> str:
 
 
 def build_events() -> list[dict]:
+    if not PLAN_FILE.exists():
+        raise FileNotFoundError("week_plan.json לא קיים — אין ממה לייצר יומן.")
     plan = json.loads(PLAN_FILE.read_text(encoding="utf-8"))
     events = []
     for s in plan.get("sessions", []):

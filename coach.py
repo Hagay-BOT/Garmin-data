@@ -33,8 +33,13 @@ RUN_TYPES = ("running", "treadmill_running", "trail_running")
 # ── Load data ────────────────────────────────────────────────────────────────
 
 def load_data() -> dict:
-    with open(DATA_FILE, encoding="utf-8") as f:
-        return json.load(f)
+    """טוען data.json. עמיד לקובץ חסר/פגום — מחזיר מבנה ריק בטוח במקום לקרוס."""
+    try:
+        with open(DATA_FILE, encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError, OSError) as e:
+        print(f"⚠️  load_data: כשל בקריאת {DATA_FILE} ({e}) — מחזיר מבנה ריק.")
+        return {"activities": [], "daily": {}}
 
 
 # ── Macro Plan (14-week periodization) ────────────────────────────────────────
@@ -960,14 +965,31 @@ def materialize_week_plan(raw: dict) -> dict:
     return out
 
 
-def save_week_plan(raw: dict) -> bool:
-    """שומר week_plan.json מהתוכנית המובנית. מחזיר True אם נשמר."""
+def save_week_plan(raw: dict, prev_week_km: float = 0.0,
+                   macro: dict | None = None, acwr: float | None = None) -> tuple[bool, list, bool]:
+    """
+    שומר week_plan.json — אך ורק אחרי מעבר בשכבת הבטיחות הדטרמיניסטית (safety.py).
+    מחזיר (saved, messages, needs_review):
+      • saved        — האם נכתב לדיסק.
+      • messages     — adjustments + warnings להצגה בשער האישור.
+      • needs_review — האם נדרש אישור מפורש.
+    תוכנית פגומה מבנית → לא נכתבת (saved=False).
+    """
+    import safety
     full = materialize_week_plan(raw)
     if not full.get("sessions"):
-        return False
+        return False, ["לא נמצאו אימונים בתוכנית."], False
+
+    plan, adjustments, warnings, needs_review = safety.clamp_and_validate_week_plan(
+        full, prev_week_km, macro, acwr)
+    if plan is None:
+        # דחייה מבנית — לא כותבים שום דבר.
+        return False, warnings, True
+
+    plan["plan_metadata"] = safety.build_plan_metadata(adjustments, warnings, needs_review)
     (BASE_DIR / "week_plan.json").write_text(
-        json.dumps(full, ensure_ascii=False, indent=2), encoding="utf-8")
-    return True
+        json.dumps(plan, ensure_ascii=False, indent=2), encoding="utf-8")
+    return True, adjustments + warnings, needs_review
 
 
 def format_history_for_prompt(history: list[dict]) -> str:
@@ -1568,13 +1590,40 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
         print("\n⚠️  לא נמצא בלוק PLAN_JSON בדוח.")
 
     # ── כתיבת week_plan.json המובנה (הגשר לגרמין + יומן) ──────────────────
+    # עובר דרך שכבת הבטיחות הדטרמיניסטית (safety.py) לפני כל כתיבה.
     raw_week = extract_week_plan(full_response)
-    if raw_week and save_week_plan(raw_week):
-        n = len(raw_week.get("sessions", []))
-        print(f"✅ week_plan.json עודכן — {n} אימונים לשבוע {raw_week.get('week_of','?')}.")
-        print("   → זורם אוטומטית ליומן. לגרמין: דורש אישורך (push_week.py).")
+    prev_week_km = metrics["last_week"].get("total_km", 0) or 0
+    safety_messages: list[str] = []
+    needs_review = False
+    if raw_week:
+        saved, safety_messages, needs_review = save_week_plan(
+            raw_week, prev_week_km=prev_week_km,
+            macro=metrics.get("macro"), acwr=metrics["load"].get("acwr"))
+        if saved:
+            n = len(raw_week.get("sessions", []))
+            print(f"✅ week_plan.json עודכן — {n} אימונים לשבוע {raw_week.get('week_of','?')}.")
+            print("   → זורם אוטומטית ליומן. לגרמין: דורש אישורך (push_week.py).")
+        else:
+            print("🛑 התוכנית נדחתה בשכבת הבטיחות — week_plan.json לא עודכן:")
+            for m in safety_messages:
+                print(f"   • {m}")
     else:
         print("⚠️  לא נמצא WEEK_PLAN_JSON תקין — week_plan.json לא עודכן.")
+
+    # התראות/התאמות בטיחות — מוצגות בשער האישור (ונשלחות לטלגרם אם זמין)
+    if safety_messages:
+        print("\n🛡️ בטיחות:")
+        for m in safety_messages:
+            print(f"   • {m}")
+        if needs_review:
+            print("   ⚠️ נדרש אישור מפורש שלך לפני סנכרון (needs_review).")
+        try:
+            import telegram_notify as _tg
+            ack = "\n⚠️ נדרש אישור מפורש לפני סנכרון." if needs_review else ""
+            _tg.send_message("🛡️ <b>בטיחות תוכנית שבועית</b>\n" +
+                             "\n".join(f"• {m}" for m in safety_messages) + ack)
+        except Exception:
+            pass
 
     load_metrics = metrics["load"]
     compliance_to_store = {k: v for k, v in compliance.items() if k != "available"}

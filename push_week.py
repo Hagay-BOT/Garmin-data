@@ -47,7 +47,41 @@ STEP_BUILDERS = {
 
 
 def load_plan() -> dict:
-    return json.loads(PLAN_FILE.read_text(encoding="utf-8"))
+    if not PLAN_FILE.exists():
+        print("שגיאה: week_plan.json לא קיים — אין תוכנית לדחוף.")
+        sys.exit(1)
+    try:
+        return json.loads(PLAN_FILE.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        print(f"שגיאה: week_plan.json פגום ({e}).")
+        sys.exit(1)
+
+
+VALID_STEP_KINDS = {"warmup", "interval", "cooldown"}
+MAX_TOTAL_SECONDS = 4 * 3600
+MIN_TOTAL_SECONDS = 5 * 60
+
+
+def validate_workout(session: dict) -> None:
+    """ולידציה אחרונה לפני העלאה לגרמין. זורק ValueError עם התאריך הבעייתי."""
+    d = session.get("date", "?")
+    if session.get("type") == "strength":
+        if session.get("key") not in STRENGTH_DEFS:
+            raise ValueError(f"{d}: מפתח כוח לא תקין '{session.get('key')}'")
+        return
+    steps = session.get("steps") or []
+    if not steps:
+        raise ValueError(f"{d}: ריצה ללא steps")
+    total = 0
+    for st in steps:
+        if st.get("kind") not in VALID_STEP_KINDS:
+            raise ValueError(f"{d}: סוג step לא מוכר '{st.get('kind')}'")
+        secs = float(st.get("seconds") or 0)
+        if secs <= 0:
+            raise ValueError(f"{d}: step עם משך לא חיובי")
+        total += secs
+    if not (MIN_TOTAL_SECONDS <= total <= MAX_TOTAL_SECONDS):
+        raise ValueError(f"{d}: משך כולל לא סביר ({int(total)} שנ')")
 
 
 def build_run(session: dict) -> RunningWorkout:
@@ -103,13 +137,27 @@ def build_strength(key: str) -> dict:
 
 def login():
     from garminconnect import Garmin
+    try:
+        from garminconnect import (
+            GarminConnectAuthenticationError,
+            GarminConnectConnectionError,
+        )
+    except Exception:  # pragma: no cover - older lib without named errors
+        GarminConnectAuthenticationError = GarminConnectConnectionError = Exception
     email = os.environ.get("GARMIN_EMAIL")
     password = os.environ.get("GARMIN_PASSWORD")
     if not email or not password:
         print("שגיאה: GARMIN_EMAIL / GARMIN_PASSWORD לא מוגדרים (Secrets).")
         sys.exit(1)
-    client = Garmin(email, password)
-    client.login()
+    try:
+        client = Garmin(email, password)
+        client.login()
+    except GarminConnectAuthenticationError as e:
+        print(f"שגיאה: אימות גרמין נכשל — {e}")
+        sys.exit(1)
+    except GarminConnectConnectionError as e:
+        print(f"שגיאה: חיבור לגרמין נכשל — {e}")
+        sys.exit(1)
     print("✅ התחברות לגרמין הצליחה")
     return client
 
@@ -152,28 +200,65 @@ def main():
         return
 
     if "--push" in args:
+        force = "--force" in args
+        # ── שער אישור: לא דוחפים תוכנית שלא אושרה במפורש ──────────────────
+        if not plan.get("approved"):
+            print("🛑 התוכנית לא אושרה (approved=true חסר) — סנכרון לגרמין נחסם.")
+            print("   אשר דרך confirm_week.py / approve-week workflow לפני דחיפה.")
+            sys.exit(1)
+
+        # ── ולידציה של כל האימונים לפני כל חיבור/העלאה ───────────────────
+        try:
+            for s in sessions:
+                validate_workout(s)
+        except ValueError as e:
+            print(f"🛑 ולידציה נכשלה — לא נדחף כלום: {e}")
+            sys.exit(1)
+
+        # ── מניעת כפילויות: דלג על מה שכבר נוצר (אלא אם --force) ──────────
+        already = {}
+        if CREATED_FILE.exists():
+            try:
+                already = {(c["date"], c["name"]): c
+                           for c in json.loads(CREATED_FILE.read_text(encoding="utf-8"))}
+            except Exception:
+                already = {}
+
         client = login()
-        created = []
+        created = list(already.values()) if not force else []
+        failures = []
         for s in sessions:
-            if s["type"] == "run":
-                wk = build_run(s)
-                res = client.upload_running_workout(wk)
-                name = s["name"]
-            else:
-                slot = build_strength(s["key"])
-                res = client.upload_workout(slot)
-                name = STRENGTH_DEFS[s["key"]]["name"]
-            wid = res.get("workoutId") or res.get("workoutid")
-            client.schedule_workout(wid, s["date"])
-            created.append({"date": s["date"], "name": name, "workout_id": wid})
-            print(f"✅ {s['date']} · {name} · id {wid}")
+            name = s["name"] if s["type"] == "run" else STRENGTH_DEFS[s["key"]]["name"]
+            if not force and (s["date"], name) in already:
+                print(f"⏭️  {s['date']} · {name} · כבר קיים — דילוג")
+                continue
+            try:
+                if s["type"] == "run":
+                    res = client.upload_running_workout(build_run(s))
+                else:
+                    res = client.upload_workout(build_strength(s["key"]))
+                wid = res.get("workoutId") or res.get("workoutid")
+                if not wid:
+                    raise ValueError(f"תגובת העלאה ללא workoutId: {res}")
+                client.schedule_workout(wid, s["date"])
+                created.append({"date": s["date"], "name": name, "workout_id": wid})
+                print(f"✅ {s['date']} · {name} · id {wid}")
+            except Exception as e:
+                failures.append({"date": s["date"], "name": name, "error": str(e)})
+                print(f"⚠️  כשל ב-{s['date']} · {name}: {e}")
+
+        # תמיד שומרים את מה שהצליח — אין אימונים יתומים שלא מתועדים
         CREATED_FILE.write_text(json.dumps(created, ensure_ascii=False, indent=2), encoding="utf-8")
-        print(f"\n🎯 כל {len(created)} האימונים שובצו בלוח גרמין.")
-        print("בדוק: Garmin Connect → Calendar → שבוע 14–20.06")
+        ok = len(created) - (0 if force else len(already))
+        print(f"\n🎯 {ok} אימונים חדשים שובצו · {len(failures)} כשלונות.")
+        if failures:
+            print("⚠️ כשלונות (לא שובצו):")
+            for f in failures:
+                print(f"   • {f['date']} · {f['name']} — {f['error']}")
         print("למחיקה: python push_week.py --cleanup")
         return
 
-    print("בחר מצב: --build-only | --push | --cleanup")
+    print("בחר מצב: --build-only | --push [--force] | --cleanup")
 
 
 if __name__ == "__main__":
