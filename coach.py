@@ -1617,6 +1617,101 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
         chat_mode(client, knowledge_base, full_response)
 
 
+def _parse_morning_json(report_text: str) -> dict:
+    """Extract and parse the ---MORNING_JSON--- block from the morning report."""
+    import re
+    match = re.search(r"---MORNING_JSON---\s*(.*?)\s*---END_MORNING---", report_text, re.DOTALL)
+    if not match:
+        return {}
+    try:
+        return json.loads(match.group(1))
+    except Exception:
+        return {}
+
+
+def _readiness_emoji(level: str) -> str:
+    """Map Hebrew readiness level to traffic-light emoji."""
+    if "ירוק" in level:
+        return "🟢"
+    if "אדום" in level:
+        return "🔴"
+    return "🟡"
+
+
+def _send_morning_telegram(morning_json: dict, metrics: dict) -> tuple[int | None, float]:
+    """
+    Send the morning readiness Telegram message.
+    Returns (message_id, sent_at_unix).  message_id is None if Telegram not configured.
+    """
+    import time as _time
+    try:
+        import telegram_notify as tg
+    except ImportError:
+        print("⚠️  telegram_notify not available — skipping Telegram.")
+        return None, _time.time()
+
+    readiness_level = morning_json.get("readiness_level", "צהוב")
+    adjustment_type = morning_json.get("adjustment_type", "none")
+    planned = morning_json.get("planned", "—")
+    adjusted = morning_json.get("adjusted", "—")
+    reason = morning_json.get("reason", "—")
+    emoji = _readiness_emoji(readiness_level)
+
+    today = date.today().strftime("%d/%m/%Y")
+    rt = metrics.get("readiness_today", {})
+    bb = rt.get("body_battery") or "—"
+    sleep = rt.get("sleep_score") or "—"
+
+    if adjustment_type == "none":
+        text = (
+            f"✅ <b>מוכנות בוקר — {today}</b>\n"
+            f"{emoji} מוכנות טובה\n"
+            f"Body Battery: {bb} | שינה: {sleep}\n\n"
+            f"📋 האימון כמתוכנן: {planned}"
+        )
+    else:
+        text = (
+            f"{emoji} <b>מוכנות בוקר — {today}</b>\n"
+            f"Body Battery: {bb} | שינה: {sleep}\n\n"
+            f"📋 תוכנן: {planned}\n"
+            f"💡 המלצה: {adjusted}\n"
+            f"📌 סיבה: {reason}\n\n"
+            f"השב:\n"
+            f"✅ כן — שנה את האימון בגרמין\n"
+            f"❌ לא — בצע כמתוכנן (יתועד)"
+        )
+
+    sent_at = _time.time()
+    message_id = tg.send_message(text)
+    if message_id:
+        print(f"✅ Telegram נשלח (message_id={message_id})")
+    else:
+        print("⚠️  Telegram לא נשלח (אין credentials או שגיאה)")
+    return message_id, sent_at
+
+
+def _save_morning_state(morning_json: dict, message_id: int | None, sent_at: float) -> None:
+    """Write morning_state.json with the current session's state."""
+    import time as _time
+    adjustment_type = morning_json.get("adjustment_type", "none")
+    status = "no_adjustment" if adjustment_type == "none" else "pending_reply"
+    state = {
+        "date": date.today().isoformat(),
+        "status": status,
+        "sent_at_unix": sent_at,
+        "message_id": message_id,
+        "adjustment_type": adjustment_type,
+        "planned": morning_json.get("planned", ""),
+        "adjusted": morning_json.get("adjusted", ""),
+        "reason": morning_json.get("reason", ""),
+        "readiness_level": morning_json.get("readiness_level", ""),
+        "adjustment_source": morning_json.get("adjustment_source", "none"),
+    }
+    state_file = BASE_DIR / "morning_state.json"
+    state_file.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"morning_state.json שמור (status={status})")
+
+
 def run_morning(client, knowledge_base: str, metrics: dict) -> None:
     """Morning readiness check — adjust today's workout (easier only)."""
     system_prompt = MORNING_SYSTEM.format(knowledge_base=knowledge_base)
@@ -1626,6 +1721,18 @@ def run_morning(client, knowledge_base: str, metrics: dict) -> None:
     out = BASE_DIR / "morning_report.md"
     out.write_text(f"# בדיקת בוקר — {datetime.now():%Y-%m-%d %H:%M}\n\n{full}\n", encoding="utf-8")
     print(f"\n\nנשמר: {out}")
+
+    # ── Parse MORNING_JSON and send Telegram notification ──────────────────
+    morning_json = _parse_morning_json(full)
+    if not morning_json:
+        print("⚠️  לא נמצא MORNING_JSON בדוח — Telegram לא נשלח.")
+        return
+
+    try:
+        message_id, sent_at = _send_morning_telegram(morning_json, metrics)
+        _save_morning_state(morning_json, message_id, sent_at)
+    except Exception as exc:
+        print(f"⚠️  שגיאה בשליחת Telegram / שמירת state: {exc}")
 
 
 def run_postworkout(client, knowledge_base: str, metrics: dict, data: dict) -> None:
