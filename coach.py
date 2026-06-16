@@ -1505,20 +1505,34 @@ def _today_run_weather() -> dict | None:
     return None
 
 
+# מודל לכל לולאה — לפי איזון עלות/איכות שנבחר:
+#   בוקר (פשוט, פרסור) → Haiku · אחרי אימון (ניתוח) → Sonnet · שבועי (תכנון) → Opus
+MODEL_MORNING = "claude-haiku-4-5"
+MODEL_POSTWORKOUT = "claude-sonnet-4-6"
+MODEL_WEEKLY = "claude-opus-4-8"
+
+# Haiku 4.5 לא תומך ב-effort / adaptive thinking (יחזיר 400). Sonnet/Opus כן.
+_ADAPTIVE_MODELS = {"claude-sonnet-4-6", "claude-opus-4-8"}
+
+
 def _stream_report(client, system_prompt: str, user_prompt: str,
-                   max_tokens: int = 4096, effort: str = "high") -> str:
+                   max_tokens: int = 4096, effort: str = "high",
+                   model: str = MODEL_WEEKLY) -> str:
     """Stream a Claude response to stdout and return the full text.
-    effort tunes cost: 'low' (morning), 'medium' (post-workout), 'high' (weekly)."""
+    effort tunes cost: 'low' (morning), 'medium' (post-workout), 'high' (weekly).
+    effort/adaptive-thinking applied only on models that support them (Sonnet/Opus)."""
+    kwargs = {
+        "model": model,
+        "max_tokens": max_tokens,
+        "system": [{"type": "text", "text": system_prompt,
+                    "cache_control": {"type": "ephemeral"}}],
+        "messages": [{"role": "user", "content": user_prompt}],
+    }
+    if model in _ADAPTIVE_MODELS:
+        kwargs["thinking"] = {"type": "adaptive"}
+        kwargs["output_config"] = {"effort": effort}
     full = ""
-    with client.messages.stream(
-        model="claude-opus-4-8",
-        max_tokens=max_tokens,
-        thinking={"type": "adaptive"},
-        output_config={"effort": effort},
-        system=[{"type": "text", "text": system_prompt,
-                 "cache_control": {"type": "ephemeral"}}],
-        messages=[{"role": "user", "content": user_prompt}],
-    ) as stream:
+    with client.messages.stream(**kwargs) as stream:
         for text in stream.text_stream:
             print(text, end="", flush=True)
             full += text
@@ -1766,7 +1780,8 @@ def run_morning(client, knowledge_base: str, metrics: dict) -> None:
     system_prompt = MORNING_SYSTEM.format(knowledge_base=knowledge_base)
     user_prompt = build_morning_prompt(metrics)
     print("בדיקת מוכנות בוקר (streaming)...\n")
-    full = _stream_report(client, system_prompt, user_prompt, max_tokens=1024, effort="low")
+    full = _stream_report(client, system_prompt, user_prompt, max_tokens=1024,
+                          effort="low", model=MODEL_MORNING)
     out = BASE_DIR / "morning_report.md"
     out.write_text(f"# בדיקת בוקר — {datetime.now():%Y-%m-%d %H:%M}\n\n{full}\n", encoding="utf-8")
     print(f"\n\nנשמר: {out}")
@@ -1790,7 +1805,8 @@ def run_postworkout(client, knowledge_base: str, metrics: dict, data: dict) -> N
     system_prompt = POSTWORKOUT_SYSTEM.format(knowledge_base=knowledge_base)
     user_prompt = build_postworkout_prompt(metrics, workout)
     print("ניתוח אחרי אימון (streaming)...\n")
-    full = _stream_report(client, system_prompt, user_prompt, max_tokens=2048, effort="medium")
+    full = _stream_report(client, system_prompt, user_prompt, max_tokens=2048,
+                          effort="medium", model=MODEL_POSTWORKOUT)
     out = BASE_DIR / "postworkout_report.md"
     out.write_text(f"# ניתוח אחרי אימון — {datetime.now():%Y-%m-%d %H:%M}\n\n{full}\n", encoding="utf-8")
     print(f"\n\nנשמר: {out}")
