@@ -390,15 +390,19 @@ print(f"Daily: fetching {len(to_fetch)} days (reusing {len(existing_daily)} cach
 
 for d in to_fetch:
     sleep_score = None
+    sleep_end_time = None
     body_battery = None
     calories_resting = None
     calories_active = None
     try:
         sleep_data = client.get_sleep_data(d)
-        sleep_score = (sleep_data.get("dailySleepDTO", {})
-                       .get("sleepScores", {})
+        sleep_dto = sleep_data.get("dailySleepDTO", {})
+        sleep_score = (sleep_dto.get("sleepScores", {})
                        .get("overall", {})
                        .get("value"))
+        end_ts = sleep_dto.get("sleepEndTimestampLocal")
+        if end_ts:
+            sleep_end_time = datetime.fromtimestamp(end_ts / 1000).strftime("%H:%M")
     except Exception:
         pass
     try:
@@ -435,6 +439,7 @@ for d in to_fetch:
     time.sleep(0.3)
     daily[d] = {
         "sleep_score": sleep_score,
+        "sleep_end_time": sleep_end_time,
         "body_battery_morning": body_battery,
         "calories_resting": calories_resting,
         "calories_active": calories_active,
