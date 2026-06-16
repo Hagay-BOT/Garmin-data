@@ -63,13 +63,15 @@ jobs:
         run: python coach.py morning
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
       - name: Commit reports
         if: steps.dedup.outputs.skip != 'true' && steps.wakecheck.outputs.awake == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data.json morning_report.md
+          git add data.json morning_report.md morning_state.json
           git diff --staged --quiet && echo "no changes" || git commit -m "coach: morning readiness $(TZ=Asia/Jerusalem date +%Y-%m-%d)"
           git pull --rebase origin main || true
           git push || true

@@ -1,0 +1,39 @@
+name: Coach — Morning Reply Check
+
+on:
+  schedule:
+    # Every 5 minutes, 07:00–09:00 Israel (IDT = UTC+3 → 04:00–06:00 UTC)
+    - cron: '*/5 4,5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check-reply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Check for Telegram reply
+        run: python check_telegram_reply.py
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+
+      - name: Commit state changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add morning_state.json data.json created_workouts.json 2>/dev/null || true
+          git diff --staged --quiet && echo "no changes" || git commit -m "coach: morning reply applied $(TZ=Asia/Jerusalem date +%Y-%m-%d)"
+          git pull --rebase origin main || true
+          git push || true
