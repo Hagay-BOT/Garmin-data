@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-06-17T16:56:24.790935+00:00",
+  "last_updated": "2026-06-17T23:27:22.776587+00:00",
   "activities": [
     {
       "activity_id": 13381622386,
@@ -115281,7 +115281,7 @@
       "date": "2026-06-15",
       "start_time": "2026-06-15 07:18:46",
       "activity_type": "running",
-      "category": "base_run",
+      "category": "quality_tempo",
       "rpe": 4.0,
       "feel": 2,
       "distance_km": 4.96,
@@ -116148,7 +116148,351 @@
           "cadence_spm": 113
         }
       ],
-      "splits_100m": []
+      "splits_100m": [
+        {
+          "seg": 1,
+          "distance_m": 100,
+          "pace_sec_per_km": 470,
+          "avg_hr": 114,
+          "duration_sec": 47.0
+        },
+        {
+          "seg": 2,
+          "distance_m": 200,
+          "pace_sec_per_km": 430,
+          "avg_hr": 135,
+          "duration_sec": 43.0
+        },
+        {
+          "seg": 3,
+          "distance_m": 300,
+          "pace_sec_per_km": 440,
+          "avg_hr": 138,
+          "duration_sec": 44.0
+        },
+        {
+          "seg": 4,
+          "distance_m": 400,
+          "pace_sec_per_km": 470,
+          "avg_hr": 136,
+          "duration_sec": 47.0
+        },
+        {
+          "seg": 5,
+          "distance_m": 500,
+          "pace_sec_per_km": 450,
+          "avg_hr": 136,
+          "duration_sec": 45.0
+        },
+        {
+          "seg": 6,
+          "distance_m": 600,
+          "pace_sec_per_km": 470,
+          "avg_hr": 136,
+          "duration_sec": 47.0
+        },
+        {
+          "seg": 7,
+          "distance_m": 700,
+          "pace_sec_per_km": 460,
+          "avg_hr": 139,
+          "duration_sec": 46.0
+        },
+        {
+          "seg": 8,
+          "distance_m": 800,
+          "pace_sec_per_km": 470,
+          "avg_hr": 141,
+          "duration_sec": 47.0
+        },
+        {
+          "seg": 9,
+          "distance_m": 900,
+          "pace_sec_per_km": 440,
+          "avg_hr": 138,
+          "duration_sec": 44.0
+        },
+        {
+          "seg": 10,
+          "distance_m": 1000,
+          "pace_sec_per_km": 450,
+          "avg_hr": 141,
+          "duration_sec": 45.0
+        },
+        {
+          "seg": 11,
+          "distance_m": 1100,
+          "pace_sec_per_km": 450,
+          "avg_hr": 140,
+          "duration_sec": 45.0
+        },
+        {
+          "seg": 12,
+          "distance_m": 1200,
+          "pace_sec_per_km": 550,
+          "avg_hr": 141,
+          "duration_sec": 55.0
+        },
+        {
+          "seg": 13,
+          "distance_m": 1300,
+          "pace_sec_per_km": 280,
+          "avg_hr": 145,
+          "duration_sec": 28.0
+        },
+        {
+          "seg": 14,
+          "distance_m": 1400,
+          "pace_sec_per_km": 310,
+          "avg_hr": 154,
+          "duration_sec": 31.0
+        },
+        {
+          "seg": 15,
+          "distance_m": 1500,
+          "pace_sec_per_km": 290,
+          "avg_hr": 160,
+          "duration_sec": 29.0
+        },
+        {
+          "seg": 16,
+          "distance_m": 1600,
+          "pace_sec_per_km": 310,
+          "avg_hr": 159,
+          "duration_sec": 31.0
+        },
+        {
+          "seg": 17,
+          "distance_m": 1700,
+          "pace_sec_per_km": 300,
+          "avg_hr": 154,
+          "duration_sec": 30.0
+        },
+        {
+          "seg": 18,
+          "distance_m": 1800,
+          "pace_sec_per_km": 290,
+          "avg_hr": 159,
+          "duration_sec": 29.0
+        },
+        {
+          "seg": 19,
+          "distance_m": 1900,
+          "pace_sec_per_km": 280,
+          "avg_hr": 162,
+          "duration_sec": 28.0
+        },
+        {
+          "seg": 20,
+          "distance_m": 2000,
+          "pace_sec_per_km": 290,
+          "avg_hr": 165,
+          "duration_sec": 29.0
+        },
+        {
+          "seg": 21,
+          "distance_m": 2100,
+          "pace_sec_per_km": 290,
+          "avg_hr": 168,
+          "duration_sec": 29.0
+        },
+        {
+          "seg": 22,
+          "distance_m": 2200,
+          "pace_sec_per_km": 290,
+          "avg_hr": 171,
+          "duration_sec": 29.0
+        },
+        {
+          "seg": 23,
+          "distance_m": 2300,
+          "pace_sec_per_km": 290,
+          "avg_hr": 174,
+          "duration_sec": 29.0
+        },
+        {
+          "seg": 24,
+          "distance_m": 2400,
+          "pace_sec_per_km": 280,
+          "avg_hr": 174,
+          "duration_sec": 28.0
+        },
+        {
+          "seg": 25,
+          "distance_m": 2500,
+          "pace_sec_per_km": 310,
+          "avg_hr": 174,
+          "duration_sec": 31.0
+        },
+        {
+          "seg": 26,
+          "distance_m": 2600,
+          "pace_sec_per_km": 300,
+          "avg_hr": 175,
+          "duration_sec": 30.0
+        },
+        {
+          "seg": 27,
+          "distance_m": 2700,
+          "pace_sec_per_km": 300,
+          "avg_hr": 172,
+          "duration_sec": 30.0
+        },
+        {
+          "seg": 28,
+          "distance_m": 2800,
+          "pace_sec_per_km": 300,
+          "avg_hr": 167,
+          "duration_sec": 30.0
+        },
+        {
+          "seg": 29,
+          "distance_m": 2900,
+          "pace_sec_per_km": 290,
+          "avg_hr": 167,
+          "duration_sec": 29.0
+        },
+        {
+          "seg": 30,
+          "distance_m": 3000,
+          "pace_sec_per_km": 280,
+          "avg_hr": 169,
+          "duration_sec": 28.0
+        },
+        {
+          "seg": 31,
+          "distance_m": 3100,
+          "pace_sec_per_km": 280,
+          "avg_hr": 171,
+          "duration_sec": 28.0
+        },
+        {
+          "seg": 32,
+          "distance_m": 3200,
+          "pace_sec_per_km": 280,
+          "avg_hr": 175,
+          "duration_sec": 28.0
+        },
+        {
+          "seg": 33,
+          "distance_m": 3300,
+          "pace_sec_per_km": 300,
+          "avg_hr": 178,
+          "duration_sec": 30.0
+        },
+        {
+          "seg": 34,
+          "distance_m": 3400,
+          "pace_sec_per_km": 280,
+          "avg_hr": 179,
+          "duration_sec": 28.0
+        },
+        {
+          "seg": 35,
+          "distance_m": 3500,
+          "pace_sec_per_km": 300,
+          "avg_hr": 176,
+          "duration_sec": 30.0
+        },
+        {
+          "seg": 36,
+          "distance_m": 3600,
+          "pace_sec_per_km": 300,
+          "avg_hr": 177,
+          "duration_sec": 30.0
+        },
+        {
+          "seg": 37,
+          "distance_m": 3700,
+          "pace_sec_per_km": 290,
+          "avg_hr": 177,
+          "duration_sec": 29.0
+        },
+        {
+          "seg": 38,
+          "distance_m": 3800,
+          "pace_sec_per_km": 290,
+          "avg_hr": 177,
+          "duration_sec": 29.0
+        },
+        {
+          "seg": 39,
+          "distance_m": 3900,
+          "pace_sec_per_km": 310,
+          "avg_hr": 174,
+          "duration_sec": 31.0
+        },
+        {
+          "seg": 40,
+          "distance_m": 4000,
+          "pace_sec_per_km": 280,
+          "avg_hr": 171,
+          "duration_sec": 28.0
+        },
+        {
+          "seg": 41,
+          "distance_m": 4100,
+          "pace_sec_per_km": 270,
+          "avg_hr": 173,
+          "duration_sec": 27.0
+        },
+        {
+          "seg": 42,
+          "distance_m": 4200,
+          "pace_sec_per_km": 320,
+          "avg_hr": 173,
+          "duration_sec": 32.0
+        },
+        {
+          "seg": 43,
+          "distance_m": 4300,
+          "pace_sec_per_km": 420,
+          "avg_hr": 169,
+          "duration_sec": 42.0
+        },
+        {
+          "seg": 44,
+          "distance_m": 4400,
+          "pace_sec_per_km": 420,
+          "avg_hr": 164,
+          "duration_sec": 42.0
+        },
+        {
+          "seg": 45,
+          "distance_m": 4500,
+          "pace_sec_per_km": 440,
+          "avg_hr": 158,
+          "duration_sec": 44.0
+        },
+        {
+          "seg": 46,
+          "distance_m": 4600,
+          "pace_sec_per_km": 460,
+          "avg_hr": 160,
+          "duration_sec": 46.0
+        },
+        {
+          "seg": 47,
+          "distance_m": 4700,
+          "pace_sec_per_km": 460,
+          "avg_hr": 161,
+          "duration_sec": 46.0
+        },
+        {
+          "seg": 48,
+          "distance_m": 4800,
+          "pace_sec_per_km": 440,
+          "avg_hr": 160,
+          "duration_sec": 44.0
+        },
+        {
+          "seg": 49,
+          "distance_m": 4900,
+          "pace_sec_per_km": 550,
+          "avg_hr": 153,
+          "duration_sec": 55.0
+        }
+      ]
     },
     {
       "activity_id": 23265854047,
@@ -119638,8 +119982,8 @@
       "sleep_score": 81,
       "sleep_end_time": "06:00",
       "body_battery_morning": 89,
-      "calories_resting": 1714.0,
-      "calories_active": 610.0
+      "calories_resting": 2119.0,
+      "calories_active": 641.0
     }
   },
   "shoes": [
