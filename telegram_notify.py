@@ -123,3 +123,30 @@ def find_reply(since_message_id: int, since_time_unix: float) -> str | None:
             return "reject"
 
     return None
+
+
+def find_text_reply(since_time_unix: float) -> str | None:
+    """
+    Return the raw text of the first message from TELEGRAM_CHAT_ID sent AFTER
+    since_time_unix. Used to capture FREE-TEXT replies (e.g. a cancellation
+    reason) rather than a fixed approve/reject keyword.
+
+    Returns the stripped reply text, or None (no reply yet / credentials missing).
+    Single poll — call repeatedly (e.g. every 15 minutes).
+    """
+    chat_id = _chat_id()
+    if not chat_id:
+        logger.warning("TELEGRAM_CHAT_ID not set — cannot check for reply.")
+        return None
+
+    for update in get_updates():
+        msg = update.get("message") or {}
+        if str((msg.get("chat") or {}).get("id", "")) != str(chat_id):
+            continue
+        if msg.get("date", 0) <= since_time_unix:
+            continue
+        text = (msg.get("text") or "").strip()
+        if text:
+            return text
+
+    return None

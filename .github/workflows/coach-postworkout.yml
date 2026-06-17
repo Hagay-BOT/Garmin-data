@@ -1,16 +1,23 @@
-name: Coach — Post-Workout Analysis
+name: Coach — Workout Watcher (event-driven, all day)
+
+# חלק 2: מזהה ריצה בכל שעה שהיא ומנתח אותה — לא משנה מתי רצת.
+# ה-dedup לפי activity_id ב-coach.py מבטיח: תמיד נתפוס, אף פעם לא פעמיים,
+# ו-Sonnet נקרא רק כשבאמת יש ריצה חדשה.
 
 on:
   schedule:
-    # 20:00 Israel (IDT, UTC+3) = 17:00 UTC — אחרי האימון
-    - cron: '0 17 * * *'
+    # IDT = UTC+3. צפוף בחלונות ריצה, חסכוני בשעות המתות.
+    - cron: '0,30 4,5,6 * * *'        # 07:00–09:30 IL — חלון בוקר, כל 30 דק'
+    - cron: '0 7-14 * * *'            # 10:00–17:00 IL — שעות מתות, כל שעה
+    - cron: '0,30 15,16,17,18 * * *'  # 18:00–21:30 IL — חלון ערב, כל 30 דק'
+    - cron: '0 19 * * *'              # 22:00 IL — סלוט אחרון (בדיקת ביטול)
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  postworkout:
+  watch:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,22 +27,37 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Fetch latest Garmin data (today's workout)
+      - name: Fetch latest Garmin data
         run: python fetch_garmin.py
         env:
           GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
 
-      - name: Run post-workout analysis (medium effort)
+      - name: Analyze new run if any (self-dedup by activity_id)
         run: python coach.py postworkout
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
-      - name: Commit reports
+      - name: End-of-day cancellation check (23:00 IL only, no run today)
+        if: ${{ github.event_name == 'schedule' }}
+        run: |
+          HOUR=$(TZ=Asia/Jerusalem date +%H)
+          if [ "$HOUR" = "23" ]; then
+            python evening_cancel_prompt.py
+          else
+            echo "Not the 23:00 slot (now $HOUR) — skipping cancellation check"
+          fi
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+      - name: Commit reports + state
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data.json postworkout_report.md
-          git diff --staged --quiet && echo "no changes" || git commit -m "coach: post-workout analysis $(date -u +%Y-%m-%d)"
+          git add data.json postworkout_report.md analyzed_runs.json evening_state.json run_cancellations.json 2>/dev/null || true
+          git diff --staged --quiet && echo "no changes" || git commit -m "coach: workout watcher $(TZ=Asia/Jerusalem date '+%Y-%m-%d %H:%M')"
           git pull --rebase origin main || true
           git push || true

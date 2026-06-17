@@ -1,0 +1,38 @@
+name: Coach — Evening Cancellation Reply
+
+on:
+  schedule:
+    # כל 15 דק' 22:00–23:30 ישראל (IDT = UTC+3) → 19:00–20:30 UTC
+    # (שאלת הביטול נשלחת ב-22:00, אז התשובה נתפסת אחריה)
+    - cron: '0,15,30,45 19 * * *'   # 22:00–22:45 IL
+    - cron: '0,15,30 20 * * *'      # 23:00–23:30 IL
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  reply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Poll for cancellation reply
+        run: python check_evening_reply.py
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+      - name: Commit state + cancellation log
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add evening_state.json run_cancellations.json 2>/dev/null || true
+          git diff --staged --quiet && echo "no changes" || git commit -m "coach: cancellation reply $(TZ=Asia/Jerusalem date +%Y-%m-%d)"
+          git pull --rebase origin main || true
+          git push || true

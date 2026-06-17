@@ -135,6 +135,46 @@ def classify(type_key, aerobic_effect, anaerobic_effect=None,
         return classify_quality_subtype(anaerobic_effect, max_hr, avg_hr, ascent_m, dist_km)
     return "base_run"
 
+
+def detect_workout_structure(laps):
+    """
+    מזהה מבנה אימון איכות מתוך ה-laps (לחיצות lap ידניות בשעון).
+    תווית גרמין (training_effect_label) לא אמינה — לפעמים מתייגת אימון
+    אינטרוואלים/טמפו כ-AEROBIC_BASE. מבנה ה-laps הוא האמת הקרקעית.
+
+    מחזיר (is_structured, suggested_subtype):
+      - is_structured: יש מבנה ברור של חימום → עבודה → שחרור
+      - subtype: quality_intervals (בלוקים מהירים מופרדים בהתאוששות)
+                 או quality_tempo (בלוק מהיר רציף אחד)
+
+    היגיון: מסננים laps זעירים (<200מ', מעברי לחיצה), ואם הקצב המהיר
+    ביותר מהיר ב-≥35% מהאיטי ביותר עם ≥2 laps מהירים → אימון מובנה.
+    """
+    valid = [l for l in (laps or [])
+             if (l.get("distance_km") or 0) >= 0.2 and l.get("pace_sec_per_km")]
+    if len(valid) < 3:
+        return (False, None)
+
+    paces = [l["pace_sec_per_km"] for l in valid]
+    fastest, slowest = min(paces), max(paces)
+    if fastest <= 0 or slowest / fastest < 1.35:
+        return (False, None)
+
+    thresh = fastest * 1.15                       # "מהיר" = עד 15% מעל הקצב המהיר ביותר
+    fast_flags = [p <= thresh for p in paces]
+    if sum(fast_flags) < 2:
+        return (False, None)
+
+    # ספירת בלוקים מהירים נפרדים: בלוק אחד רציף → טמפו, כמה בלוקים → אינטרוואלים
+    blocks, prev = 0, False
+    for f in fast_flags:
+        if f and not prev:
+            blocks += 1
+        prev = f
+    subtype = "quality_intervals" if blocks >= 2 else "quality_tempo"
+    return (True, subtype)
+
+
 try:
     activities = client.get_activities_by_date(fetch_start, end_date)
 except Exception as e:
@@ -168,6 +208,7 @@ for activity in activities:
     temperature = None
     laps = []
     splits_100m = []
+    details = None
 
     # Extra fields from activity summary
     max_speed = activity.get("maxSpeed", 0)
@@ -280,11 +321,9 @@ for activity in activities:
                         sum(hr_vals[-third:]) / third - sum(hr_vals[:third]) / third, 1
                     )
 
-            # מקטעי 100מ' — רק לריצות איכות (לראות אינטרוולים קצרים)
-            if str(category).startswith("quality_"):
-                splits_100m = compute_segments(details, seg_meters=100.0)
+            # חישוב splits נדחה עד אחרי שליפת ה-laps (שעשויים לשדרג את הסיווג)
         except Exception as e:
-            logger.warning("כשל בחישוב splits ל-%s: %s", activity_id, e)
+            logger.warning("כשל בשליפת פרטי פעילות ל-%s: %s", activity_id, e)
 
         # Lap data via get_activity_splits (lapDTOs with averageRunCadence)
         try:
@@ -303,6 +342,22 @@ for activity in activities:
                 })
         except Exception as e:
             logger.warning("כשל בפענוח נתוני הקפות/קצב ל-%s: %s", activity_id, e)
+
+        # שדרוג סיווג לפי מבנה ה-laps — תווית גרמין לבדה מפספסת אימוני
+        # איכות שתויגו AEROBIC_BASE. אם ה-laps מראים מבנה ברור → שדרג.
+        if not str(category).startswith("quality_"):
+            is_structured, suggested = detect_workout_structure(laps)
+            if is_structured:
+                logger.info("שדרוג סיווג %s: %s → %s (מבנה laps)",
+                            activity_id, category, suggested)
+                category = suggested
+
+        # מקטעי 100מ' לכל ריצת איכות — לפירוק חימום/סט עיקרי/שחרור
+        if str(category).startswith("quality_") and details is not None:
+            try:
+                splits_100m = compute_segments(details, seg_meters=100.0)
+            except Exception as e:
+                logger.warning("כשל בחישוב splits ל-%s: %s", activity_id, e)
 
         time.sleep(0.5)
 
