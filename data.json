@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-06-17T11:01:25.292150+00:00",
+  "last_updated": "2026-06-17T16:56:24.790935+00:00",
   "activities": [
     {
       "activity_id": 13381622386,
@@ -117159,6 +117159,58 @@
         }
       ],
       "splits_100m": []
+    },
+    {
+      "activity_id": 23284441095,
+      "date": "2026-06-17",
+      "start_time": "2026-06-17 17:57:08",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "rpe": null,
+      "feel": null,
+      "distance_km": null,
+      "duration_sec": 4681,
+      "pace_sec_per_km": null,
+      "best_pace_sec_per_km": null,
+      "avg_hr": 114.0,
+      "max_hr": 171.0,
+      "recovery_hr": null,
+      "cadence_spm": null,
+      "max_cadence_spm": null,
+      "gct_ms": null,
+      "stride_length_m": null,
+      "vertical_oscillation_cm": null,
+      "vertical_ratio_pct": null,
+      "aerobic_effect": 1.100000023841858,
+      "anaerobic_effect": 1.100000023841858,
+      "training_effect_label": "ANAEROBIC_CAPACITY",
+      "training_stress_score": null,
+      "exercise_load": 25.083343505859375,
+      "vo2max": null,
+      "stamina_start_pct": null,
+      "stamina_end_pct": null,
+      "active_calories": null,
+      "total_calories": 447.0,
+      "sweat_loss_ml": 851,
+      "body_battery_impact": -5,
+      "avg_respiration": null,
+      "max_respiration": null,
+      "moderate_intensity_min": 55,
+      "vigorous_intensity_min": 3,
+      "total_ascent_m": null,
+      "total_descent_m": null,
+      "temperature": null,
+      "gps": [],
+      "hr_zones_sec": [
+        2661,
+        916,
+        163,
+        11,
+        0
+      ],
+      "hr_drift_bpm": null,
+      "laps": [],
+      "splits_100m": []
     }
   ],
   "daily": {
@@ -119586,8 +119638,8 @@
       "sleep_score": 81,
       "sleep_end_time": "06:00",
       "body_battery_morning": 89,
-      "calories_resting": 1078.0,
-      "calories_active": 159.0
+      "calories_resting": 1714.0,
+      "calories_active": 610.0
     }
   },
   "shoes": [
