@@ -1827,7 +1827,9 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
 
     print(f"🤖 מודל: {MODEL_WEEKLY} (שבועי — תכנון כבד)")
     print("קורא ל-Claude Opus (weekly, streaming)...\n")
-    full_response = _stream_report(client, system_prompt, user_prompt, max_tokens=4096)
+    # 8192: מקום לדוח A–F המלא + שלושה בלוקי JSON (PLAN + WEEK_PLAN + WEEKLY_REPORT).
+    # ב-4096 הבלוק האחרון (WEEKLY_REPORT_JSON) נחתך והדוח לא נשלח לטלגרם.
+    full_response = _stream_report(client, system_prompt, user_prompt, max_tokens=8192)
 
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
     REPORT_FILE.write_text(f"# דוח מאמן שבועי — {timestamp}\n\n{full_response}\n", encoding="utf-8")
