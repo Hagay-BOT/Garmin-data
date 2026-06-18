@@ -1,12 +1,12 @@
 {
   "date": "2026-06-18",
   "status": "no_adjustment",
-  "sent_at_unix": 1781772699.4646196,
-  "message_id": 18,
+  "sent_at_unix": 1781792993.3909364,
+  "message_id": 20,
   "adjustment_type": "none",
-  "planned": "",
-  "adjusted": "",
-  "reason": "מוכנות מעולה (שינה 82, BB 86). דגל צהוב במונוטוניות — לא משפיע היום, אך הוסף מנוחה מחר (19.06) לגיוון.",
-  "readiness_level": "🟢 ירוק",
+  "planned": "Tempo Run: 4km Z2 warm-up + 5×(4 min @ 5:10/km pace) + 2km Z2 cool-down",
+  "adjusted": "Tempo Run: 4km Z2 warm-up + 5×(4 min @ 5:10/km pace) + 2km Z2 cool-down",
+  "reason": "מוכנות מעולה (BB=86, sleep=82). בצע כמתוכנן. הוסף active recovery ביום שישי להפחתת מונוטוניות גבוהה.",
+  "readiness_level": "ירוק",
   "adjustment_source": "none"
 }
