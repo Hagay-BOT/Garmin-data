@@ -1979,15 +1979,51 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
 
 
 def _parse_morning_json(report_text: str) -> dict:
-    """Extract and parse the ---MORNING_JSON--- block from the morning report."""
+    """Extract the morning JSON from the report, tolerant of how the model wrapped it.
+
+    The model (especially at effort=low) doesn't always emit the literal
+    ---MORNING_JSON---/---END_MORNING--- markers — it may wrap the object in a
+    ```json fence or just print a bare {...}. Try each strategy in order, then
+    normalize field-name aliases (planned_workout→planned etc.) so downstream
+    code finds the keys it expects.
+    """
     import re
-    match = re.search(r"---MORNING_JSON---\s*(.*?)\s*---END_MORNING---", report_text, re.DOTALL)
-    if not match:
+
+    candidates = []
+    # 1) explicit markers (the format we ask for)
+    m = re.search(r"---MORNING_JSON---\s*(.*?)\s*---END_MORNING---", report_text, re.DOTALL)
+    if m:
+        candidates.append(m.group(1))
+    # 2) fenced ```json … ``` (or any ``` … ``` block)
+    for fm in re.finditer(r"```(?:json)?\s*(\{.*?\})\s*```", report_text, re.DOTALL):
+        candidates.append(fm.group(1))
+    # 3) last bare {...} object in the text (greedy to the final brace)
+    bm = re.search(r"(\{.*\})", report_text, re.DOTALL)
+    if bm:
+        candidates.append(bm.group(1))
+
+    parsed = None
+    for cand in candidates:
+        try:
+            parsed = json.loads(cand)
+            break
+        except Exception:
+            continue
+    if not isinstance(parsed, dict):
         return {}
-    try:
-        return json.loads(match.group(1))
-    except Exception:
-        return {}
+
+    # Normalize field-name aliases so callers can rely on canonical keys.
+    aliases = {
+        "planned": ("planned", "planned_workout"),
+        "adjusted": ("adjusted", "adjusted_workout"),
+    }
+    for canonical, names in aliases.items():
+        if not parsed.get(canonical):
+            for n in names:
+                if parsed.get(n):
+                    parsed[canonical] = parsed[n]
+                    break
+    return parsed
 
 
 def _readiness_emoji(level: str) -> str:
