@@ -2079,7 +2079,7 @@ def run_morning(client, knowledge_base: str, metrics: dict) -> None:
     user_prompt = build_morning_prompt(metrics)
     print(f"🤖 מודל: {MODEL_MORNING} (בוקר — הזול)")
     print("בדיקת מוכנות בוקר (streaming)...\n")
-    full = _stream_report(client, system_prompt, user_prompt, max_tokens=1024,
+    full = _stream_report(client, system_prompt, user_prompt, max_tokens=2048,
                           effort="low", model=MODEL_MORNING)
     out = BASE_DIR / "morning_report.md"
     out.write_text(f"# בדיקת בוקר — {datetime.now():%Y-%m-%d %H:%M}\n\n{full}\n", encoding="utf-8")
