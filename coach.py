@@ -2332,17 +2332,25 @@ def run_postworkout(client, knowledge_base: str, metrics: dict, data: dict) -> N
     user_prompt = build_postworkout_prompt(metrics, workout)
     print(f"🤖 מודל: {MODEL_POSTWORKOUT} (אחרי אימון — אמצע)")
     print(f"מנתח ריצה {workout.get('activity_id')} מ-{workout.get('start_time','?')} (streaming)...\n")
-    full = _stream_report(client, system_prompt, user_prompt, max_tokens=2048,
+    # max_tokens=8192: עם thinking אדפטיבי, budget קטן (2048) נבלע ע"י החשיבה
+    # ולא נשאר טקסט — הפלט יוצא ריק. 8192 משאיר מקום לחשיבה + ניתוח מלא + JSON.
+    full = _stream_report(client, system_prompt, user_prompt, max_tokens=8192,
                           effort="medium", model=MODEL_POSTWORKOUT)
     out = BASE_DIR / "postworkout_report.md"
     out.write_text(f"# ניתוח אחרי אימון — {datetime.now():%Y-%m-%d %H:%M}\n\n{full}\n", encoding="utf-8")
     print(f"\n\nנשמר: {out}")
 
+    # פלט ריק = קריאת API נכשלה/נחתכה. אל תסמן כנותח — תן לריצה הבאה לנסות שוב,
+    # אחרת ההודעה אובדת לתמיד (הריצה מסומנת אך אף פעם לא נשלח ניתוח).
+    if not full.strip():
+        print("⚠️  הניתוח חזר ריק — לא מסמן כנותח, ינסה שוב בריצה הבאה.")
+        return
+
     # ── Parse POSTWORKOUT_JSON and send Telegram notification ──────────────
     pw_json = _parse_postworkout_json(full)
     if not pw_json:
         print("⚠️  לא נמצא POSTWORKOUT_JSON בניתוח — Telegram לא נשלח.")
-        # עדיין מסמנים כדי לא לבזבז קריאת API נוספת על אותה ריצה
+        # יש טקסט ניתוח אבל ללא JSON תקין — מסמן כדי לא להריץ API שוב ושוב על אותה ריצה.
         _mark_run_analyzed(workout.get("activity_id"))
         return
     try:
