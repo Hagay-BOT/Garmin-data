@@ -61,7 +61,15 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data.json postworkout_report.md analyzed_runs.json evening_state.json run_cancellations.json 2>/dev/null || true
-          git diff --staged --quiet && echo "no changes" || git commit -m "coach: workout watcher $(TZ=Asia/Jerusalem date '+%Y-%m-%d %H:%M')"
-          git pull --rebase origin main || true
-          git push || true
+          # הוסף רק קבצים קיימים — git add אטומי: קובץ חסר אחד מפיל את כל ה-add,
+          # ואז ה-state והדוחות לא נדחפים (data.json לא מתעדכן → GitHub Pages תקוע).
+          for f in data.json postworkout_report.md analyzed_runs.json evening_state.json run_cancellations.json; do
+            [ -f "$f" ] && git add "$f"
+          done
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "coach: workout watcher $(TZ=Asia/Jerusalem date '+%Y-%m-%d %H:%M')"
+            git pull --rebase origin main || git rebase --abort || true
+            git push origin main || true
+          fi

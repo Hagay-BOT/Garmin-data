@@ -2185,16 +2185,58 @@ def run_morning(client, knowledge_base: str, metrics: dict) -> None:
 
 
 def _parse_postworkout_json(report_text: str) -> dict:
-    """Extract and parse the ---POSTWORKOUT_JSON--- block from the analysis."""
+    """Extract the post-workout JSON, tolerant of how the model wrapped it.
+
+    Same hardening as _parse_morning_json: the model (Sonnet at effort=medium)
+    doesn't always emit the literal ---POSTWORKOUT_JSON---/---END_POSTWORKOUT---
+    markers — it may wrap the object in a ```json fence or print a bare {...}.
+    Try each strategy in order, then normalize field-name aliases so the Telegram
+    sender finds the keys it expects. A brittle parser here silently drops the
+    notification AND marks the run analyzed, so the message is lost for good.
+    """
     import re
-    match = re.search(r"---POSTWORKOUT_JSON---\s*(.*?)\s*---END_POSTWORKOUT---",
-                      report_text, re.DOTALL)
-    if not match:
+
+    candidates = []
+    # 1) explicit markers (the format we ask for)
+    m = re.search(r"---POSTWORKOUT_JSON---\s*(.*?)\s*---END_POSTWORKOUT---",
+                  report_text, re.DOTALL)
+    if m:
+        candidates.append(m.group(1))
+    # 2) fenced ```json … ``` (or any ``` … ``` block)
+    for fm in re.finditer(r"```(?:json)?\s*(\{.*?\})\s*```", report_text, re.DOTALL):
+        candidates.append(fm.group(1))
+    # 3) last bare {...} object in the text (greedy to the final brace)
+    bm = re.search(r"(\{.*\})", report_text, re.DOTALL)
+    if bm:
+        candidates.append(bm.group(1))
+
+    parsed = None
+    for cand in candidates:
+        try:
+            parsed = json.loads(cand)
+            break
+        except Exception:
+            continue
+    if not isinstance(parsed, dict):
         return {}
-    try:
-        return json.loads(match.group(1))
-    except Exception:
-        return {}
+
+    # Normalize field-name aliases so the sender can rely on canonical keys.
+    aliases = {
+        "category": ("category", "type", "workout_type", "קטגוריה"),
+        "planned": ("planned", "planned_workout"),
+        "actual": ("actual", "actual_workout", "performed"),
+        "improve": ("improve", "improvements", "improve_points"),
+        "keep": ("keep", "maintain", "strength"),
+        "red_flags": ("red_flags", "flags", "warnings"),
+        "next": ("next", "next_workout", "upcoming"),
+    }
+    for canonical, names in aliases.items():
+        if not parsed.get(canonical):
+            for n in names:
+                if parsed.get(n):
+                    parsed[canonical] = parsed[n]
+                    break
+    return parsed
 
 
 def _send_postworkout_telegram(pw: dict) -> int | None:
