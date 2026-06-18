@@ -1,11 +1,13 @@
 // Service worker for the Garmin dashboard PWA
-const CACHE = 'garmin-dash-v2';
+const CACHE = 'garmin-dash-v3';
 const SHELL = [
   './',
   './index.html',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './icons/apple-touch-icon.png',
+  './icons/favicon-48.png',
 ];
 
 self.addEventListener('install', (e) => {
