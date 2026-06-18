@@ -1061,6 +1061,10 @@ SYSTEM_PROMPT_TEMPLATE = """
 ## כללי דוח
 1. אל תחזור על הנתונים הגולמיים — תפרש אותם.
 2. כל המלצה על קצב חייבת להתבסס על נתוני דופק מהנתונים, לא על ניחוש.
+2א. **ריצת איכות/טמפו/אינטרוולים — לעולם אל תתאר אותה לפי קצב ממוצע אחד** (הממוצע
+   מערבב חימום+שחרור+מנוחות ומטעה). השתמש ב"פירוק ריצות איכות השבוע" שבנתונים ונתח
+   בנפרד: **חימום · קצב הסט העיקרי · שחרור**. לדוגמה: אל תכתוב "טמפו 5.5ק\"מ @6:01" —
+   כתוב "סט עיקרי 3ק\"מ @4:50, חימום+שחרור קלים". אם הפירוק חסר — ציין זאת, אל תמציא ממוצע.
 3. אם ACWR > 1.5 — הזהר ברמה גבוהה לפני הכל.
 4. אם Body Battery < 50 או Sleep Score < 60 — אסור להמליץ על אימון קשה.
 5. כתוב בצורה ישירה: "עשה X", לא "אולי כדאי לשקול X".
@@ -1547,6 +1551,9 @@ def build_metrics(data: dict) -> dict:
     zones = compute_zone_distribution(activities, days=28, global_max_hr=global_max_hr)
     last_week_runs = last_n_days_runs(activities, n=7)
     last_week = summarize_runs(last_week_runs)
+    # ריצות איכות של השבוע (עם laps) — לפירוק חימום/סט/שחרור בסיכום השבועי
+    last_week_quality = [a for a in last_week_runs
+                         if str(a.get("category", "")).startswith("quality")]
     readiness = get_readiness(daily)
     readiness_today = morning_readiness(daily)
     prs = compute_prs(activities)
@@ -1562,6 +1569,7 @@ def build_metrics(data: dict) -> dict:
         "monotony": monotony,
         "zones": zones,
         "last_week": last_week,
+        "last_week_quality": last_week_quality,
         "readiness": readiness,
         "readiness_today": readiness_today,
         "prs": prs,
@@ -1697,6 +1705,29 @@ def _format_weekly_analysis_section(analysis: dict) -> str:
     return "\n".join(lines) + "\n\n"
 
 
+def _format_weekly_quality_segments(metrics: dict) -> str:
+    """
+    פירוק ריצות האיכות של השבוע לחימום/סט-עיקרי/שחרור (מתוך laps).
+    בלי זה ה-LLM מתאר ריצת טמפו לפי קצב ממוצע מטעה (חימום+שחרור מערבבים אותו).
+    """
+    quality = metrics.get("last_week_quality") or []
+    if not quality:
+        return ""
+    blocks = []
+    for w in quality:
+        seg = _format_workout_segments(w)
+        cat = w.get("category", "quality")
+        if seg:
+            blocks.append(f"**{w.get('date','?')} · {cat} · {w.get('distance_km','?')}ק\"מ**\n{seg}")
+        else:
+            blocks.append(f"**{w.get('date','?')} · {cat} · {w.get('distance_km','?')}ק\"מ** "
+                          f"(אין פירוק laps — אל תתאר לפי קצב ממוצע, ציין שהפירוק חסר)")
+    if not blocks:
+        return ""
+    return ("## פירוק ריצות איכות השבוע (חובה — נתח לפי מקטעים, לא קצב ממוצע)\n"
+            + "\n\n".join(blocks) + "\n\n")
+
+
 def _parse_weekly_report_json(report_text: str) -> dict:
     """Extract the ---WEEKLY_REPORT_JSON--- block (the structured Telegram report)."""
     import re
@@ -1823,7 +1854,9 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
         print(f"⚖️  קונפליקט מאקרו↔מציאות: {analysis['conflict']['summary']}")
 
     system_prompt = SYSTEM_PROMPT_TEMPLATE.format(knowledge_base=knowledge_base)
-    user_prompt = _format_weekly_analysis_section(analysis) + build_user_prompt(metrics, history, compliance)
+    user_prompt = (_format_weekly_analysis_section(analysis)
+                   + _format_weekly_quality_segments(metrics)
+                   + build_user_prompt(metrics, history, compliance))
 
     print(f"🤖 מודל: {MODEL_WEEKLY} (שבועי — תכנון כבד)")
     print("קורא ל-Claude Opus (weekly, streaming)...\n")
