@@ -3,6 +3,19 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  # דחיפות הבוט (GITHUB_TOKEN) לא מפעילות workflows אחרים — לכן push לבדו לא
+  # מרענן את Pages כשהמאמן מעדכן data.json. workflow_run מפעיל deploy אחרי
+  # שכל workflow שמעדכן נתונים מסתיים, כך שהאתר תמיד עדכני.
+  workflow_run:
+    workflows:
+      - "Coach — Workout Watcher (event-driven, all day)"
+      - "Coach — Morning Readiness"
+      - "Coach — Morning Reply Check"
+      - "Coach — Evening Cancellation Reply"
+      - "Coach — Weekly Review"
+      - "Calendar Weather Refresh"
+    types: [completed]
+  workflow_dispatch:
 
 permissions:
   contents: read
