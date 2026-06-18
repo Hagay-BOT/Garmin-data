@@ -11,6 +11,10 @@ on:
     - cron: '0 7-14 * * *'            # 10:00–17:00 IL — שעות מתות, כל שעה
     - cron: '0,30 15,16,17,18 * * *'  # 18:00–21:30 IL — חלון ערב, כל 30 דק'
     - cron: '0 19 * * *'              # 22:00 IL — סלוט אחרון (בדיקת ביטול)
+  # טריגר חיצוני אמין: cron-job.org / Cloudflare Worker מפעילים דרך GitHub API.
+  # מבטיח שהניתוח רץ גם כש-GitHub cron הפנימי מדלג (best-effort, לא אמין בשעות עומס).
+  repository_dispatch:
+    types: [run-analysis]
   workflow_dispatch:
 
 permissions:
