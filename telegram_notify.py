@@ -49,19 +49,29 @@ def _api(method: str, **kwargs) -> dict | None:
         return None
 
 
-def send_message(text: str, parse_mode: str = "HTML") -> int | None:
+def send_message(text: str, parse_mode: str = "HTML",
+                 reply_markup: dict | None = None) -> int | None:
     """
     Send a text message to TELEGRAM_CHAT_ID.
+    reply_markup — optional Telegram inline keyboard (e.g. URL button).
     Returns the message_id on success, None on failure.
     """
     chat_id = _chat_id()
     if not chat_id:
         logger.warning("TELEGRAM_CHAT_ID not set — skipping send_message.")
         return None
-    result = _api("sendMessage", chat_id=chat_id, text=text, parse_mode=parse_mode)
+    kwargs = {"chat_id": chat_id, "text": text, "parse_mode": parse_mode}
+    if reply_markup:
+        kwargs["reply_markup"] = reply_markup
+    result = _api("sendMessage", **kwargs)
     if result and result.get("ok"):
         return result["result"]["message_id"]
     return None
+
+
+def url_button(label: str, url: str) -> dict:
+    """Build a single-button inline keyboard (URL button) for reply_markup."""
+    return {"inline_keyboard": [[{"text": label, "url": url}]]}
 
 
 def get_updates(offset: int | None = None) -> list:

@@ -2123,8 +2123,13 @@ def _send_morning_telegram(morning_json: dict, metrics: dict) -> tuple[int | Non
             f"❌ לא — בצע כמתוכנן (יתועד)"
         )
 
+    # כפתור "נתח ריצה עכשיו" — מופיע רק אם הוגדר TRIGGER_BUTTON_URL (Cloudflare Worker).
+    # מאפשר להפעיל את ניתוח הריצה מיד אחרי ריצה, בלי להמתין ל-cron. אינרטי בלי הסוד.
+    trigger_url = os.environ.get("TRIGGER_BUTTON_URL")
+    markup = tg.url_button("📊 נתח ריצה עכשיו", trigger_url) if trigger_url else None
+
     sent_at = _time.time()
-    message_id = tg.send_message(text)
+    message_id = tg.send_message(text, reply_markup=markup)
     if message_id:
         print(f"✅ Telegram נשלח (message_id={message_id})")
     else:
