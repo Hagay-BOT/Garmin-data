@@ -421,15 +421,15 @@
       <div class="hero-val" id="h-runs">—</div>
       <div class="hero-sub">אימוני ריצה</div>
     </div>
+    <div class="hero-card runs-card card">
+      <div class="hero-lbl">ריצות השבוע</div>
+      <div class="hero-val" id="h-runs-week">—</div>
+      <div class="hero-sub">אימוני ריצה</div>
+    </div>
     <div class="hero-card km-card card">
       <div class="hero-lbl">ק"מ השבוע</div>
       <div class="hero-val" id="h-km">—</div>
       <div class="hero-delta" id="h-km-delta"></div>
-    </div>
-    <div class="hero-card pace-card card">
-      <div class="hero-lbl">קצב ממוצע שבועי</div>
-      <div class="hero-val" id="h-pace">—</div>
-      <div class="hero-delta" id="h-pace-delta"></div>
     </div>
     <div class="hero-pie-card card">
       <div class="pie-tabs">
@@ -803,15 +803,18 @@ function buildHero(runs){
 
   const thisWRuns=runs.filter(r=>r.date>=thisW.start&&r.date<=thisW.end);
   const lastWRuns=runs.filter(r=>r.date>=lastW.start&&r.date<=lastW.end);
+  countUp(document.getElementById('h-runs-week'), thisWRuns.length||0);
   const thisKm=thisWRuns.reduce((s,r)=>s+(r.distance_km||0),0);
   const lastKm=lastWRuns.reduce((s,r)=>s+(r.distance_km||0),0);
 
   const kmEl=document.getElementById('h-km');
   const kmDelta=document.getElementById('h-km-delta');
   countUp(kmEl, thisKm, 1);
-  kmEl.className='hero-val'+(thisKm>lastKm?' g':thisKm<lastKm&&lastKm>0?' ':'');
+  kmEl.className='hero-val';
 
-  if(lastKm>0){
+  // השוואה לשבוע שעבר מחושבת רק בשבת (סוף השבוע) — אין טעם להשוות תוך כדי שבוע
+  const isSat = now.getDay()===6;
+  if(isSat && lastKm>0){
     const diff=+(thisKm-lastKm).toFixed(1);
     const pct=Math.round(Math.abs(diff)/lastKm*100);
     const cls=diff>=0?'up':'dn', arr=diff>=0?'↑':'↓';
@@ -819,26 +822,7 @@ function buildHero(runs){
     kmDelta.innerHTML=`${arr} ${diff>=0?'+':''}${diff} ק"מ · ${pct}%`;
   } else {
     kmDelta.className='hero-delta neu';
-    kmDelta.textContent='אין נתון לשבוע שעבר';
-  }
-
-  const thisPace=avg(thisWRuns.map(r=>r.pace_sec_per_km));
-  const lastPace=avg(lastWRuns.map(r=>r.pace_sec_per_km));
-  const paceEl=document.getElementById('h-pace');
-  const paceDelta=document.getElementById('h-pace-delta');
-  if(thisPace){
-    paceEl.textContent=fmtPace(thisPace);
-    if(lastPace){
-      const diff=lastPace-thisPace; // positive = faster this week
-      const abs=Math.abs(diff);
-      const diffFmt=`${Math.floor(abs/60)}:${String(abs%60).padStart(2,'0')}`;
-      const cls=diff>0?'up':diff<0?'dn':'neu';
-      const arr=diff>0?'↑':diff<0?'↓':'';
-      paceDelta.className=`hero-delta ${cls}`;
-      paceDelta.innerHTML=`${arr} ${diffFmt} שנ/קמ ${diff>0?'מהיר יותר':'איטי יותר'}`;
-    }
-  } else {
-    paceEl.textContent='—';
+    kmDelta.textContent='סיכום שבועי בשבת';
   }
 }
 
@@ -1254,13 +1238,13 @@ function buildTable(tab){
         const tk=mActs.reduce((s,x)=>s+(x.distance_km||0),0);
         const summary=`${fmtMonthHe(m)} · ${mActs.length} ריצות · ${tk.toFixed(1)} ק"מ`
           +(ap?` · ${fmtPace(ap)}/קמ`:'')+(ah?` · ♥ ${ah}`:'');
-        tr.innerHTML=`<td colspan="7"><span class="month-arrow" data-mkey="${m}">▼</span> ${summary}</td>`;
+        tr.innerHTML=`<td colspan="7"><span class="month-arrow closed" data-mkey="${m}">▼</span> ${summary}</td>`;
       } else {
-        tr.innerHTML=`<td colspan="4"><span class="month-arrow" data-mkey="${m}">▼</span> ${fmtMonthHe(m)} · ${mActs.length} אימונים</td>`;
+        tr.innerHTML=`<td colspan="4"><span class="month-arrow closed" data-mkey="${m}">▼</span> ${fmtMonthHe(m)} · ${mActs.length} אימונים</td>`;
       }
       body.appendChild(tr);
     }
-    const tr=document.createElement('tr'); tr.dataset.month=m;
+    const tr=document.createElement('tr'); tr.dataset.month=m; tr.className='month-hidden';
     const c=a.category||'other';
     if(tab==='runs'){
       tr.innerHTML=`

@@ -1113,6 +1113,28 @@ SYSTEM_PROMPT_TEMPLATE = """
   ]
 }}
 ---END_WEEK_PLAN---
+
+## פורמט חובה שלישי — הודעת הטלגרם המובנית (סעיפים A–F)
+אחרי WEEK_PLAN_JSON, הוסף בלוק שלישי עם תמצית מובנית לטלגרם.
+"headline" = **כותרת השבוע** = הדגש האדפטיבי, המסר #1 (קח אותו מ"כותרת אדפטיבית" שבנתונים).
+
+---WEEKLY_REPORT_JSON---
+{{
+  "headline": "<כותרת השבוע — המסר הכי חשוב, אדפטיבי>",
+  "compass": "<מצפן למרוץ: איפה אתה מול 15K@5:20 — VDOT/פער סף, פסק דין on-track>",
+  "wins": ["<ניצחון 1>", "<ניצחון 2>"],
+  "concern": "<הדבר העיקרי לשיפור/להיזהר>",
+  "week_analysis": "<2-3 משפטים: ציות, זונות, איכות ביצוע אובייקטיבית (לא feel)>",
+  "plan_summary": ["<יום: אימון קצר>", "..."],
+  "focus": "<דגש קונקרטי אחד לשבוע>"
+}}
+---END_WEEKLY_REPORT---
+
+## שער הכרעה — קונפליקט מאקרו↔מציאות
+אם בנתונים סומן דגל קונפליקט (המאקרו דורש עליית נפח אבל המציאות מסויגת) — **אל תכריע לבד**.
+ב-WEEK_PLAN_JSON החזר במקום "sessions" שני שדות: "variant_a" (נאמן למאקרו) ו-"variant_b"
+(שמרני, קרוב לבוצע) — כל אחד מערך sessions מלא לפי אותה סכמה. הוסף "conflict": true ו-
+"tradeoff": "<משפט מסביר>". ב-headline הסבר שנדרשת בחירה (A/B).
 """
 
 
@@ -1653,6 +1675,129 @@ def main():
 
 # ── Mode Runners ──────────────────────────────────────────────────────────────
 
+def _format_weekly_analysis_section(analysis: dict) -> str:
+    """שלב 1 כטקסט ל-prompt — עובדות דטרמיניסטיות + כותרת אדפטיבית + דגל קונפליקט."""
+    p = analysis.get("priority", {})
+    conf = analysis.get("conflict", {})
+    lines = [
+        "## ניתוח דטרמיניסטי מקדים (עובדות — הסתמך עליהן, אל תמציא)",
+        f"**כותרת אדפטיבית (המסר #1 לשבוע):** {p.get('headline','')}",
+        f"- מצפן/סף: {analysis.get('threshold_progress',{}).get('verdict','')}",
+        f"- ציות: {analysis.get('compliance',{}).get('verdict','')}",
+        f"- איזון זונות: {analysis.get('zone_balance',{}).get('verdict','')}",
+        f"- עומס: {analysis.get('load_trajectory',{}).get('verdict','')}",
+        f"- מאקרו: {analysis.get('macro_adherence',{}).get('verdict','')}",
+        f"- כוח: {analysis.get('strength_balance',{}).get('verdict','')}",
+    ]
+    if conf.get("conflict"):
+        lines.append(
+            f"**⚖️ שער הכרעה — קונפליקט:** {conf.get('summary','')} "
+            f"→ החזר variant_a (מאקרו, {conf.get('macro_target_km')}ק\"מ) "
+            f"ו-variant_b (שמרני, {conf.get('conservative_target_km')}ק\"מ).")
+    return "\n".join(lines) + "\n\n"
+
+
+def _parse_weekly_report_json(report_text: str) -> dict:
+    """Extract the ---WEEKLY_REPORT_JSON--- block (the structured Telegram report)."""
+    import re
+    match = re.search(r"---WEEKLY_REPORT_JSON---\s*(.*?)\s*---END_WEEKLY_REPORT---",
+                      report_text, re.DOTALL)
+    if not match:
+        return {}
+    try:
+        return json.loads(match.group(1))
+    except Exception:
+        return {}
+
+
+def _send_weekly_telegram(wr: dict, safety_messages: list, needs_review: bool) -> int | None:
+    """שולח את הדוח השבועי המובנה (A–F) לטלגרם."""
+    try:
+        import telegram_notify as tg
+    except ImportError:
+        print("⚠️  telegram_notify לא זמין — מדלג על טלגרם.")
+        return None
+
+    wins = wr.get("wins") or []
+    plan = wr.get("plan_summary") or []
+    lines = [
+        f"📅 <b>סיכום שבועי</b>",
+        "",
+        f"🧭 <b>{wr.get('headline','')}</b>",
+        "",
+        f"<b>מצפן למרוץ:</b> {wr.get('compass','—')}",
+        "",
+        f"<b>ניתוח השבוע:</b> {wr.get('week_analysis','—')}",
+    ]
+    if wins:
+        lines += ["", "✅ <b>נקודות חוזק</b>"] + [f"• {w}" for w in wins]
+    if wr.get("concern"):
+        lines += ["", f"⚠️ <b>לתשומת לב:</b> {wr['concern']}"]
+    if plan:
+        lines += ["", "🗓️ <b>תוכנית השבוע הבא</b>"] + [f"• {d}" for d in plan]
+    if wr.get("focus"):
+        lines += ["", f"🎯 <b>הדגש לשבוע:</b> {wr['focus']}"]
+    if safety_messages:
+        lines += ["", "🛡️ <b>בטיחות</b>"] + [f"• {m}" for m in safety_messages]
+    if needs_review:
+        lines += ["", "⚠️ נדרש אישורך המפורש לפני סנכרון לגרמין."]
+    else:
+        lines += ["", "התוכנית ממתינה לאישורך לפני push לגרמין."]
+
+    mid = tg.send_message("\n".join(lines))
+    print(f"✅ דוח שבועי נשלח לטלגרם (message_id={mid})" if mid
+          else "⚠️  דוח שבועי לא נשלח (אין credentials)")
+    return mid
+
+
+WEEKLY_STATE_FILE = BASE_DIR / "weekly_state.json"
+
+
+def _handle_weekly_conflict(raw_week: dict, analysis: dict, metrics: dict,
+                            prev_week_km: float) -> None:
+    """
+    שער הכרעה A/B: שולח לטלגרם את שתי האפשרויות (מאקרו מול שמרני) וכותב
+    weekly_state.json. לא כותב week_plan.json — זה קורה ב-check_weekly_choice.py
+    אחרי שתבחר. שני הווריאנטים נשמרים גולמיים + הקשר לבטיחות.
+    """
+    import time as _time
+    conf = analysis["conflict"]
+    base = {k: raw_week.get(k) for k in ("week_of", "macro_week", "phase")}
+    state = {
+        "date": date.today().isoformat(),
+        "status": "pending_choice",
+        "sent_at_unix": _time.time(),
+        "base": base,
+        "variant_a": raw_week.get("variant_a"),
+        "variant_b": raw_week.get("variant_b"),
+        "prev_week_km": prev_week_km,
+        "macro": metrics.get("macro"),
+        "acwr": metrics["load"].get("acwr"),
+        "tradeoff": raw_week.get("tradeoff", ""),
+    }
+    WEEKLY_STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=2),
+                                 encoding="utf-8")
+    print(f"⚖️  weekly_state.json נכתב (status=pending_choice).")
+
+    try:
+        import telegram_notify as tg
+    except ImportError:
+        return
+    a_km = conf.get("macro_target_km")
+    b_km = conf.get("conservative_target_km")
+    text = (
+        f"📅 <b>סיכום שבועי — נדרשת הכרעה</b>\n\n"
+        f"🧭 {analysis['priority']['headline']}\n\n"
+        f"⚖️ <b>{conf.get('summary','')}</b>\n"
+        f"{state['tradeoff']}\n\n"
+        f"<b>A</b> · נאמן למאקרו — {a_km} ק\"מ (התקדמות מהירה, סיכון מעט גבוה)\n"
+        f"<b>B</b> · שמרני — {b_km} ק\"מ (בטוח, קרוב למה שבוצע)\n\n"
+        f"השב <b>A</b> או <b>B</b> ואבנה את התוכנית בהתאם."
+    )
+    mid = tg.send_message(text)
+    print(f"✅ שאלת A/B נשלחה (message_id={mid})" if mid else "⚠️  A/B לא נשלח")
+
+
 def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
     """Weekly review — the macro-driven plan for next week. Saves history. Chat."""
     history = load_history()
@@ -1660,9 +1805,17 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
     if compliance.get("available"):
         print(f"ציות שבוע שעבר: {compliance.get('km_compliance_pct', '?')}% ({compliance.get('compliance_level', '?')})")
 
-    system_prompt = SYSTEM_PROMPT_TEMPLATE.format(knowledge_base=knowledge_base)
-    user_prompt = build_user_prompt(metrics, history, compliance)
+    # שלב 1: ניתוח דטרמיניסטי מקדים (weekly_analysis.py) — עובדות + כותרת אדפטיבית + קונפליקט
+    import weekly_analysis as wa
+    analysis = wa.build_weekly_analysis(metrics, compliance)
+    print(f"🧭 כותרת השבוע: {analysis['priority']['headline']}")
+    if analysis["conflict"]["conflict"]:
+        print(f"⚖️  קונפליקט מאקרו↔מציאות: {analysis['conflict']['summary']}")
 
+    system_prompt = SYSTEM_PROMPT_TEMPLATE.format(knowledge_base=knowledge_base)
+    user_prompt = _format_weekly_analysis_section(analysis) + build_user_prompt(metrics, history, compliance)
+
+    print(f"🤖 מודל: {MODEL_WEEKLY} (שבועי — תכנון כבד)")
     print("קורא ל-Claude Opus (weekly, streaming)...\n")
     full_response = _stream_report(client, system_prompt, user_prompt, max_tokens=4096)
 
@@ -1679,7 +1832,13 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
     prev_week_km = metrics["last_week"].get("total_km", 0) or 0
     safety_messages: list[str] = []
     needs_review = False
-    if raw_week:
+    is_conflict = bool(raw_week and raw_week.get("conflict")
+                       and (raw_week.get("variant_a") or raw_week.get("variant_b")))
+    if is_conflict:
+        # שער הכרעה A/B — לא כותבים week_plan עד שתבחר
+        _handle_weekly_conflict(raw_week, analysis, metrics, prev_week_km)
+        needs_review = True
+    elif raw_week:
         saved, safety_messages, needs_review = save_week_plan(
             raw_week, prev_week_km=prev_week_km,
             macro=metrics.get("macro"), acwr=metrics["load"].get("acwr"))
@@ -1709,12 +1868,31 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
         except Exception:
             pass
 
+    # ── שליחת דוח שבועי מובנה לטלגרם (סעיפים A–F) ─────────────────────────
+    # בקונפליקט — _handle_weekly_conflict כבר שלח הודעת A/B משולבת, לא משכפלים.
+    weekly_report = _parse_weekly_report_json(full_response)
+    if weekly_report and not is_conflict:
+        try:
+            _send_weekly_telegram(weekly_report, safety_messages, needs_review)
+        except Exception as exc:
+            print(f"⚠️  שגיאה בשליחת דוח שבועי לטלגרם: {exc}")
+    elif not weekly_report and not is_conflict:
+        print("⚠️  לא נמצא WEEKLY_REPORT_JSON — דוח טלגרם לא נשלח.")
+
     load_metrics = metrics["load"]
     compliance_to_store = {k: v for k, v in compliance.items() if k != "available"}
     macro = metrics["macro"]
+    thr = analysis.get("threshold_progress", {})
     history_entry = {
         "week_of": current_week_monday(),
         "generated_at": timestamp,
+        "headline": analysis["priority"]["headline"],
+        "threshold_snapshot": {
+            "current_vdot": thr.get("current_vdot"),
+            "required_vdot": thr.get("required_vdot"),
+            "vdot_gap": thr.get("vdot_gap"),
+            "threshold_pace": thr.get("threshold_pace"),
+        },
         "macro": {
             "week_num": macro.get("week_num"),
             "phase": macro.get("phase"),
