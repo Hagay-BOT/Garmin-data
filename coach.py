@@ -1710,7 +1710,8 @@ def _parse_weekly_report_json(report_text: str) -> dict:
         return {}
 
 
-def _send_weekly_telegram(wr: dict, safety_messages: list, needs_review: bool) -> int | None:
+def _send_weekly_telegram(wr: dict, safety_messages: list, needs_review: bool,
+                          test: bool = False) -> int | None:
     """שולח את הדוח השבועי המובנה (A–F) לטלגרם."""
     try:
         import telegram_notify as tg
@@ -1720,8 +1721,9 @@ def _send_weekly_telegram(wr: dict, safety_messages: list, needs_review: bool) -
 
     wins = wr.get("wins") or []
     plan = wr.get("plan_summary") or []
+    header = "🧪 <b>בדיקה — אל תפעל לפי זה</b>\n\n📅 <b>סיכום שבועי</b>" if test else "📅 <b>סיכום שבועי</b>"
     lines = [
-        f"📅 <b>סיכום שבועי</b>",
+        header,
         "",
         f"🧭 <b>{wr.get('headline','')}</b>",
         "",
@@ -1754,7 +1756,7 @@ WEEKLY_STATE_FILE = BASE_DIR / "weekly_state.json"
 
 
 def _handle_weekly_conflict(raw_week: dict, analysis: dict, metrics: dict,
-                            prev_week_km: float) -> None:
+                            prev_week_km: float, dry: bool = False) -> None:
     """
     שער הכרעה A/B: שולח לטלגרם את שתי האפשרויות (מאקרו מול שמרני) וכותב
     weekly_state.json. לא כותב week_plan.json — זה קורה ב-check_weekly_choice.py
@@ -1775,9 +1777,12 @@ def _handle_weekly_conflict(raw_week: dict, analysis: dict, metrics: dict,
         "acwr": metrics["load"].get("acwr"),
         "tradeoff": raw_week.get("tradeoff", ""),
     }
-    WEEKLY_STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=2),
-                                 encoding="utf-8")
-    print(f"⚖️  weekly_state.json נכתב (status=pending_choice).")
+    if dry:
+        print("🧪 בדיקה — weekly_state.json לא נכתב (שאלת A/B תישלח לתצוגה בלבד).")
+    else:
+        WEEKLY_STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=2),
+                                     encoding="utf-8")
+        print(f"⚖️  weekly_state.json נכתב (status=pending_choice).")
 
     try:
         import telegram_notify as tg
@@ -1785,8 +1790,9 @@ def _handle_weekly_conflict(raw_week: dict, analysis: dict, metrics: dict,
         return
     a_km = conf.get("macro_target_km")
     b_km = conf.get("conservative_target_km")
+    test_hdr = "🧪 <b>בדיקה — אל תפעל לפי זה</b>\n\n" if dry else ""
     text = (
-        f"📅 <b>סיכום שבועי — נדרשת הכרעה</b>\n\n"
+        f"{test_hdr}📅 <b>סיכום שבועי — נדרשת הכרעה</b>\n\n"
         f"🧭 {analysis['priority']['headline']}\n\n"
         f"⚖️ <b>{conf.get('summary','')}</b>\n"
         f"{state['tradeoff']}\n\n"
@@ -1800,6 +1806,10 @@ def _handle_weekly_conflict(raw_week: dict, analysis: dict, metrics: dict,
 
 def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
     """Weekly review — the macro-driven plan for next week. Saves history. Chat."""
+    import os
+    dry = bool(os.environ.get("WEEKLY_DRY_RUN"))
+    if dry:
+        print("🧪 מצב בדיקה (WEEKLY_DRY_RUN) — לא ייכתבו week_plan/היסטוריה/state.")
     history = load_history()
     compliance = compute_compliance(history, metrics["last_week"])
     if compliance.get("available"):
@@ -1836,8 +1846,10 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
                        and (raw_week.get("variant_a") or raw_week.get("variant_b")))
     if is_conflict:
         # שער הכרעה A/B — לא כותבים week_plan עד שתבחר
-        _handle_weekly_conflict(raw_week, analysis, metrics, prev_week_km)
+        _handle_weekly_conflict(raw_week, analysis, metrics, prev_week_km, dry=dry)
         needs_review = True
+    elif raw_week and dry:
+        print("🧪 בדיקה — week_plan.json לא נכתב (היה עובר שכבת בטיחות ב-prod).")
     elif raw_week:
         saved, safety_messages, needs_review = save_week_plan(
             raw_week, prev_week_km=prev_week_km,
@@ -1873,7 +1885,7 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
     weekly_report = _parse_weekly_report_json(full_response)
     if weekly_report and not is_conflict:
         try:
-            _send_weekly_telegram(weekly_report, safety_messages, needs_review)
+            _send_weekly_telegram(weekly_report, safety_messages, needs_review, test=dry)
         except Exception as exc:
             print(f"⚠️  שגיאה בשליחת דוח שבועי לטלגרם: {exc}")
     elif not weekly_report and not is_conflict:
@@ -1916,8 +1928,11 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
         "recommended_plan": plan_json,
         "compliance": compliance_to_store,
     }
-    save_history_entry(history_entry)
-    print(f"\nהיסטוריה עודכנה: {HISTORY_FILE}\nהדוח נשמר: {REPORT_FILE}")
+    if dry:
+        print("🧪 בדיקה — היסטוריה לא נכתבה.")
+    else:
+        save_history_entry(history_entry)
+        print(f"\nהיסטוריה עודכנה: {HISTORY_FILE}\nהדוח נשמר: {REPORT_FILE}")
 
     print("\nרוצה לשוחח עם המאמן? (Enter = כן | q = לא)")
     try:
