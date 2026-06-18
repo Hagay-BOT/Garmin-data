@@ -2109,7 +2109,7 @@ def _send_morning_telegram(morning_json: dict, metrics: dict) -> tuple[int | Non
             f"✅ <b>מוכנות בוקר — {today}</b>\n"
             f"{emoji} מוכנות טובה\n"
             f"Body Battery: {bb} | שינה: {sleep}\n\n"
-            f"📋 האימון כמתוכנן: {planned}"
+            f"📋 אין שינויים באימון — בצע כמתוכנן."
         )
     else:
         text = (
