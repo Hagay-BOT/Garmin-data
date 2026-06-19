@@ -810,7 +810,7 @@ function buildWeekPlan(acts){
       return `<div class="wp-row ${isDone?'done':''} ${isToday?'today':''}" style="--acc:${acc};cursor:pointer" onclick="toggleSession(${i})">
         <div class="wp-day"><div class="dn">${dn}</div><div class="dd">${dd}</div></div>
         <div class="wp-main"><div class="wp-name">${name}</div><div class="wp-sub">${sub}${isToday?' · היום':''}</div></div>
-        <div class="wp-check"><span class="wp-arrow closed" id="wpa-${i}">▼</span> ${isDone?'✓':'○'}</div>
+        <div class="wp-check">${isDone?'✓':'○'}</div>
       </div>
       <div class="wp-detail" id="wpd-${i}"></div>`;
     }).join('');
@@ -832,11 +832,16 @@ function strengthHTML(wo){
   </div>`).join('');
   return html;
 }
+function runPartColor(p){
+  if(/חימום|חימם|warm/i.test(p)) return '#34d399';   // חימום — ירוק
+  if(/שחרור|שיחרור|cool|רגוע/i.test(p)) return '#38bdf8'; // שחרור — כחול
+  return '#f87171';                                   // עיקרי — אדום
+}
 function runHTML(s){
   const desc=s.desc||'אין פירוט לריצה זו.';
   const parts=desc.split(/[·\n]/).map(p=>p.trim()).filter(Boolean);
   let html=`<div class="wo-sub">${(s.est_km?s.est_km+' ק"מ · ':'')}${s.subtype||'ריצה'}</div>`;
-  html+=parts.map(p=>`<div class="wo-ex" style="--acc:#22d3ee"><div class="wo-ex-name" style="font-weight:400;font-size:.78rem">${p}</div></div>`).join('');
+  html+=parts.map(p=>`<div class="wo-ex" style="--acc:${runPartColor(p)}"><div class="wo-ex-name" style="font-weight:400;font-size:.78rem">${p}</div></div>`).join('');
   return html;
 }
 function toggleSession(i){
