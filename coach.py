@@ -2180,18 +2180,28 @@ def _todays_sessions() -> list | None:
 
 
 def _has_run_planned_today() -> bool:
-    """True if today's week_plan has a run-type session.
+    """True if the morning readiness loop should run today.
 
-    Used to skip the morning readiness loop on strength-only / rest days — there's
-    no run to adjust, so we save the LLM (Haiku) call and the Telegram message.
-    Data tracking (fetch_garmin) is a separate workflow step and keeps running.
-    Fail-safe: returns True (send) if the plan can't be read, so a missing/corrupt
-    week_plan.json never silently swallows the morning message.
+    Skips strength-only / rest days to save the LLM call and the Telegram message
+    (data tracking via fetch_garmin is a separate step and keeps running).
+
+    Two fail-safes prevent a silent cascade where the user stops getting messages:
+      * plan unreadable → send (don't let a corrupt file swallow the message).
+      * today is OUTSIDE the plan's date span (plan is STALE — e.g. the weekly
+        loop was skipped by GitHub cron) → send. We only treat today as a true
+        rest day when the plan actually COVERS today and schedules no run.
     """
-    sessions = _todays_sessions()
-    if sessions is None:
-        return True  # fail-safe: when the plan is unreadable, still send
-    return any(s.get("type") == "run" for s in sessions)
+    try:
+        wp = json.loads((BASE_DIR / "week_plan.json").read_text(encoding="utf-8"))
+    except Exception:
+        return True  # fail-safe: unreadable plan → still send
+
+    sessions = wp.get("sessions", [])
+    dates = [s.get("date") for s in sessions if s.get("date")]
+    today = date.today().isoformat()
+    if not dates or today < min(dates) or today > max(dates):
+        return True  # plan doesn't cover today (stale/missing) → fail-safe send
+    return any(s.get("date") == today and s.get("type") == "run" for s in sessions)
 
 
 def _todays_planned_md() -> str:
