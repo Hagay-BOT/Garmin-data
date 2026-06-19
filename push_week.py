@@ -112,6 +112,17 @@ def build_run(session: dict) -> RunningWorkout:
 
 
 def build_strength(key: str) -> dict:
+    """אימון כוח ברמת-תרגיל (סטים · חזרות · מנוחה) מ-strength_workouts.json —
+    אותו builder שנבדק ועבד בשעון. נופל חזרה למשבצת-זמן אם ה-DB חסר/שבור,
+    כדי שתקלה במאגר לא תפיל את כל האישור השבועי."""
+    try:
+        import push_strength
+        wo = push_strength.build_strength_workout_full(key)
+        if wo.get("workoutSegments", [{}])[0].get("workoutSteps"):
+            return wo
+    except Exception as e:
+        print(f"⚠️ build_strength ברמת-תרגיל נכשל ({e}) — נופל למשבצת-זמן.")
+
     d = STRENGTH_DEFS[key]
     secs = float(d["minutes"] * 60)
     return {
