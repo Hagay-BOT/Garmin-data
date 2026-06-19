@@ -42,9 +42,5 @@ jobs:
       - name: Commit reports + history (skipped in dry-run)
         if: ${{ inputs.dry_run != true }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data.json coach_report.md coach_history.json week_plan.json weekly_state.json 2>/dev/null || true
-          git diff --staged --quiet && echo "no changes" || git commit -m "coach: weekly review $(date -u +%Y-%m-%d)"
-          git pull --rebase origin main || true
-          git push || true
+          bash scripts/git_sync.sh "coach: weekly review $(date -u +%Y-%m-%d)" \
+            data.json coach_report.md coach_history.json week_plan.json weekly_state.json

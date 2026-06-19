@@ -38,12 +38,8 @@ jobs:
 
       - name: Commit data.json
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data.json
-          git diff --staged --quiet && echo "No changes to commit" || git commit -m "chore: update running data $(date -u +%Y-%m-%d)"
-          git pull --rebase origin main
-          git push
+          bash scripts/git_sync.sh "chore: update running data $(date -u +%Y-%m-%d)" \
+            data.json
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

@@ -27,9 +27,5 @@ jobs:
 
       - name: Commit calendar
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add calendar/training.ics
-          git diff --staged --quiet && echo "no changes" || git commit -m "calendar: refresh weather forecast $(date -u +%Y-%m-%d)"
-          git pull --rebase origin main || true
-          git push || true
+          bash scripts/git_sync.sh "calendar: refresh weather forecast $(date -u +%Y-%m-%d)" \
+            calendar/training.ics

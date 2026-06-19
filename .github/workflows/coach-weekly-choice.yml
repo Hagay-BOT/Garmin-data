@@ -30,9 +30,5 @@ jobs:
 
       - name: Commit plan + state
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add week_plan.json weekly_state.json coach_history.json 2>/dev/null || true
-          git diff --staged --quiet && echo "no changes" || git commit -m "coach: weekly plan choice $(TZ=Asia/Jerusalem date +%Y-%m-%d)"
-          git pull --rebase origin main || true
-          git push || true
+          bash scripts/git_sync.sh "coach: weekly plan choice $(TZ=Asia/Jerusalem date +%Y-%m-%d)" \
+            week_plan.json weekly_state.json coach_history.json

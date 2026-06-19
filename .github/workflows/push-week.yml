@@ -35,12 +35,7 @@ jobs:
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
         run: |
           python push_week.py --push
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add created_workouts.json || true
-          git commit -m "push-week: record created Garmin workout ids" || echo "no changes"
-          git pull --rebase origin main || true
-          git push || true
+          bash scripts/git_sync.sh "push-week: record created Garmin workout ids" created_workouts.json
 
       - name: Cleanup created workouts
         if: ${{ github.event.inputs.mode == 'cleanup' }}
