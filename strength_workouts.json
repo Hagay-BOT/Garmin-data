@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "updated": "2026-06-19",
+  "note": "מאגר אימוני הכוח A/B/C של הגיא. מקור-אמת לפירוט התרגילים באתר ובמעקב. נבנה משילוב מדע (knowledge_base) + העדפה אישית. legend: src ⭐=preference 🔬=research.",
+  "workouts": {
+    "A": {
+      "name": "משיכה — גב + יד קדמית",
+      "split": "pull",
+      "muscles": ["גב", "יד קדמית", "דלתא אחורית"],
+      "duration_min": 60,
+      "frequency_per_week": 2,
+      "warmup": "מתח קל + מתיחות דינמיות — 7 דק'",
+      "exercises": [
+        {"id": "a1", "name": "מתח", "sets": "2 קל + 3 כבד", "reps": "5", "rest_sec": 150, "muscle": "גב", "track": true, "src": "⭐", "why": "משיכה אנכית כבדה — בסיס רוחב הגב וכוח אחיזה"},
+        {"id": "a2", "name": "חתירה עם מוט", "sets": "3", "reps": "8-10", "rest_sec": 120, "muscle": "גב", "track": true, "src": "⭐", "why": "משיכה אופקית — עובי גב + יציבה (עוזר ליציבת ריצה)"},
+        {"id": "a3", "name": "Pullover בפולי", "sets": "3", "reps": "10-12", "rest_sec": 90, "muscle": "גב", "track": true, "src": "⭐", "why": "מתיחה ובידוד רחב גבי"},
+        {"id": "a4", "name": "Face Pull", "sets": "3", "reps": "15", "rest_sec": 60, "muscle": "דלתא אחורית", "track": true, "src": "⭐", "why": "דלתא אחורית + בריאות כתף/שכמה ויציבה"},
+        {"id": "a5", "name": "Incline Curl (מתיחה)", "sets": "3", "reps": "10-12", "rest_sec": 75, "muscle": "יד קדמית", "track": true, "src": "⭐", "why": "בייספס במצב מתוח"},
+        {"id": "a6", "name": "Spider/Concentration Curl (כיווץ)", "sets": "3", "reps": "12-15", "rest_sec": 60, "muscle": "יד קדמית", "track": true, "src": "⭐", "why": "מיצוי הכיווץ בבידוד"}
+      ]
+    },
+    "B": {
+      "name": "דחיפה — חזה + כתפיים + יד אחורית",
+      "split": "push",
+      "muscles": ["חזה", "כתפיים", "יד אחורית"],
+      "duration_min": 60,
+      "frequency_per_week": 2,
+      "warmup": "גומייה + שכיבות שמיכה — 5 דק'",
+      "exercises": [
+        {"id": "b1", "name": "בנצ'", "sets": "4 רמפה + 3 כבד", "reps": "5-6", "rest_sec": 180, "muscle": "חזה", "track": true, "src": "⭐", "why": "דחיפה אופקית — כוח חזה בסיסי"},
+        {"id": "b2", "name": "בנצ' בשיפוע", "sets": "3", "reps": "8-10", "rest_sec": 90, "muscle": "חזה עליון", "track": true, "src": "⭐", "why": "חזה עליון"},
+        {"id": "b3", "name": "Fly בפולי (דגש חזה עליון)", "sets": "3", "reps": "12-15", "rest_sec": 75, "muscle": "חזה עליון", "track": true, "src": "⭐", "why": "בידוד ומתיחת חזה, זווית עליונה"},
+        {"id": "b4", "name": "מקבילים (Dips)", "sets": "3", "reps": "8-12", "rest_sec": 90, "muscle": "חזה תחתון", "track": true, "src": "⭐", "why": "מורכב חזה תחתון + טרייספס"},
+        {"id": "b5", "name": "לחיצת כתפיים", "sets": "3", "reps": "10", "rest_sec": 90, "muscle": "כתפיים", "track": true, "src": "⭐", "why": "דחיפה מעל הראש — כוח כתף"},
+        {"id": "b6", "name": "הנפות לצדדים", "sets": "3", "reps": "8-10", "rest_sec": 90, "muscle": "דלתא צדדית", "track": true, "src": "⭐", "why": "דלתא צדדית — רוחב כתף"},
+        {"id": "b7", "name": "יד אחורית בפולי (rope, drop בסוף)", "sets": "3", "reps": "10-12", "rest_sec": 60, "muscle": "יד אחורית", "track": true, "src": "⭐", "why": "מיצוי טרייספס"}
+      ]
+    },
+    "C": {
+      "name": "רגליים — כוח לריצה + מגן ברך/קרסול",
+      "split": "legs",
+      "muscles": ["ארבע ראשי", "שרשרת אחורית", "גלוטאוס", "שוק", "כופפי ירך"],
+      "duration_min": 60,
+      "frequency_per_week": 1,
+      "warmup": "חימום דינמי טוב + סקוואט משקל גוף — 7 דק'",
+      "exercises": [
+        {"id": "c1", "name": "סקוואט כבד", "sets": "3", "reps": "4-6", "rest_sec": 180, "muscle": "ארבע ראשי", "track": true, "src": "⭐", "why": "מנוע ה-running economy — כוח, לא מסה"},
+        {"id": "c2", "name": "דדליפט רומני / בולגרי חד-רגלי (מתחלף)", "sets": "3", "reps": "6-8", "rest_sec": 120, "muscle": "שרשרת אחורית", "track": true, "src": "⭐", "why": "שרשרת אחורית + איזון חד-צדדי"},
+        {"id": "c3", "name": "Hip Thrust (→ חד-רגלי)", "sets": "3", "reps": "8-10", "rest_sec": 90, "muscle": "גלוטאוס", "track": true, "src": "⭐", "why": "גלוטאוס מקס — מייצב ברך, ידידותי לכאב"},
+        {"id": "c4", "name": "Reverse Step-up", "sets": "3", "reps": "8 לרגל", "rest_sec": 60, "muscle": "ארבע ראשי / ברך", "track": true, "src": "🔬", "why": "בריאות הברך — quad + ניידות ירך (כאב הברך שלך)"},
+        {"id": "c5", "name": "הרחקות ירך בפולי (רצועת קרסול)", "sets": "3", "reps": "12-15", "rest_sec": 75, "muscle": "גלוטאוס מדיוס", "track": true, "src": "⭐", "why": "גלוטאוס מדיוס → מונע ITBS/כאב ברך"},
+        {"id": "c6", "name": "עליית עקב ברך כפופה (סוֹלֵאוּס)", "sets": "3", "reps": "12", "rest_sec": 60, "muscle": "סוֹלֵאוּס", "track": true, "src": "⭐🔬", "why": "השריר הכי עמוס בריצה — מגן שוק/אכילס/שבר מאמץ"},
+        {"id": "c7", "name": "עליית עקב ברך ישרה אקסצנטרי", "sets": "3", "reps": "10", "rest_sec": 60, "muscle": "גסטרוקנמיוס", "track": true, "src": "⭐", "why": "גסטרוקנמיוס + אכילס — חוזק לאורך הטווח"},
+        {"id": "c8", "name": "Wall Tibialis Raises", "sets": "3", "reps": "10", "rest_sec": 45, "muscle": "טיביאליס קדמי", "track": false, "src": "🔬", "why": "מונע שין-ספלינטס — קדמת השוק (כאב הקרסול שלך)"},
+        {"id": "c9", "name": "Loaded Hip Flexion (בכבל, בשכיבה)", "sets": "3", "reps": "10 לרגל", "rest_sec": 60, "muscle": "כופפי ירך", "track": true, "src": "🔬", "why": "כופפי ירך — הבאת הברך קדימה בריצה (מוזנח אצל רצים)"},
+        {"id": "c10", "name": "קפיצה בחבל", "sets": "1", "reps": "5 דק'", "rest_sec": 0, "muscle": "שוק / אלסטיות", "track": false, "src": "⭐", "why": "פליומטריקה עדינה — אלסטיות (running economy), סוֹלֵאוּס וכף רגל; ידידותי לקרסול"}
+      ]
+    }
+  }
+}
