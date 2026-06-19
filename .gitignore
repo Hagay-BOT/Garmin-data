@@ -3,3 +3,5 @@ __pycache__/
 .env
 debug_artifact/
 ~$*.xlsx
+graphify-out/
+RunWorkflow.bat
