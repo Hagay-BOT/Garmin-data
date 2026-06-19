@@ -269,6 +269,24 @@
       z-index:500; align-items:center; justify-content:center; display:none;
     }
     #wk-modal.open { display:flex; }
+    #wo-modal {
+      position:fixed; inset:0; background:rgba(0,0,0,.78);
+      backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+      z-index:510; align-items:center; justify-content:center; display:none;
+    }
+    #wo-modal.open { display:flex; }
+    .wo-sub { font-size:.72rem; color:var(--t2); margin-bottom:.7rem; }
+    .wo-ex {
+      padding:.6rem .72rem; border-radius:10px;
+      border:0.5px solid var(--b1); background:var(--s2); margin-bottom:.42rem;
+      border-right:2.5px solid var(--acc,#a78bfa);
+    }
+    .wo-ex-top { display:flex; justify-content:space-between; align-items:baseline; gap:.5rem; }
+    .wo-ex-name { font-size:.82rem; font-weight:700; color:var(--t1); }
+    .wo-ex-sr { font-size:.74rem; color:var(--acc,#a78bfa); white-space:nowrap; font-weight:700; }
+    .wo-ex-meta { font-size:.66rem; color:var(--t2); margin-top:.18rem; display:flex; flex-wrap:wrap; gap:.5rem; }
+    .wo-ex-why { font-size:.7rem; color:var(--t2); margin-top:.28rem; line-height:1.5; }
+    .wo-warm { font-size:.72rem; color:var(--t2); background:var(--s2); border-radius:8px; padding:.45rem .6rem; margin-bottom:.6rem; }
     .modal-box {
       background:var(--s1); border:0.5px solid var(--b2);
       border-radius:20px; padding:1.35rem;
@@ -410,6 +428,17 @@
       <span class="modal-x" onclick="closeModal()">×</span>
     </div>
     <div id="modal-body"></div>
+  </div>
+</div>
+
+<div id="wo-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title" id="wo-ttl">פירוט אימון</span>
+      <span class="modal-x" onclick="closeWorkout()">×</span>
+    </div>
+    <div id="wo-sub" class="wo-sub"></div>
+    <div id="wo-body"></div>
   </div>
 </div>
 
@@ -753,7 +782,7 @@ function buildFitness(runs){
 }
 
 // ── Weekly workout plan (auto-checks completed sessions) ────────────────────
-const WP_STR={A:'💪 כוח A — Push',B:'💪 כוח B — Pull',C:'🦵 כוח C — Legs'};
+const WP_STR={A:'💪 כוח A — משיכה',B:'💪 כוח B — דחיפה',C:'🦵 כוח C — רגליים'};
 const WP_DAYS=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
 function buildWeekPlan(acts){
   const list=document.getElementById('wp-list'), progEl=document.getElementById('wp-prog');
@@ -772,8 +801,9 @@ function buildWeekPlan(acts){
       if(s.type==='strength') return day.some(a=>STRENGTH_TYPES.has(a.activity_type));
       return false;
     };
+    window._wpSessions=plan.sessions;
     let done=0;
-    const rows=plan.sessions.map(s=>{
+    const rows=plan.sessions.map((s,i)=>{
       const dt=new Date(s.date+'T00:00:00');
       const dn=WP_DAYS[dt.getDay()];
       const dd=`${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}`;
@@ -783,9 +813,9 @@ function buildWeekPlan(acts){
       let name, sub, acc;
       if(s.type==='run'){ name=s.name; sub=(s.est_km?s.est_km+' ק"מ · ':'')+'ריצה'; acc='#22d3ee'; }
       else{ name=WP_STR[s.key]||('כוח '+s.key); sub='אימון כוח'; acc='#a78bfa'; }
-      return `<div class="wp-row ${isDone?'done':''} ${isToday?'today':''}" style="--acc:${acc}">
+      return `<div class="wp-row ${isDone?'done':''} ${isToday?'today':''}" style="--acc:${acc};cursor:pointer" onclick="openSession(${i})">
         <div class="wp-day"><div class="dn">${dn}</div><div class="dd">${dd}</div></div>
-        <div class="wp-main"><div class="wp-name">${name}</div><div class="wp-sub">${sub}${isToday?' · היום':''}</div></div>
+        <div class="wp-main"><div class="wp-name">${name}</div><div class="wp-sub">${sub}${isToday?' · היום':''} · הצג</div></div>
         <div class="wp-check">${isDone?'✓':'○'}</div>
       </div>`;
     }).join('');
@@ -793,6 +823,42 @@ function buildWeekPlan(acts){
     if(progEl) progEl.innerHTML=`<b>${done}</b>/${plan.sessions.length} הושלמו`;
   }).catch(()=>{ list.innerHTML='<div class="wp-none">לא ניתן לטעון את התוכנית.</div>'; });
 }
+
+// ── Workout detail (click a plan row → exercises) ───────────────────────────
+let STRENGTH_DB=null;
+fetch('strength_workouts.json').then(r=>r.ok?r.json():null).then(d=>{STRENGTH_DB=d;}).catch(()=>{});
+function openSession(i){
+  const s=(window._wpSessions||[])[i]; if(!s) return;
+  if(s.type==='strength') openWorkout(s.key);
+  else openRunDetail(s);
+}
+function openWorkout(key){
+  const wo=STRENGTH_DB&&STRENGTH_DB.workouts&&STRENGTH_DB.workouts[key];
+  if(!wo){ alert('מאגר התרגילים עדיין נטען — נסה שוב בעוד רגע.'); return; }
+  document.getElementById('wo-ttl').textContent='🏋️ '+wo.name;
+  document.getElementById('wo-sub').textContent=`${wo.muscles.join(' · ')} · ${wo.duration_min} דק' · ${wo.exercises.length} תרגילים`;
+  let html=`<div class="wo-warm">🔥 חימום: ${wo.warmup}</div>`;
+  html+=wo.exercises.map(e=>`<div class="wo-ex" style="--acc:#a78bfa">
+    <div class="wo-ex-top"><span class="wo-ex-name">${e.name} ${e.src||''}</span><span class="wo-ex-sr">${e.sets} × ${e.reps}</span></div>
+    <div class="wo-ex-meta"><span>💪 ${e.muscle}</span><span>⏱ מנוחה ${e.rest_sec?e.rest_sec+' ש\'':'—'}</span></div>
+    <div class="wo-ex-why">${e.why}</div>
+  </div>`).join('');
+  document.getElementById('wo-body').innerHTML=html;
+  document.getElementById('wo-modal').classList.add('open');
+}
+function openRunDetail(s){
+  document.getElementById('wo-ttl').textContent='🏃 '+(s.name||'ריצה');
+  document.getElementById('wo-sub').textContent=(s.est_km?s.est_km+' ק"מ · ':'')+(s.subtype||'');
+  const desc=s.desc||'אין פירוט לריצה זו.';
+  const parts=desc.split(/[·\n]/).map(p=>p.trim()).filter(Boolean);
+  document.getElementById('wo-body').innerHTML=parts.map(p=>
+    `<div class="wo-ex" style="--acc:#22d3ee"><div class="wo-ex-name" style="font-weight:400;font-size:.78rem">${p}</div></div>`).join('');
+  document.getElementById('wo-modal').classList.add('open');
+}
+function closeWorkout(){ document.getElementById('wo-modal').classList.remove('open'); }
+document.getElementById('wo-modal').addEventListener('click',e=>{
+  if(e.target===document.getElementById('wo-modal')) closeWorkout();
+});
 
 // ── hero ───────────────────────────────────────────────────────────────────
 function buildHero(runs){
