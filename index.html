@@ -287,6 +287,11 @@
     .wo-ex-meta { font-size:.66rem; color:var(--t2); margin-top:.18rem; display:flex; flex-wrap:wrap; gap:.5rem; }
     .wo-ex-why { font-size:.7rem; color:var(--t2); margin-top:.28rem; line-height:1.5; }
     .wo-warm { font-size:.72rem; color:var(--t2); background:var(--s2); border-radius:8px; padding:.45rem .6rem; margin-bottom:.6rem; }
+    .wp-detail { display:none; padding:.3rem .15rem .55rem; }
+    .wp-detail.open { display:block; animation:wpd-in .18s var(--ease); }
+    @keyframes wpd-in { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:none} }
+    .wp-arrow { display:inline-block; font-size:.58rem; color:var(--t2); transition:transform .2s var(--ease); }
+    .wp-arrow.closed { transform:rotate(-90deg); }
     .modal-box {
       background:var(--s1); border:0.5px solid var(--b2);
       border-radius:20px; padding:1.35rem;
@@ -428,17 +433,6 @@
       <span class="modal-x" onclick="closeModal()">×</span>
     </div>
     <div id="modal-body"></div>
-  </div>
-</div>
-
-<div id="wo-modal">
-  <div class="modal-box">
-    <div class="modal-head">
-      <span class="modal-title" id="wo-ttl">פירוט אימון</span>
-      <span class="modal-x" onclick="closeWorkout()">×</span>
-    </div>
-    <div id="wo-sub" class="wo-sub"></div>
-    <div id="wo-body"></div>
   </div>
 </div>
 
@@ -813,52 +807,52 @@ function buildWeekPlan(acts){
       let name, sub, acc;
       if(s.type==='run'){ name=s.name; sub=(s.est_km?s.est_km+' ק"מ · ':'')+'ריצה'; acc='#22d3ee'; }
       else{ name=WP_STR[s.key]||('כוח '+s.key); sub='אימון כוח'; acc='#a78bfa'; }
-      return `<div class="wp-row ${isDone?'done':''} ${isToday?'today':''}" style="--acc:${acc};cursor:pointer" onclick="openSession(${i})">
+      return `<div class="wp-row ${isDone?'done':''} ${isToday?'today':''}" style="--acc:${acc};cursor:pointer" onclick="toggleSession(${i})">
         <div class="wp-day"><div class="dn">${dn}</div><div class="dd">${dd}</div></div>
-        <div class="wp-main"><div class="wp-name">${name}</div><div class="wp-sub">${sub}${isToday?' · היום':''} · הצג</div></div>
-        <div class="wp-check">${isDone?'✓':'○'}</div>
-      </div>`;
+        <div class="wp-main"><div class="wp-name">${name}</div><div class="wp-sub">${sub}${isToday?' · היום':''}</div></div>
+        <div class="wp-check"><span class="wp-arrow closed" id="wpa-${i}">▼</span> ${isDone?'✓':'○'}</div>
+      </div>
+      <div class="wp-detail" id="wpd-${i}"></div>`;
     }).join('');
     list.innerHTML=rows;
     if(progEl) progEl.innerHTML=`<b>${done}</b>/${plan.sessions.length} הושלמו`;
   }).catch(()=>{ list.innerHTML='<div class="wp-none">לא ניתן לטעון את התוכנית.</div>'; });
 }
 
-// ── Workout detail (click a plan row → exercises) ───────────────────────────
+// ── Workout detail (click a plan row → inline accordion below it) ───────────
 let STRENGTH_DB=null;
 fetch('strength_workouts.json').then(r=>r.ok?r.json():null).then(d=>{STRENGTH_DB=d;}).catch(()=>{});
-function openSession(i){
-  const s=(window._wpSessions||[])[i]; if(!s) return;
-  if(s.type==='strength') openWorkout(s.key);
-  else openRunDetail(s);
-}
-function openWorkout(key){
-  const wo=STRENGTH_DB&&STRENGTH_DB.workouts&&STRENGTH_DB.workouts[key];
-  if(!wo){ alert('מאגר התרגילים עדיין נטען — נסה שוב בעוד רגע.'); return; }
-  document.getElementById('wo-ttl').textContent='🏋️ '+wo.name;
-  document.getElementById('wo-sub').textContent=`${wo.muscles.join(' · ')} · ${wo.duration_min} דק' · ${wo.exercises.length} תרגילים`;
-  let html=`<div class="wo-warm">🔥 חימום: ${wo.warmup}</div>`;
+function strengthHTML(wo){
+  let html=`<div class="wo-sub">${wo.muscles.join(' · ')} · ${wo.duration_min} דק' · ${wo.exercises.length} תרגילים</div>`;
+  html+=`<div class="wo-warm">🔥 חימום: ${wo.warmup}</div>`;
   html+=wo.exercises.map(e=>`<div class="wo-ex" style="--acc:#a78bfa">
     <div class="wo-ex-top"><span class="wo-ex-name">${e.name} ${e.src||''}</span><span class="wo-ex-sr">${e.sets} × ${e.reps}</span></div>
     <div class="wo-ex-meta"><span>💪 ${e.muscle}</span><span>⏱ מנוחה ${e.rest_sec?e.rest_sec+' ש\'':'—'}</span></div>
     <div class="wo-ex-why">${e.why}</div>
   </div>`).join('');
-  document.getElementById('wo-body').innerHTML=html;
-  document.getElementById('wo-modal').classList.add('open');
+  return html;
 }
-function openRunDetail(s){
-  document.getElementById('wo-ttl').textContent='🏃 '+(s.name||'ריצה');
-  document.getElementById('wo-sub').textContent=(s.est_km?s.est_km+' ק"מ · ':'')+(s.subtype||'');
+function runHTML(s){
   const desc=s.desc||'אין פירוט לריצה זו.';
   const parts=desc.split(/[·\n]/).map(p=>p.trim()).filter(Boolean);
-  document.getElementById('wo-body').innerHTML=parts.map(p=>
-    `<div class="wo-ex" style="--acc:#22d3ee"><div class="wo-ex-name" style="font-weight:400;font-size:.78rem">${p}</div></div>`).join('');
-  document.getElementById('wo-modal').classList.add('open');
+  let html=`<div class="wo-sub">${(s.est_km?s.est_km+' ק"מ · ':'')}${s.subtype||'ריצה'}</div>`;
+  html+=parts.map(p=>`<div class="wo-ex" style="--acc:#22d3ee"><div class="wo-ex-name" style="font-weight:400;font-size:.78rem">${p}</div></div>`).join('');
+  return html;
 }
-function closeWorkout(){ document.getElementById('wo-modal').classList.remove('open'); }
-document.getElementById('wo-modal').addEventListener('click',e=>{
-  if(e.target===document.getElementById('wo-modal')) closeWorkout();
-});
+function toggleSession(i){
+  const s=(window._wpSessions||[])[i]; if(!s) return;
+  const panel=document.getElementById('wpd-'+i), arrow=document.getElementById('wpa-'+i);
+  if(!panel) return;
+  if(!panel.dataset.built){
+    if(s.type==='strength'){
+      const wo=STRENGTH_DB&&STRENGTH_DB.workouts&&STRENGTH_DB.workouts[s.key];
+      panel.innerHTML=wo?strengthHTML(wo):'<div class="wo-sub">מאגר התרגילים עדיין נטען — נסה שוב.</div>';
+      if(wo) panel.dataset.built='1';
+    } else { panel.innerHTML=runHTML(s); panel.dataset.built='1'; }
+  }
+  const open=panel.classList.toggle('open');
+  if(arrow) arrow.classList.toggle('closed',!open);
+}
 
 // ── hero ───────────────────────────────────────────────────────────────────
 function buildHero(runs){
