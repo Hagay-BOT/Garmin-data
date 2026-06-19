@@ -2159,8 +2159,29 @@ def _save_morning_state(morning_json: dict, message_id: int | None, sent_at: flo
     print(f"morning_state.json שמור (status={status})")
 
 
+def _has_run_planned_today() -> bool:
+    """True if today's week_plan has a run-type session.
+
+    Used to skip the morning readiness loop on strength-only / rest days — there's
+    no run to adjust, so we save the LLM (Haiku) call and the Telegram message.
+    Data tracking (fetch_garmin) is a separate workflow step and keeps running.
+    Fail-safe: returns True (send) if the plan can't be read, so a missing/corrupt
+    week_plan.json never silently swallows the morning message.
+    """
+    today = date.today().isoformat()
+    try:
+        wp = json.loads((BASE_DIR / "week_plan.json").read_text(encoding="utf-8"))
+        return any(s.get("date") == today and s.get("type") == "run"
+                   for s in wp.get("sessions", []))
+    except Exception:
+        return True
+
+
 def run_morning(client, knowledge_base: str, metrics: dict) -> None:
     """Morning readiness check — adjust today's workout (easier only)."""
+    if not _has_run_planned_today():
+        print("📅 אין ריצה מתוכננת היום — מעקב נתונים בלבד, ללא LLM וללא טלגרם.")
+        return
     system_prompt = MORNING_SYSTEM.format(knowledge_base=knowledge_base)
     user_prompt = build_morning_prompt(metrics)
     print(f"🤖 מודל: {MODEL_MORNING} (בוקר — הזול)")
