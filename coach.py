@@ -1353,6 +1353,7 @@ MORNING_SYSTEM = """
 
 def build_morning_prompt(metrics: dict) -> str:
     macro_md = format_macro_for_prompt(metrics.get("macro", {}))
+    todays_planned_md = _todays_planned_md()
     red_flags = metrics.get("red_flags", [])
     flags_md = "\n".join(
         f"- {rf['severity']} {rf['flag']}: {rf['detail']} → {rf['action']}"
@@ -1383,7 +1384,11 @@ def build_morning_prompt(metrics: dict) -> str:
     return f"""
 ## בדיקת בוקר — {date.today().isoformat()}
 
-### מיקום במאקרו (מה מתוכנן היום בפאזה)
+### האימון המתוכנן להיום (מקור-אמת — מ-week_plan.json)
+{todays_planned_md}
+**זהו האימון של היום. בסס את שדה "planned" עליו בדיוק — אל תמציא אימון מהמאקרו.**
+
+### מיקום במאקרו (הקשר פאזה בלבד — לא האימון הקונקרטי של היום)
 {macro_md}
 
 ### מוכנות היום (זה מה שקובע את ההחלטה)
@@ -2159,6 +2164,21 @@ def _save_morning_state(morning_json: dict, message_id: int | None, sent_at: flo
     print(f"morning_state.json שמור (status={status})")
 
 
+def _todays_sessions() -> list | None:
+    """Today's sessions from week_plan.json (the single source of truth).
+
+    Returns the list of session dicts dated today, or None if the plan can't be
+    read (so callers can apply a fail-safe). An empty list means the plan covers
+    today but schedules nothing (a true rest day).
+    """
+    today = date.today().isoformat()
+    try:
+        wp = json.loads((BASE_DIR / "week_plan.json").read_text(encoding="utf-8"))
+        return [s for s in wp.get("sessions", []) if s.get("date") == today]
+    except Exception:
+        return None
+
+
 def _has_run_planned_today() -> bool:
     """True if today's week_plan has a run-type session.
 
@@ -2168,13 +2188,29 @@ def _has_run_planned_today() -> bool:
     Fail-safe: returns True (send) if the plan can't be read, so a missing/corrupt
     week_plan.json never silently swallows the morning message.
     """
-    today = date.today().isoformat()
-    try:
-        wp = json.loads((BASE_DIR / "week_plan.json").read_text(encoding="utf-8"))
-        return any(s.get("date") == today and s.get("type") == "run"
-                   for s in wp.get("sessions", []))
-    except Exception:
-        return True
+    sessions = _todays_sessions()
+    if sessions is None:
+        return True  # fail-safe: when the plan is unreadable, still send
+    return any(s.get("type") == "run" for s in sessions)
+
+
+def _todays_planned_md() -> str:
+    """Authoritative 'today's workout' block for the morning prompt, taken from
+    week_plan.json so the message describes the REAL session, not a macro guess."""
+    sessions = _todays_sessions()
+    if not sessions:
+        return "_(אין session בתוכנית להיום — הסתמך על המאקרו בזהירות.)_"
+    lines = []
+    for s in sessions:
+        if s.get("type") == "run":
+            name = s.get("name") or f"ריצה ({s.get('subtype', 'easy')})"
+            desc = s.get("desc", "")
+            lines.append(f"- 🏃 **{name}**" + (f" — {desc}" if desc else ""))
+        elif s.get("type") == "strength":
+            lines.append(f"- 💪 כוח {s.get('key', '')}")
+        else:
+            lines.append(f"- {s.get('type', '?')}")
+    return "\n".join(lines)
 
 
 def run_morning(client, knowledge_base: str, metrics: dict) -> None:
