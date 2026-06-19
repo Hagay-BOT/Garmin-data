@@ -877,16 +877,56 @@ def compute_compliance(history: list[dict], current_last_week: dict) -> dict:
     return result
 
 
+def extract_llm_json(report_text: str, start_marker: str = "", end_marker: str = "",
+                     aliases: dict | None = None) -> dict:
+    """Robust extraction of a JSON object from an LLM report. SINGLE source of
+    truth for all *_JSON block parsing (morning/postworkout/weekly/plan/week_plan).
+
+    The model does not reliably emit the literal ---MARKER--- wrappers — at low
+    effort it may wrap the object in a ```json fence or print a bare {...}. A
+    markers-only regex silently returns {}, which downstream means a dropped
+    Telegram message, an unbuilt week plan, or a lost adjustment. Strategy:
+      1) explicit markers (what we ask for)
+      2) any ```fenced``` block
+      3) the last bare {...} object (greedy — handles nested sessions arrays)
+    Then normalize field-name aliases so callers rely on canonical keys.
+    """
+    import re
+    candidates = []
+    if start_marker and end_marker:
+        m = re.search(re.escape(start_marker) + r"\s*(.*?)\s*" + re.escape(end_marker),
+                      report_text, re.DOTALL)
+        if m:
+            candidates.append(m.group(1))
+    for fm in re.finditer(r"```(?:json)?\s*(.*?)```", report_text, re.DOTALL):
+        candidates.append(fm.group(1).strip())
+    bm = re.search(r"(\{.*\})", report_text, re.DOTALL)
+    if bm:
+        candidates.append(bm.group(1))
+
+    parsed = None
+    for cand in candidates:
+        try:
+            parsed = json.loads(cand)
+            break
+        except Exception:
+            continue
+    if not isinstance(parsed, dict):
+        return {}
+
+    if aliases:
+        for canonical, names in aliases.items():
+            if not parsed.get(canonical):
+                for n in names:
+                    if parsed.get(n):
+                        parsed[canonical] = parsed[n]
+                        break
+    return parsed
+
+
 def extract_plan_json(report_text: str) -> dict:
     """Extract the structured plan block Claude writes at the end of each report."""
-    import re
-    match = re.search(r"---PLAN_JSON---\s*(.*?)\s*---END_PLAN---", report_text, re.DOTALL)
-    if not match:
-        return {}
-    try:
-        return json.loads(match.group(1))
-    except Exception:
-        return {}
+    return extract_llm_json(report_text, "---PLAN_JSON---", "---END_PLAN---")
 
 
 # ── Structured Week Plan (the bridge to Garmin + calendar) ────────────────────
@@ -904,16 +944,8 @@ def _pace_to_sec(pace: str) -> int:
 
 
 def extract_week_plan(report_text: str) -> dict:
-    """חילוץ בלוק WEEK_PLAN_JSON שה-AI כותב בסוף הדוח."""
-    import re
-    match = re.search(r"---WEEK_PLAN_JSON---\s*(.*?)\s*---END_WEEK_PLAN---",
-                      report_text, re.DOTALL)
-    if not match:
-        return {}
-    try:
-        return json.loads(match.group(1))
-    except Exception:
-        return {}
+    """חילוץ בלוק WEEK_PLAN_JSON שה-AI כותב בסוף הדוח (מקור-האמת לתוכנית)."""
+    return extract_llm_json(report_text, "---WEEK_PLAN_JSON---", "---END_WEEK_PLAN---")
 
 
 def materialize_week_plan(raw: dict) -> dict:
@@ -1772,16 +1804,17 @@ def _format_weekly_quality_segments(metrics: dict) -> str:
 
 
 def _parse_weekly_report_json(report_text: str) -> dict:
-    """Extract the ---WEEKLY_REPORT_JSON--- block (the structured Telegram report)."""
-    import re
-    match = re.search(r"---WEEKLY_REPORT_JSON---\s*(.*?)\s*---END_WEEKLY_REPORT---",
-                      report_text, re.DOTALL)
-    if not match:
-        return {}
-    try:
-        return json.loads(match.group(1))
-    except Exception:
-        return {}
+    """Extract the ---WEEKLY_REPORT_JSON--- block (the structured Telegram report).
+    Hardened via the shared extractor — a markers-only parse here silently drops
+    the weekly Telegram message, the same failure that hit the postworkout loop."""
+    return extract_llm_json(report_text, "---WEEKLY_REPORT_JSON---", "---END_WEEKLY_REPORT---",
+                            aliases={"headline": ("headline", "title"),
+                                     "compass": ("compass", "vdot_gap"),
+                                     "week_analysis": ("week_analysis", "analysis"),
+                                     "wins": ("wins", "win"),
+                                     "concerns": ("concerns", "concern"),
+                                     "plan_summary": ("plan_summary", "plan"),
+                                     "focus": ("focus", "tip")})
 
 
 def _send_weekly_telegram(wr: dict, safety_messages: list, needs_review: bool,
@@ -2037,43 +2070,10 @@ def _parse_morning_json(report_text: str) -> dict:
     normalize field-name aliases (planned_workout→planned etc.) so downstream
     code finds the keys it expects.
     """
-    import re
-
-    candidates = []
-    # 1) explicit markers (the format we ask for)
-    m = re.search(r"---MORNING_JSON---\s*(.*?)\s*---END_MORNING---", report_text, re.DOTALL)
-    if m:
-        candidates.append(m.group(1))
-    # 2) fenced ```json … ``` (or any ``` … ``` block)
-    for fm in re.finditer(r"```(?:json)?\s*(\{.*?\})\s*```", report_text, re.DOTALL):
-        candidates.append(fm.group(1))
-    # 3) last bare {...} object in the text (greedy to the final brace)
-    bm = re.search(r"(\{.*\})", report_text, re.DOTALL)
-    if bm:
-        candidates.append(bm.group(1))
-
-    parsed = None
-    for cand in candidates:
-        try:
-            parsed = json.loads(cand)
-            break
-        except Exception:
-            continue
-    if not isinstance(parsed, dict):
-        return {}
-
-    # Normalize field-name aliases so callers can rely on canonical keys.
-    aliases = {
-        "planned": ("planned", "planned_workout"),
-        "adjusted": ("adjusted", "adjusted_workout"),
-    }
-    for canonical, names in aliases.items():
-        if not parsed.get(canonical):
-            for n in names:
-                if parsed.get(n):
-                    parsed[canonical] = parsed[n]
-                    break
-    return parsed
+    return extract_llm_json(
+        report_text, "---MORNING_JSON---", "---END_MORNING---",
+        aliases={"planned": ("planned", "planned_workout"),
+                 "adjusted": ("adjusted", "adjusted_workout")})
 
 
 def _readiness_emoji(level: str) -> str:
@@ -2251,49 +2251,15 @@ def _parse_postworkout_json(report_text: str) -> dict:
     sender finds the keys it expects. A brittle parser here silently drops the
     notification AND marks the run analyzed, so the message is lost for good.
     """
-    import re
-
-    candidates = []
-    # 1) explicit markers (the format we ask for)
-    m = re.search(r"---POSTWORKOUT_JSON---\s*(.*?)\s*---END_POSTWORKOUT---",
-                  report_text, re.DOTALL)
-    if m:
-        candidates.append(m.group(1))
-    # 2) fenced ```json … ``` (or any ``` … ``` block)
-    for fm in re.finditer(r"```(?:json)?\s*(\{.*?\})\s*```", report_text, re.DOTALL):
-        candidates.append(fm.group(1))
-    # 3) last bare {...} object in the text (greedy to the final brace)
-    bm = re.search(r"(\{.*\})", report_text, re.DOTALL)
-    if bm:
-        candidates.append(bm.group(1))
-
-    parsed = None
-    for cand in candidates:
-        try:
-            parsed = json.loads(cand)
-            break
-        except Exception:
-            continue
-    if not isinstance(parsed, dict):
-        return {}
-
-    # Normalize field-name aliases so the sender can rely on canonical keys.
-    aliases = {
-        "category": ("category", "type", "workout_type", "קטגוריה"),
-        "planned": ("planned", "planned_workout"),
-        "actual": ("actual", "actual_workout", "performed"),
-        "improve": ("improve", "improvements", "improve_points"),
-        "keep": ("keep", "maintain", "strength"),
-        "red_flags": ("red_flags", "flags", "warnings"),
-        "next": ("next", "next_workout", "upcoming"),
-    }
-    for canonical, names in aliases.items():
-        if not parsed.get(canonical):
-            for n in names:
-                if parsed.get(n):
-                    parsed[canonical] = parsed[n]
-                    break
-    return parsed
+    return extract_llm_json(
+        report_text, "---POSTWORKOUT_JSON---", "---END_POSTWORKOUT---",
+        aliases={"category": ("category", "type", "workout_type", "קטגוריה"),
+                 "planned": ("planned", "planned_workout"),
+                 "actual": ("actual", "actual_workout", "performed"),
+                 "improve": ("improve", "improvements", "improve_points"),
+                 "keep": ("keep", "maintain", "strength"),
+                 "red_flags": ("red_flags", "flags", "warnings"),
+                 "next": ("next", "next_workout", "upcoming")})
 
 
 def _send_postworkout_telegram(pw: dict) -> int | None:
