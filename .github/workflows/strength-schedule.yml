@@ -4,9 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "build (JSON only) | schedule-week (push to watch) | cleanup"
+        description: "build | build-one | push-one | schedule-week | cleanup"
         required: false
         default: "build"
+      push_key:
+        description: "workout key for push-one (A/B/C)"
+        required: false
+        default: "B"
       cleanup_id:
         description: "workout id to delete (cleanup mode only)"
         required: false
@@ -28,6 +32,17 @@ jobs:
       - name: Build only (no credentials, no push)
         if: ${{ github.event.inputs.mode == 'build' }}
         run: python push_strength.py --build-only
+
+      - name: Build one full workout (no credentials)
+        if: ${{ github.event.inputs.mode == 'build-one' }}
+        run: python push_strength.py --build-one "${{ github.event.inputs.push_key }}"
+
+      - name: Push one full exercise-level workout to Garmin (test)
+        if: ${{ github.event.inputs.mode == 'push-one' }}
+        env:
+          GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+        run: python push_strength.py --push-one "${{ github.event.inputs.push_key }}"
 
       - name: Schedule week to Garmin calendar
         if: ${{ github.event.inputs.mode == 'schedule-week' }}
