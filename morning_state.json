@@ -1,12 +1,12 @@
 {
-  "date": "2026-06-18",
+  "date": "2026-06-19",
   "status": "no_adjustment",
-  "sent_at_unix": 1781792993.3909364,
-  "message_id": 20,
+  "sent_at_unix": 1781853284.6319368,
+  "message_id": 23,
   "adjustment_type": "none",
-  "planned": "Tempo Run: 4km Z2 warm-up + 5×(4 min @ 5:10/km pace) + 2km Z2 cool-down",
-  "adjusted": "Tempo Run: 4km Z2 warm-up + 5×(4 min @ 5:10/km pace) + 2km Z2 cool-down",
-  "reason": "מוכנות מעולה (BB=86, sleep=82). בצע כמתוכנן. הוסף active recovery ביום שישי להפחתת מונוטוניות גבוהה.",
-  "readiness_level": "ירוק",
+  "planned": "Tempo Tempo קל 5:10/ק\"מ — אימון איכות ראשון בפאזת Base",
+  "adjusted": "כמתוכנן — ללא שינוי",
+  "reason": "שינה מעולה (95), Body Battery מלא (98), TSB טרי (-2), ACWR בטוח (1.06). תנאים אידיאליים לאימון איכות בתחילת Base.",
+  "readiness_level": "🟢 ירוק",
   "adjustment_source": "none"
 }
