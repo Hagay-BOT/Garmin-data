@@ -1,12 +1,12 @@
 {
-  "date": "2026-06-19",
-  "status": "no_adjustment",
-  "sent_at_unix": 1781853284.6319368,
-  "message_id": 23,
-  "adjustment_type": "none",
-  "planned": "Tempo Tempo קל 5:10/ק\"מ — אימון איכות ראשון בפאזת Base",
-  "adjusted": "כמתוכנן — ללא שינוי",
-  "reason": "שינה מעולה (95), Body Battery מלא (98), TSB טרי (-2), ACWR בטוח (1.06). תנאים אידיאליים לאימון איכות בתחילת Base.",
-  "readiness_level": "🟢 ירוק",
-  "adjustment_source": "none"
+  "date": "2026-06-20",
+  "status": "pending_reply",
+  "sent_at_unix": 1781940912.5785384,
+  "message_id": 24,
+  "adjustment_type": "reschedule",
+  "planned": "Long Run — 9 ק״מ Z2 @ 6:30–6:50 (דופק 121–141)",
+  "adjusted": "",
+  "reason": "גוף ירוק לחלוטין, אך 27°C בבוקר בשבוע 1. אם תרוץ בחוץ — קדם ושתה. אם בחדר — הליכון נמוך בעדיפות.",
+  "readiness_level": "ירוק",
+  "adjustment_source": "weather"
 }
