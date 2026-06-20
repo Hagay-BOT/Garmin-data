@@ -1480,25 +1480,29 @@ POSTWORKOUT_SYSTEM = """
 3. בטיחות לפני התקדמות.
 
 ## פורמט פלט (בסוף, אחרי הניתוח המילולי — JSON תקני להודעת הטלגרם):
-שדה "improve" = בדיוק 2 דגשים לשיפור על סמך המדדים. "keep" = דגש אחד לשימור.
-"red_flags" = רשימה ריקה [] אם אין. "next" = מה בתכנון בהמשך היום, ואם אין עוד אימון
-היום אז האימון של מחר.
+- "planned" = שם האימון הקונקרטי מ-week_plan (למשל "Long Run 9 ק\"מ Z2"), לא תיאור מאקרו כללי.
+- "actual" = מרחק · קצב · משך · דופק ממוצע · **קדנס** · **GCT (פגיעה בקרקע)**.
+- "improve" = בדיוק 2 דגשים, מבוססי **נתוני אמת בלבד** של האימון שבוצע. **אסור** להמציא אירועים שלא קרו (double session, ריצת בוקר נוספת) — נותחה פעילות אחת.
+- "keep" = דגש שימור אחד שמסתובב בין **קדנס · GCT · יציבות קצב · נשימה · cardiac drift · אורך/תנודת צעד**. דופק **לא** יהיה הדגש המרכזי (מובן מאליו שרץ בדופק היעד) — לכל היותר הערת-צד.
+- "red_flags" = רק מהרשימה הדטרמיניסטית שניתנה. ריק [] אם אין. **אל תמציא דגלים.**
+- "next" = אימון מחר (ריצת היום כבר בוצעה). אל תתאר אותה כאילו עוד לפניך.
 ---POSTWORKOUT_JSON---
 {{
   "category": "<קטגוריה בעברית: ריצה קלה | טמפו | אינטרוולים | ריצה ארוכה | כוח>",
-  "planned": "<מה היה אמור: מרחק + קצב יעד>",
-  "actual": "<מה בוצע: מרחק · קצב · משך · דופק ממוצע/מקס>",
-  "improve": ["<דגש לשיפור 1>", "<דגש לשיפור 2>"],
-  "keep": "<דגש לשימור אחד>",
-  "red_flags": ["<דגל אדום אם יש>"],
-  "next": "<מה בתכנון בהמשך היום, ואם אין אז האימון של מחר>"
+  "planned": "<שם האימון הקונקרטי של היום מהתוכנית>",
+  "actual": "<מרחק · קצב · משך · דופק ממוצע · קדנס · GCT>",
+  "improve": ["<דגש לשיפור 1 — מנתוני האימון בלבד>", "<דגש לשיפור 2>"],
+  "keep": "<דגש שימור — קדנס/GCT/יציבות/נשימה, לא דופק>",
+  "red_flags": ["<רק מהרשימה הדטרמיניסטית; ריק אם אין>"],
+  "next": "<אימון מחר>"
 }}
 ---END_POSTWORKOUT---
 """
 
 
-def _next_sessions_md() -> str:
-    """מחזיר את האימונים המתוכננים להמשך היום + מחר מ-week_plan.json (לשדה next)."""
+def _next_sessions_md(run_done_today: bool = False) -> str:
+    """מחזיר את האימונים המתוכננים להמשך היום + מחר מ-week_plan.json (לשדה next).
+    run_done_today=True → מדלג על ריצת היום (כבר בוצעה) כדי לא להמציא double session."""
     wp = BASE_DIR / "week_plan.json"
     if not wp.exists():
         return "אין week_plan.json — הסק את אימון מחר מהפאזה במאקרו."
@@ -1511,10 +1515,30 @@ def _next_sessions_md() -> str:
     lines = []
     for s in plan.get("sessions", []):
         d = s.get("date")
-        if d in (today, tomorrow) and s.get("est_km"):
-            when = "היום (בהמשך)" if d == today else "מחר"
-            lines.append(f"- {when}: {s.get('subtype','?')} · {s.get('est_km')} ק\"מ")
-    return "\n".join(lines) or "אין אימון נוסף מתוכנן היום/מחר בתוכנית."
+        if not s.get("est_km"):
+            continue
+        # אם ריצת היום כבר בוצעה (זה האימון שניתחנו), אל תציג אותה כ"בהמשך" —
+        # אחרת המודל חושב שיש עוד ריצה היום וממציא "double session" שלא קיים.
+        if d == today and not run_done_today:
+            lines.append(f"- היום (בהמשך): {s.get('subtype','?')} · {s.get('est_km')} ק\"מ")
+        elif d == tomorrow:
+            lines.append(f"- מחר: {s.get('subtype','?')} · {s.get('est_km')} ק\"מ")
+    return "\n".join(lines) or "אין ריצה נוספת מתוכננת (ריצת היום בוצעה). ההמלצה ל-next = אימון מחר."
+
+
+def _todays_planned_run_md() -> str:
+    """שם האימון המתוכנן של היום מ-week_plan.json — לעיגון שדה planned (לא ניחוש מהמאקרו)."""
+    wp = BASE_DIR / "week_plan.json"
+    try:
+        plan = json.loads(wp.read_text(encoding="utf-8"))
+    except Exception:
+        return "—"
+    today = date.today().isoformat()
+    runs = [s for s in plan.get("sessions", []) if s.get("date") == today and s.get("type") == "run"]
+    if not runs:
+        return "אין ריצה מתוכננת היום בתוכנית."
+    return " · ".join((s.get("name") or s.get("subtype", "ריצה")) +
+                      (f" — {s['desc']}" if s.get("desc") else "") for s in runs)
 
 
 def _format_workout_segments(workout: dict) -> str:
@@ -1564,6 +1588,8 @@ def build_postworkout_prompt(metrics: dict, workout: dict | None) -> str:
             f"- מרחק: {workout.get('distance_km')} ק\"מ | קצב ממוצע: {pace_str}\n"
             f"- דופק ממוצע: {workout.get('avg_hr')} | מקס: {workout.get('max_hr')}\n"
             f"- משך: {round((workout.get('duration_sec') or 0)/60)} דק'\n"
+            f"- קדנס: {workout.get('cadence_spm','—')} spm | GCT (פגיעה בקרקע): {workout.get('gct_ms','—')} ms | אורך צעד: {workout.get('stride_length_m','—')} מ'\n"
+            f"- תנודה אנכית: {workout.get('vertical_oscillation_cm','—')} ס\"מ | יחס אנכי: {workout.get('vertical_ratio_pct','—')}% | נשימה ממוצעת: {workout.get('avg_respiration','—')}\n"
             f"- cardiac drift: {workout.get('hr_drift_bpm','לא זמין')} bpm\n"
             f"- 🧠 דירוג סובייקטיבי: RPE {workout.get('rpe','—')}/10 · Feel {workout.get('feel','—')}/5 "
             f"(השווה לדופק/קצב — אי-התאמה = סימן עייפות)\n"
@@ -1571,25 +1597,34 @@ def build_postworkout_prompt(metrics: dict, workout: dict | None) -> str:
             f"- 100m splits: {'כן ('+str(len(workout['splits_100m']))+' מקטעים)' if workout.get('splits_100m') else 'לא זמין'}"
         )
 
+    run_done_today = bool(
+        workout and workout.get("date") == date.today().isoformat()
+        and workout.get("activity_type") in RUN_TYPES)
+
     return f"""
 ## ניתוח אחרי אימון — {date.today().isoformat()}
 
-### מיקום במאקרו (מה הפאזה דרשה)
+### האימון שתוכנן להיום (מקור-אמת — מ-week_plan.json)
+{_todays_planned_run_md()}
+**שדה "planned" = האימון הזה בדיוק (השם הקונקרטי), לא תיאור כללי מהמאקרו.**
+
+### מיקום במאקרו (הקשר פאזה בלבד)
 {macro_md}
 
-### האימון שבוצע היום
+### האימון שבוצע היום (נתוני אמת — זו הפעילות היחידה היום)
 {workout_md}
+⚠️ נותחה **פעילות אחת** היום (זו שלמעלה). אל תמציא אימונים נוספים — אין ריצת בוקר נוספת, אין double session. נתח רק את מה שמופיע כאן.
 
 {_format_workout_segments(workout) if workout else ""}
 
-### דגלים אדומים שזוהו
+### דגלים אדומים שזוהו (דטרמיניסטי — אל תוסיף דגלים שלא ברשימה)
 {flags_md}
 
 ### עומס נוכחי
 - ATL: {metrics['load']['atl']} | TSB: {metrics['load']['tsb']} | ACWR: {metrics['load']['acwr'] or 'לא זמין'} {metrics['acwr_status']['flag']}
 
 ### מתוכנן בהמשך (לשדה next)
-{_next_sessions_md()}
+{_next_sessions_md(run_done_today)}
 
 ---
 
