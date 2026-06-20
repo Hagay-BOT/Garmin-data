@@ -3,7 +3,14 @@
   "weeks": [
     {
       "week_of": "2026-06-15",
-      "generated_at": "2026-06-14 (manual, week 1 kickoff)",
+      "generated_at": "2026-06-20 18:57",
+      "headline": "📊 איזון: דשדוש ב-Z3 (22.5%) — לחדד את הקיטוב: קל יותר קל, קשה יותר קשה",
+      "threshold_snapshot": {
+        "current_vdot": 36.9,
+        "required_vdot": 38.3,
+        "vdot_gap": 1.4,
+        "threshold_pace": "5:13/ק\"מ"
+      },
       "macro": {
         "week_num": 1,
         "phase": "Base",
@@ -11,55 +18,52 @@
         "gate": false
       },
       "metrics": {
-        "ctl": 32.7,
-        "atl": 32.9,
-        "tsb": -0.3,
-        "acwr": 1.01,
-        "ramp_rate_4w": 9.7
+        "ctl": 34.3,
+        "atl": 37.8,
+        "tsb": -3.5,
+        "acwr": 1.1,
+        "ramp_rate_4w": 6.1
       },
       "fitness_4week": {
         "available": true,
         "window_days": 28,
-        "runs": 9,
-        "weekly_km_avg": 15.3,
-        "total_km": 61.3,
+        "runs": 12,
+        "weekly_km_avg": 19.8,
+        "total_km": 79.2,
         "vdot": 36.9,
         "vdot_basis": "6.3ק\"מ @ 5:13/ק\"מ (2026-06-08)",
-        "threshold_pace": "6:28/ק\"מ",
-        "threshold_runs": 2,
-        "ef_z2_avg": 1.1055,
-        "z2_runs": 4
+        "threshold_pace": "5:13/ק\"מ",
+        "threshold_runs": 1,
+        "ef_z2_avg": 1.075,
+        "z2_runs": 7
       },
       "zones_28d": {
-        "easy_pct": 45.0,
-        "hard_pct": 30.9
+        "easy_pct": 57.0,
+        "hard_pct": 20.5
       },
-      "week_actual": {},
-      "red_flags": [
-        {
-          "flag": "קפיצת נפח",
-          "severity": "🟡",
-          "detail": "נפח השבוע 21 ק\"מ מול 12 בשבוע שעבר (>30%)",
-          "action": "עלייה חדה מדי בנפח. רכך את השבוע הבא."
-        }
-      ],
+      "week_actual": {
+        "run_count": 5,
+        "total_km": 33.3,
+        "total_load": 220.3
+      },
+      "red_flags": [],
       "recommended_plan": {
-        "run_count": 4,
-        "total_km_approx": 24.5,
-        "focus": "בסיס Base — נפח Z2 קל אמיתי + סף ביום שני",
-        "key_workout": "שני: Tempo 3 ק\"מ @ 5:10–5:15 | רביעי: רגליים C | שבת: Long 9 ק\"מ Z2",
-        "strength": "B(א') · A(ג') · C-רגליים(ד') · B(ה') · A קליל(ו') — 5 אימונים, עליון×4",
-        "schedule": {
-          "ראשון": "כוח B",
-          "שני": "איכות סף",
-          "שלישי": "קל 5ק\"מ + כוח A",
-          "רביעי": "רגליים C",
-          "חמישי": "קל 5ק\"מ + strides + כוח B",
-          "שישי": "כוח A קליל",
-          "שבת": "ארוכה 9ק\"מ"
-        }
+        "run_count": 5,
+        "total_km_approx": 33,
+        "focus": "בסיס אירובי נקי + קיטוב — להוריד Z3, לגעת בסף פעם אחת",
+        "key_workout": "טמפו רציף 3 ק\"מ @ 5:05–5:10 + 6×100מ' strides"
       },
-      "compliance": {}
+      "compliance": {
+        "prior_week_of": "2026-06-15",
+        "plan_focus": "בסיס Base — נפח Z2 קל אמיתי + סף ביום שני",
+        "plan_key_workout": "שני: Tempo 3 ק\"מ @ 5:10–5:15 | רביעי: רגליים C | שבת: Long 9 ק\"מ Z2",
+        "planned_runs": 4,
+        "actual_runs": 5,
+        "planned_km_approx": 24.5,
+        "actual_km": 33.3,
+        "km_compliance_pct": 136,
+        "compliance_level": "מלא"
+      }
     }
   ]
 }
