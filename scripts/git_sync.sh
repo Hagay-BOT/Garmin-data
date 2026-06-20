@@ -39,7 +39,12 @@ fi
 git commit -m "$MSG"
 
 for attempt in 1 2 3 4 5; do
-  if git pull --rebase --autostash origin main && git push origin main; then
+  # -X theirs auto-resolves CONTENT conflicts in favor of our just-committed
+  # version. These workflows only commit GENERATED/state files (data.json,
+  # reports, *_state.json) — both sides are valid Garmin snapshots, so taking
+  # ours lets the rebase COMPLETE instead of halting on a conflict (the failure
+  # mode that broke update.yml: same conflict retried 5× → exit 1).
+  if git pull --rebase --autostash -X theirs origin main && git push origin main; then
     echo "git_sync: pushed on attempt $attempt"
     exit 0
   fi
