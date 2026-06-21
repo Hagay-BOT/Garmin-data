@@ -8,29 +8,6 @@
     {
       "date": "2026-06-21",
       "day": "ראשון",
-      "type": "run",
-      "subtype": "easy",
-      "name": "Z2 בסיס",
-      "desc": "Z2 בסיס",
-      "est_km": 4.6,
-      "steps": [
-        {
-          "kind": "warmup",
-          "seconds": 502
-        },
-        {
-          "kind": "interval",
-          "seconds": 976
-        },
-        {
-          "kind": "cooldown",
-          "seconds": 335
-        }
-      ]
-    },
-    {
-      "date": "2026-06-21",
-      "day": "ראשון",
       "type": "strength",
       "key": "B"
     },
