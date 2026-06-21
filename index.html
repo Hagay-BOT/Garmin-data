@@ -665,7 +665,7 @@ function showError(msg){
 function weekBounds(offsetWeeks=0){
   const today=new Date();
   const mon=new Date(today);
-  mon.setDate(today.getDate()-((today.getDay()+6)%7)-offsetWeeks*7);
+  mon.setDate(today.getDate()-today.getDay()-offsetWeeks*7);
   const sun=new Date(mon); sun.setDate(mon.getDate()+6);
   return { start:mon.toISOString().slice(0,10), end:sun.toISOString().slice(0,10) };
 }
@@ -1018,7 +1018,7 @@ function buildHeatmap(acts){
   const weeks=[];
   for(let i=11;i>=0;i--){
     const mon=new Date(today);
-    mon.setDate(today.getDate()-((today.getDay()+6)%7)-i*7);
+    mon.setDate(today.getDate()-today.getDay()-i*7);
     const sun=new Date(mon); sun.setDate(mon.getDate()+6);
     const start=mon.toISOString().slice(0,10), end=sun.toISOString().slice(0,10);
     const label=mon.toLocaleDateString('he-IL',{day:'numeric',month:'numeric'});
@@ -1074,7 +1074,7 @@ function buildWeekly(acts){
   const weeks=[];
   for(let i=7;i>=0;i--){
     const mon=new Date(today);
-    mon.setDate(today.getDate()-((today.getDay()+6)%7)-i*7);
+    mon.setDate(today.getDate()-today.getDay()-i*7);
     const sun=new Date(mon); sun.setDate(mon.getDate()+6);
     weeks.push({start:mon.toISOString().slice(0,10),end:sun.toISOString().slice(0,10),acts:[],isCurrent:i===0});
   }
@@ -1213,7 +1213,7 @@ function buildZoneChart(runs, globalMaxHR){
   const weeks=[];
   for(let i=11;i>=0;i--){
     const mon=new Date(today);
-    mon.setDate(today.getDate()-((today.getDay()+6)%7)-i*7);
+    mon.setDate(today.getDate()-today.getDay()-i*7);
     const sun=new Date(mon); sun.setDate(mon.getDate()+6);
     weeks.push({
       label:mon.toLocaleDateString('he-IL',{day:'numeric',month:'numeric'}),
