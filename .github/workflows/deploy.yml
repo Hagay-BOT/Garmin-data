@@ -9,12 +9,13 @@ on:
   workflow_run:
     workflows:
       - "Coach — Workout Watcher (event-driven, all day)"
-      - "Coach — Morning Readiness"
-      - "Coach — Morning Reply Check"
       - "Coach — Evening Cancellation Reply"
       - "Coach — Weekly Review"
       - "Calendar Weather Refresh"
     types: [completed]
+  # רענון שבועי מובטח — שבת 23:59 ישראל (20:59 UTC), אחרי שהתוכנית השבועית נסגרה.
+  schedule:
+    - cron: '59 20 * * 6'
   workflow_dispatch:
 
 permissions:

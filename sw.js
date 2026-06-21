@@ -1,5 +1,5 @@
 // Service worker for the Garmin dashboard PWA
-const CACHE = 'garmin-dash-v3';
+const CACHE = 'garmin-dash-v4';
 const SHELL = [
   './',
   './index.html',
@@ -45,8 +45,10 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // data.json: network-first so training data stays fresh; fall back to cache offline
-  if (url.pathname.endsWith('data.json')) {
+  // All .json data (data.json, week_plan.json, strength_workouts.json, coach_history…):
+  // network-first so the plan & data always stay fresh; fall back to cache offline.
+  // (Bug fix: week_plan.json was cache-first → the app showed a STALE plan after updates.)
+  if (url.pathname.endsWith('.json')) {
     e.respondWith(
       fetch(e.request)
         .then((r) => {
