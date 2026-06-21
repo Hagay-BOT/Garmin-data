@@ -207,7 +207,10 @@ def main():
                 print(f"🗑️  נמחק {item['workout_id']} ({item['name']})")
             except Exception as e:
                 print(f"⚠️  כשל במחיקת {item['workout_id']}: {e}")
-        CREATED_FILE.unlink(missing_ok=True)
+        # כותבים רשימה ריקה (לא מוחקים את הקובץ) — כדי שה-git_sync ישמור מצב נקי
+        # ב-repo. אחרת ה-repo ימשיך להחזיק IDs מחוקים והדחיפה הבאה תדלג עליהם.
+        CREATED_FILE.write_text("[]", encoding="utf-8")
+        print("✅ created_workouts.json נוקה (רשימה ריקה).")
         return
 
     if "--push" in args:

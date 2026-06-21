@@ -42,4 +42,6 @@ jobs:
         env:
           GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
-        run: python push_week.py --cleanup
+        run: |
+          python push_week.py --cleanup
+          bash scripts/git_sync.sh "push-week: cleanup — cleared created_workouts.json" created_workouts.json
