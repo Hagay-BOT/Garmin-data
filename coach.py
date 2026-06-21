@@ -1149,6 +1149,7 @@ SYSTEM_PROMPT_TEMPLATE = """
 - כוח: type=strength, key=A/B/C (A=Pull/משיכה, B=Push/דחיפה, C=Legs/רגליים). פיצול PPL לפי הפרופיל.
 - כבד את כל הכללים: ריצה בבוקר/כוח בערב, רגליים (C) רחוק מאיכות/לונג, long ≤12 ק"מ, 80/20.
 - **חובה (ידע אישי):** הריצה שאחרי יום רגליים (C) היא **ריצת התאוששות קלה (Z1)** — לא base/Z2 ולא איכות. רגליים מתישים אותו ופוגעים בריצות הבאות. אל תשבץ C יום לפני לונג; ושמור ≥48ש' בין C ללונג/איכות.
+- **חובה — המשכיות בין שבועות:** ראה את "רצף אימוני כוח" (האימון האחרון של שבוע שעבר). **התחל את השבוע באימון הבא ברוטציה, לא באותו אימון** — אחרת ייווצרו שני אימוני Push (או Pull) ברצף חוצה-שבועות. שמור גם בתוך השבוע: לעולם לא אותו אימון פלג-גוף עליון יומיים ברצף.
 - date = תאריך מלא YYYY-MM-DD. week_of = יום ראשון של השבוע הבא.
 
 ---WEEK_PLAN_JSON---
@@ -1245,6 +1246,13 @@ def build_user_prompt(metrics: dict, history: list[dict], compliance: dict) -> s
         if compliance.get("available") else f"- {compliance.get('reason', 'לא זמין')}"
     )
 
+    _last_seq = (history[-1].get("strength_sequence") if history else None) or []
+    last_strength_md = (
+        f"רצף הכוח שבוע שעבר: {' → '.join(_last_seq)} · **האחרון היה {_last_seq[-1]}**. "
+        f"המשך מכאן — אל תתחיל את השבוע באותו אימון (Push/Pull) שסיים את השבוע שעבר."
+        if _last_seq else "אין רצף כוח קודם — התחל רוטציה רגילה."
+    )
+
     macro_md = format_macro_for_prompt(metrics.get("macro", {}))
 
     f4 = metrics.get("fitness_4week", {})
@@ -1286,6 +1294,9 @@ def build_user_prompt(metrics: dict, history: list[dict], compliance: dict) -> s
 
 ### ציות לתוכנית שבוע שעבר
 {compliance_md}
+
+### המשכיות אימוני כוח (חובה)
+{last_strength_md}
 
 ### עומס אימונים (CTL/ATL)
 - CTL (כושר כרוני, 42 יום): {metrics['load']['ctl']}
@@ -2096,6 +2107,12 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
         "red_flags": metrics["red_flags"],
         "recommended_plan": plan_json,
         "compliance": compliance_to_store,
+        # רצף אימוני הכוח של השבוע (A/B/C לפי תאריך) — כדי שתכנון השבוע הבא
+        # ימשיך מהאימון האחרון ולא יחזור על אותו אימון (Push/Pull) ברצף חוצה-שבועות.
+        "strength_sequence": [s.get("key") for s in
+                              sorted(((raw_week or {}).get("sessions") or []),
+                                     key=lambda x: x.get("date", ""))
+                              if s.get("type") == "strength" and s.get("key")],
     }
     if dry:
         print("🧪 בדיקה — היסטוריה לא נכתבה.")
