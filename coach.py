@@ -1998,6 +1998,16 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
     # ── כתיבת week_plan.json המובנה (הגשר לגרמין + יומן) ──────────────────
     # עובר דרך שכבת הבטיחות הדטרמיניסטית (safety.py) לפני כל כתיבה.
     raw_week = extract_week_plan(full_response)
+
+    # דריסה דטרמיניסטית של "מתוכנן" — מספר הריצות והק"מ נלקחים מהסשנים האמיתיים
+    # של ה-WEEK_PLAN, לא ממספר שה-LLM כתב ב-PLAN_JSON. אי-התאמה ביניהם גרמה
+    # ל"ציות חלקי 4/5" שגוי גם כשבוצעה כל התוכנית (20.06). כך הציות מדויק.
+    if plan_json is not None:
+        _run_sessions = [s for s in ((raw_week or {}).get("sessions") or [])
+                         if s.get("type") == "run"]
+        if _run_sessions:
+            plan_json["run_count"] = len(_run_sessions)
+            plan_json["total_km_approx"] = round(sum((s.get("est_km") or 0) for s in _run_sessions), 1)
     prev_week_km = metrics["last_week"].get("total_km", 0) or 0
     safety_messages: list[str] = []
     needs_review = False
