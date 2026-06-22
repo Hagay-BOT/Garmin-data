@@ -1884,28 +1884,31 @@ def _send_weekly_telegram(wr: dict, safety_messages: list, needs_review: bool,
     if not concerns and wr.get("concern"):
         concerns = [wr["concern"]]
     concerns = concerns or []
+    # escape לתוכן LLM (& < >) — תו בודד שובר את מצב ה-HTML של טלגרם → 400 (תקלה חוזרת).
+    import html as _html
+    def _e(s): return _html.escape(str(s))
     header = "🧪 <b>בדיקה — אל תפעל לפי זה</b>\n\n📅 <b>סיכום שבועי</b>" if test else "📅 <b>סיכום שבועי</b>"
     lines = [
         header,
         "",
-        f"🧭 <b>המיקוד המרכזי</b>\n{wr.get('headline','—')}",
+        f"🧭 <b>המיקוד המרכזי</b>\n{_e(wr.get('headline','—'))}",
         "",
-        f"🎯 <b>תמונת מצב לקראת היעד</b>\n{wr.get('compass','—')}",
+        f"🎯 <b>תמונת מצב לקראת היעד</b>\n{_e(wr.get('compass','—'))}",
         "",
-        f"📊 <b>ניתוח השבוע</b>\n{wr.get('week_analysis','—')}",
+        f"📊 <b>ניתוח השבוע</b>\n{_e(wr.get('week_analysis','—'))}",
     ]
     if wins:
-        lines += ["", "✅ <b>נקודות חוזק</b>"] + [f"• {w}" for w in wins]
+        lines += ["", "✅ <b>נקודות חוזק</b>"] + [f"• {_e(w)}" for w in wins]
     if concerns:
-        lines += ["", "⚠️ <b>לתשומת לב</b>"] + [f"• {c}" for c in concerns]
+        lines += ["", "⚠️ <b>לתשומת לב</b>"] + [f"• {_e(c)}" for c in concerns]
     if plan:
-        lines += ["", "🗓️ <b>תוכנית השבוע הבא</b>"] + [f"• {d}" for d in plan]
+        lines += ["", "🗓️ <b>תוכנית השבוע הבא</b>"] + [f"• {_e(d)}" for d in plan]
     if wr.get("focus"):
-        lines += ["", f"🎯 <b>דגש השבוע:</b> {wr['focus']}"]
+        lines += ["", f"🎯 <b>דגש השבוע:</b> {_e(wr['focus'])}"]
     if wr.get("tip"):
-        lines += ["", f"💡 <b>טיפ מעשי:</b> {wr['tip']}"]
+        lines += ["", f"💡 <b>טיפ מעשי:</b> {_e(wr['tip'])}"]
     if safety_messages:
-        lines += ["", "🛡️ <b>בטיחות</b>"] + [f"• {m}" for m in safety_messages]
+        lines += ["", "🛡️ <b>בטיחות</b>"] + [f"• {_e(m)}" for m in safety_messages]
     if needs_review:
         lines += ["", "⚠️ נדרש אישורך המפורש לפני סנכרון לגרמין."]
     else:
@@ -2348,14 +2351,18 @@ def _send_postworkout_telegram(pw: dict) -> int | None:
         print("⚠️  telegram_notify לא זמין — מדלג על Telegram.")
         return None
 
+    # חובה לברוח מתווי HTML (& < >) בכל תוכן מה-LLM — אחרת תו בודד כמו "דופק <130"
+    # שובר את מצב ה-HTML של טלגרם → 400 Bad Request → ההודעה לא נשלחת (תקלה חוזרת 22.06).
+    import html as _html
+    def _e(s): return _html.escape(str(s))
     today = date.today().strftime("%d/%m/%Y")
-    category = pw.get("category", "אימון")
-    planned = pw.get("planned", "—")
-    actual = pw.get("actual", "—")
-    improve = pw.get("improve") or []
-    keep = pw.get("keep", "—")
-    red_flags = [f for f in (pw.get("red_flags") or []) if f and f.strip()]
-    nxt = pw.get("next", "—")
+    category = _e(pw.get("category", "אימון"))
+    planned = _e(pw.get("planned", "—"))
+    actual = _e(pw.get("actual", "—"))
+    improve = [_e(x) for x in (pw.get("improve") or [])]
+    keep = _e(pw.get("keep", "—"))
+    red_flags = [_e(f) for f in (pw.get("red_flags") or []) if f and str(f).strip()]
+    nxt = _e(pw.get("next", "—"))
 
     lines = [
         f"🏃 <b>ניתוח אימון — {today}</b>",
@@ -2489,14 +2496,18 @@ def run_postworkout(client, knowledge_base: str, metrics: dict, data: dict) -> N
         _postworkout_fail(aid, "לא נמצא POSTWORKOUT_JSON (כנראה נחתך)")
         return
     try:
-        _send_postworkout_telegram(pw_json)
+        msg_id = _send_postworkout_telegram(pw_json)
     except Exception as exc:
-        # שליחה נכשלה (טלגרם 429/רשת) → ניסיון חוזר, לא מסמן.
         _postworkout_fail(aid, f"שגיאת שליחת Telegram: {exc}")
         return
-    # רק אחרי שליחה מוצלחת — מסמן כנותח.
+    # _send_postworkout_telegram מחזיר None בכשל (אין credentials/שגיאת API) ולא זורק —
+    # לכן בודקים את ערך ההחזרה, לא רק חריגה. None → ניסיון חוזר, לא מסמן.
+    if not msg_id:
+        _postworkout_fail(aid, "Telegram לא נשלח (אין credentials/שגיאה)")
+        return
+    # רק אחרי שליחה מאומתת (message_id חוקי) — מסמן כנותח.
     _mark_run_analyzed(aid)
-    print("✅ ניתוח נשלח לטלגרם וסומן כנותח.")
+    print(f"✅ ניתוח נשלח לטלגרם (message_id={msg_id}) וסומן כנותח.")
 
 
 # ── Interactive Chat Mode ─────────────────────────────────────────────────────
