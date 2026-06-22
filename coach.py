@@ -2396,13 +2396,47 @@ def _load_analyzed_runs() -> set:
         return set()
 
 
-def _mark_run_analyzed(activity_id) -> None:
-    """מוסיף activity_id לקבוצת הנותחו (שומר אחרון 200)."""
-    analyzed = _load_analyzed_runs()
-    analyzed.add(str(activity_id))
-    payload = {"version": 1, "analyzed": sorted(analyzed)[-200:]}
+MAX_POSTWORKOUT_ATTEMPTS = 3  # תקרת ניסיונות חוזרים לפני ויתור (חוסם בזבוז API אינסופי)
+
+
+def _load_pw_pending() -> dict:
+    """מונה כשלונות פתוחים per activity_id (ניסיון חוזר עד התקרה)."""
+    if not ANALYZED_RUNS_FILE.exists():
+        return {}
+    try:
+        data = json.loads(ANALYZED_RUNS_FILE.read_text(encoding="utf-8"))
+        return {str(k): int(v) for k, v in (data.get("pending") or {}).items()}
+    except Exception:
+        return {}
+
+
+def _write_analyzed_payload(analyzed: set, pending: dict) -> None:
+    payload = {"version": 1, "analyzed": sorted(analyzed)[-200:], "pending": pending}
     ANALYZED_RUNS_FILE.write_text(json.dumps(payload, ensure_ascii=False, indent=2),
                                   encoding="utf-8")
+
+
+def _mark_run_analyzed(activity_id) -> None:
+    """מסמן ריצה כנותחה (אחרי שליחה מוצלחת) — ומנקה את מונה הכשלונות שלה."""
+    analyzed = _load_analyzed_runs()
+    analyzed.add(str(activity_id))
+    pending = _load_pw_pending()
+    pending.pop(str(activity_id), None)
+    _write_analyzed_payload(analyzed, pending)
+
+
+def _postworkout_fail(activity_id, reason: str) -> None:
+    """כשל ניתוח/שליחה: מגדיל מונה ומנסה שוב בריצה הבאה. אחרי MAX ניסיונות —
+    מוותר ומסמן כנותח כדי לא לבזבז API לנצח. כך כשל חולף נרפא לבד, וכשל מתמשך נחסם."""
+    pending = _load_pw_pending()
+    n = pending.get(str(activity_id), 0) + 1
+    if n >= MAX_POSTWORKOUT_ATTEMPTS:
+        print(f"⚠️  {reason} — ניסיון {n}/{MAX_POSTWORKOUT_ATTEMPTS}: מוותר ומסמן כנותח.")
+        _mark_run_analyzed(activity_id)  # מנקה pending בעצמו
+    else:
+        pending[str(activity_id)] = n
+        _write_analyzed_payload(_load_analyzed_runs(), pending)
+        print(f"⚠️  {reason} — ניסיון {n}/{MAX_POSTWORKOUT_ATTEMPTS}: לא מסמן, ינסה שוב בריצה הבאה.")
 
 
 def latest_unanalyzed_run_today(activities: list, analyzed: set) -> dict | None:
@@ -2433,33 +2467,36 @@ def run_postworkout(client, knowledge_base: str, metrics: dict, data: dict) -> N
     user_prompt = build_postworkout_prompt(metrics, workout)
     print(f"🤖 מודל: {MODEL_POSTWORKOUT} (אחרי אימון — אמצע)")
     print(f"מנתח ריצה {workout.get('activity_id')} מ-{workout.get('start_time','?')} (streaming)...\n")
-    # max_tokens=8192: עם thinking אדפטיבי, budget קטן (2048) נבלע ע"י החשיבה
-    # ולא נשאר טקסט — הפלט יוצא ריק. 8192 משאיר מקום לחשיבה + ניתוח מלא + JSON.
-    full = _stream_report(client, system_prompt, user_prompt, max_tokens=8192,
+    # max_tokens=16000: ניתוח מפורט (3 חלקים + קדנס/GCT/planned) + חשיבה אדפטיבית
+    # + בלוק POSTWORKOUT_JSON בסוף. ב-8192 (22.06) הפלט נחתך באמצע → אין JSON →
+    # אין טלגרם. תקרה גבוהה זולה (ריצה אחת/יום) ומונעת truncation לתמיד.
+    full = _stream_report(client, system_prompt, user_prompt, max_tokens=16000,
                           effort="medium", model=MODEL_POSTWORKOUT)
     out = BASE_DIR / "postworkout_report.md"
     out.write_text(f"# ניתוח אחרי אימון — {datetime.now():%Y-%m-%d %H:%M}\n\n{full}\n", encoding="utf-8")
     print(f"\n\nנשמר: {out}")
 
-    # פלט ריק = קריאת API נכשלה/נחתכה. אל תסמן כנותח — תן לריצה הבאה לנסות שוב,
-    # אחרת ההודעה אובדת לתמיד (הריצה מסומנת אך אף פעם לא נשלח ניתוח).
+    aid = workout.get("activity_id")
+    # פלט ריק = קריאת API נכשלה/נחתכה → ניסיון חוזר (עד התקרה).
     if not full.strip():
-        print("⚠️  הניתוח חזר ריק — לא מסמן כנותח, ינסה שוב בריצה הבאה.")
+        _postworkout_fail(aid, "הניתוח חזר ריק")
         return
 
     # ── Parse POSTWORKOUT_JSON and send Telegram notification ──────────────
     pw_json = _parse_postworkout_json(full)
     if not pw_json:
-        print("⚠️  לא נמצא POSTWORKOUT_JSON בניתוח — Telegram לא נשלח.")
-        # יש טקסט ניתוח אבל ללא JSON תקין — מסמן כדי לא להריץ API שוב ושוב על אותה ריצה.
-        _mark_run_analyzed(workout.get("activity_id"))
+        # נחתך/חסר JSON → ניסיון חוזר בריצה הבאה (לא מסמן — אחרת ההודעה אובדת).
+        _postworkout_fail(aid, "לא נמצא POSTWORKOUT_JSON (כנראה נחתך)")
         return
     try:
         _send_postworkout_telegram(pw_json)
     except Exception as exc:
-        print(f"⚠️  שגיאה בשליחת Telegram: {exc}")
-    finally:
-        _mark_run_analyzed(workout.get("activity_id"))
+        # שליחה נכשלה (טלגרם 429/רשת) → ניסיון חוזר, לא מסמן.
+        _postworkout_fail(aid, f"שגיאת שליחת Telegram: {exc}")
+        return
+    # רק אחרי שליחה מוצלחת — מסמן כנותח.
+    _mark_run_analyzed(aid)
+    print("✅ ניתוח נשלח לטלגרם וסומן כנותח.")
 
 
 # ── Interactive Chat Mode ─────────────────────────────────────────────────────
