@@ -39,14 +39,14 @@
       "day": "שלישי",
       "type": "run",
       "subtype": "easy",
-      "name": "🏃 קל Z2 — 6 ק\"מ @ 6:20–6:40",
+      "name": "🏃 קל Z2 — 5 ק\"מ @ 6:20–6:40",
       "desc": "ריצת נפח קלה, דופק 121–141.",
-      "est_km": 6.0,
+      "est_km": 5.0,
       "pace": "6:30",
       "steps": [
         {
           "kind": "interval",
-          "seconds": 2340
+          "seconds": 1950
         }
       ]
     },
@@ -67,13 +67,13 @@
       "day": "חמישי",
       "type": "run",
       "subtype": "easy",
-      "name": "🏃 התאוששות Z1 — 4.5 ק\"מ (אחרי רגליים)",
+      "name": "🚶 התאוששות Z1 — 4 ק\"מ (הליכה/ריצה קלה מאוד, אחרי רגליים)",
       "desc": "התאוששות Z1 (אחרי רגליים)",
-      "est_km": 4.5,
+      "est_km": 4.0,
       "steps": [
         {
           "kind": "interval",
-          "seconds": 1890
+          "seconds": 1680
         }
       ]
     },
@@ -88,13 +88,13 @@
       "day": "שישי",
       "type": "run",
       "subtype": "easy",
-      "name": "🏃 קל Z2 — 6.5 ק\"מ @ 6:20–6:40",
+      "name": "🏃 קל Z2 — 5 ק\"מ @ 6:20–6:40",
       "desc": "Z2 בסיס",
-      "est_km": 6.5,
+      "est_km": 5.0,
       "steps": [
         {
           "kind": "interval",
-          "seconds": 2535
+          "seconds": 1950
         }
       ]
     },
@@ -109,13 +109,13 @@
       "day": "שבת",
       "type": "run",
       "subtype": "long",
-      "name": "🏃 ריצת נפח — 10.5 ק\"מ Z2",
+      "name": "🏃 ריצת נפח — 10 ק\"מ Z2",
       "desc": "Long Run Z2",
-      "est_km": 10.5,
+      "est_km": 10.0,
       "steps": [
         {
           "kind": "interval",
-          "seconds": 4200
+          "seconds": 4000
         }
       ]
     }
