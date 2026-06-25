@@ -25,7 +25,10 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  # false (לא true!): מאפשר לכל deploy ל-Pages לסיים, ומעמיד את הבא בתור.
+  # cancel-in-progress: true ביטל workflow באמצע deploy → נשאר deployment תקוע
+  # בצד-שרת ש-400 את הריצה הבאה ("in progress deployment"). זו ההמלצה הרשמית של GitHub.
+  cancel-in-progress: false
 
 jobs:
   deploy:
