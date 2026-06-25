@@ -527,6 +527,8 @@
       font-size:.8rem;font-weight:800;border:1.5px solid rgba(255,255,255,.16);color:var(--t3);transition:.3s}
     .wp-row.done .wp-check{background:#34d399;border-color:#34d399;color:#04140d;
       animation:wpPop .42s cubic-bezier(.2,1.4,.4,1)}
+    .wp-row.done .wp-check.manual{background:#38bdf8;border-color:#38bdf8}  /* סומן ידנית */
+    .wp-check:hover{border-color:#34d399}
     @keyframes wpPop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.18)}100%{transform:scale(1)}}
     .wp-rest{opacity:.5}
     .wp-none{font-size:.7rem;color:var(--t3);text-align:center;padding:1rem}
@@ -778,6 +780,16 @@ function buildFitness(runs){
 // ── Weekly workout plan (auto-checks completed sessions) ────────────────────
 const WP_STR={A:'💪 כוח A — משיכה',B:'💪 כוח B — דחיפה',C:'🦵 כוח C — רגליים'};
 const WP_DAYS=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+// סימון ידני (localStorage) — ללחוץ על העיגול כשהשעון פספס (סוללה מתה וכו').
+function _wpKey(s){ return `${s.date}|${s.type}|${s.key||s.subtype||s.name||''}`; }
+function _wpManual(){ try{ return new Set(JSON.parse(localStorage.getItem('wpManualDone')||'[]')); }catch(e){ return new Set(); } }
+function wpToggleDone(i){
+  const s=(window._wpSessions||[])[i]; if(!s) return;
+  const set=_wpManual(), k=_wpKey(s);
+  set.has(k)?set.delete(k):set.add(k);
+  localStorage.setItem('wpManualDone', JSON.stringify([...set]));
+  buildWeekPlan(window._wpActs||[]);
+}
 function buildWeekPlan(acts){
   const list=document.getElementById('wp-list'), progEl=document.getElementById('wp-prog');
   if(!list) return;
@@ -789,12 +801,15 @@ function buildWeekPlan(acts){
     const todayStr=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
     const byDate={};
     acts.forEach(a=>{ if(a.date){ (byDate[a.date]=byDate[a.date]||[]).push(a); } });
-    const doneFor=s=>{
+    window._wpActs=acts;
+    const manual=_wpManual();
+    const autoDone=s=>{
       const day=byDate[s.date]||[];
       if(s.type==='run') return day.some(a=>RUN_TYPES.has(a.activity_type));
       if(s.type==='strength') return day.some(a=>STRENGTH_TYPES.has(a.activity_type));
       return false;
     };
+    const doneFor=s=> autoDone(s) || manual.has(_wpKey(s));
     window._wpSessions=plan.sessions;
     let done=0;
     const rows=plan.sessions.map((s,i)=>{
@@ -803,6 +818,7 @@ function buildWeekPlan(acts){
       const dd=`${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}`;
       const isToday=s.date===todayStr;
       const isDone=doneFor(s);
+      const isManualOnly=!autoDone(s) && manual.has(_wpKey(s));
       if(isDone) done++;
       let name, sub, acc;
       if(s.type==='run'){ name=s.name; sub=(s.est_km?s.est_km+' ק"מ · ':'')+'ריצה'; acc='#22d3ee'; }
@@ -810,7 +826,7 @@ function buildWeekPlan(acts){
       return `<div class="wp-row ${isDone?'done':''} ${isToday?'today':''}" style="--acc:${acc};cursor:pointer" onclick="toggleSession(${i})">
         <div class="wp-day"><div class="dn">${dn}</div><div class="dd">${dd}</div></div>
         <div class="wp-main"><div class="wp-name">${name}</div><div class="wp-sub">${sub}${isToday?' · היום':''}</div></div>
-        <div class="wp-check">${isDone?'✓':'○'}</div>
+        <div class="wp-check ${isManualOnly?'manual':''}" onclick="event.stopPropagation(); wpToggleDone(${i})" title="לחץ לסימון/ביטול ידני" style="cursor:pointer">${isDone?'✓':'○'}</div>
       </div>
       <div class="wp-detail" id="wpd-${i}"></div>`;
     }).join('');
