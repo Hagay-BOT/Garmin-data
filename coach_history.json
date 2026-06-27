@@ -64,6 +64,84 @@
         "km_compliance_pct": 74,
         "compliance_level": "חלקי"
       }
+    },
+    {
+      "week_of": "2026-06-22",
+      "generated_at": "2026-06-27 18:48",
+      "headline": "📊 איזון: דשדוש ב-Z3 (23.0%) — לחדד את הקיטוב: קל יותר קל, קשה יותר קשה",
+      "threshold_snapshot": {
+        "current_vdot": 36.9,
+        "required_vdot": 38.3,
+        "vdot_gap": 1.4,
+        "threshold_pace": "5:13/ק\"מ"
+      },
+      "macro": {
+        "week_num": 2,
+        "phase": "Base",
+        "deload": false,
+        "gate": false
+      },
+      "metrics": {
+        "ctl": 34.1,
+        "atl": 35.6,
+        "tsb": -1.5,
+        "acwr": 1.04,
+        "ramp_rate_4w": 1.9
+      },
+      "fitness_4week": {
+        "available": true,
+        "window_days": 28,
+        "runs": 15,
+        "weekly_km_avg": 22.8,
+        "total_km": 91.0,
+        "vdot": 36.9,
+        "vdot_basis": "6.3ק\"מ @ 5:13/ק\"מ (2026-06-08)",
+        "threshold_pace": "5:13/ק\"מ",
+        "threshold_runs": 1,
+        "ef_z2_avg": 1.0381,
+        "z2_runs": 9
+      },
+      "zones_28d": {
+        "easy_pct": 63.0,
+        "hard_pct": 14.0
+      },
+      "week_actual": {
+        "run_count": 6,
+        "total_km": 36.0,
+        "total_load": 245.1
+      },
+      "red_flags": [
+        {
+          "flag": "Long run 10+ ק\"מ",
+          "severity": "🟡",
+          "detail": "בוצעה ריצה ארוכה (10.0 ק\"מ) השבוע",
+          "action": "בדוק כאב ברך/קרסול. אם יש — הגבל את ה-long run הבא."
+        }
+      ],
+      "recommended_plan": {
+        "run_count": 6,
+        "total_km_approx": 34,
+        "focus": "בסיס אירובי נקי — להוביל ימים קלים לפי דופק (<141), לצמצם Z3, נגיעת סף מבוקרת",
+        "key_workout": "טמפו רציף 3.5 ק\"מ @ 5:00 + 6×100מ' strides"
+      },
+      "compliance": {
+        "prior_week_of": "2026-06-15",
+        "plan_focus": "בסיס אירובי נקי — להוריד Z3, נגיעת סף רציפה אחת + strides לקדנס",
+        "plan_key_workout": "טמפו רציף 3 ק\"מ @ 5:05 + 6×100מ' strides",
+        "planned_runs": 5,
+        "actual_runs": 6,
+        "planned_km_approx": 30,
+        "actual_km": 36.0,
+        "km_compliance_pct": 120,
+        "compliance_level": "מלא"
+      },
+      "strength_sequence": [
+        "A",
+        "B",
+        "C",
+        "B",
+        "A"
+      ]
     }
   ]
 }
