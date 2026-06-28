@@ -1,0 +1,45 @@
+name: Coach — Weekly Plan Revision (telegram reply)
+
+# קולט תשובה בטלגרם להצעת התוכנית השבועית (שבת ערב → ראשון) ומיישם:
+# "אשר" → confirm_week (גרמין+יומן) · טקסט חופשי → coach.run_revise (LLM) → שולח מחדש.
+
+on:
+  schedule:
+    - cron: '0,30 18,19,20 * * 6'   # שבת 21:00–23:30 IL (אחרי הסיכום ב-20:30)
+    - cron: '0,30 5-20 * * 0'        # ראשון 08:00–23:30 IL
+  repository_dispatch:
+    types: [weekly-revise]
+  workflow_dispatch:
+    inputs:
+      revise_text:
+        description: "טקסט שינוי לבדיקה (עוקף טלגרם)"
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  revise:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Process weekly reply (approve or revise)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+          REVISE_TEXT: ${{ github.event.inputs.revise_text }}
+        run: python weekly_revise.py
+
+      - name: Commit plan + state
+        run: |
+          bash scripts/git_sync.sh "weekly-revise $(TZ=Asia/Jerusalem date '+%Y-%m-%d %H:%M')" \
+            week_plan.json weekly_state.json created_workouts.json calendar/training.ics

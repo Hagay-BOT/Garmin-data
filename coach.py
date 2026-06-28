@@ -1923,7 +1923,7 @@ def _send_weekly_telegram(wr: dict, safety_messages: list, needs_review: bool,
     if needs_review:
         lines += ["", "⚠️ נדרש אישורך המפורש לפני סנכרון לגרמין."]
     else:
-        lines += ["", "התוכנית ממתינה לאישורך לפני push לגרמין."]
+        lines += ["", "💬 <b>השב עם שינויים</b> (למשל \"שישי 5 ק\"מ, שבת 10, חמישי בלי ריצה\"), או <b>\"אשר\"</b> להעלאה לגרמין."]
 
     mid = tg.send_message("\n".join(lines))
     print(f"✅ דוח שבועי נשלח לטלגרם (message_id={mid})" if mid
@@ -2080,6 +2080,12 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
     if weekly_report and not is_conflict:
         try:
             _send_weekly_telegram(weekly_report, safety_messages, needs_review, test=dry)
+            # חותמת זמן לשער העריכה: weekly_revise.py יחפש תשובות שנשלחו אחרי רגע זה.
+            if not dry:
+                WEEKLY_STATE_FILE.write_text(json.dumps(
+                    {"status": "pending_review", "sent_at": __import__("time").time(),
+                     "week_of": current_week_monday()}, ensure_ascii=False, indent=2),
+                    encoding="utf-8")
         except Exception as exc:
             print(f"⚠️  שגיאה בשליחת דוח שבועי לטלגרם: {exc}")
     elif not weekly_report and not is_conflict:
@@ -2467,6 +2473,55 @@ def latest_unanalyzed_run_today(activities: list, analyzed: set) -> dict | None:
     if not todays_runs:
         return None
     return sorted(todays_runs, key=lambda a: a.get("start_time", ""))[-1]
+
+
+REVISE_SYSTEM = """אתה עוזר שמעדכן תוכנית אימונים שבועית לפי בקשת שינוי של המתאמן (הגיא) בשפה חופשית.
+מקבל: התוכנית הנוכחית (JSON) + בקשת שינוי בעברית. מוציא: תוכנית מעודכנת **באותה סכמה בדיוק**.
+
+## חוקים (קריטי)
+- שנה **רק** מה שהתבקש במפורש. כל שאר הסשנים נשארים **זהים** (date, name, est_km, key).
+- כוח: key A=משיכה/Pull · B=דחיפה/Push · C=רגליים/Legs. נסה לשמור A×2, B×2, C×1.
+- "בלי ריצה ביום X" / "X בלי ריצה" → הסר את סשן ה**ריצה** של אותו יום (השאר סשן כוח אם קיים).
+- "X בלי התאוששות" → הסר את ריצת ההתאוששות של אותו יום.
+- "יום X N ק\"מ" / "X = N" → עדכן est_km של ריצת אותו יום ל-N, ועדכן name בהתאם, ו-steps[0].seconds ≈ N*390.
+- שבת = ריצת הנפח. long ≤ 12 ק\"מ.
+- **אל תמציא** ימים/אימונים שלא התבקשו. אל תשנה את week_of/macro_week/phase.
+- כל סשן ריצה: {{date, type:"run", subtype:"easy|quality|long", name, est_km, steps:[{{"kind":"interval","seconds":N}}]}}.
+- כל סשן כוח: {{date, type:"strength", key:"A|B|C"}}.
+
+החזר **רק** את בלוק ה-JSON בין המרקרים, בלי טקסט נוסף:
+---WEEK_PLAN_JSON---
+{{ "week_of": "...", "macro_week": N, "phase": "...", "sessions": [...] }}
+---END_WEEK_PLAN---"""
+
+
+def run_revise(reply_text: str, dry: bool = False) -> tuple[bool, list]:
+    """מעדכן את week_plan.json לפי בקשת שינוי חופשית (מטלגרם). עובר שכבת בטיחות.
+    מחזיר (saved, messages). מאפס approved (דורש אישור מחדש)."""
+    wp = BASE_DIR / "week_plan.json"
+    if not wp.exists():
+        print("⚠️  אין week_plan.json לעדכן.")
+        return False, []
+    plan = json.loads(wp.read_text(encoding="utf-8"))
+    user_prompt = (f"## התוכנית הנוכחית\n{json.dumps(plan, ensure_ascii=False, indent=2)}\n\n"
+                   f"## בקשת השינוי של הגיא\n{reply_text}\n\n"
+                   f"החזר את התוכנית המעודכנת בבלוק WEEK_PLAN_JSON (רק מה שהתבקש).")
+    client = anthropic.Anthropic()
+    print(f"🔧 מעדכן תוכנית לפי: {reply_text!r}")
+    full = _stream_report(client, REVISE_SYSTEM, user_prompt,
+                          max_tokens=8000, effort="medium", model=MODEL_POSTWORKOUT)
+    raw = extract_week_plan(full)
+    if not raw or not raw.get("sessions"):
+        print("⚠️  פרסור התוכנית המעודכנת נכשל — לא שונה דבר.")
+        return False, []
+    raw["week_of"] = plan.get("week_of")  # לעולם לא משנים את השבוע
+    if dry:
+        print(json.dumps(raw, ensure_ascii=False, indent=2))
+        return True, []
+    macro = get_macro_week()
+    saved, messages, _ = save_week_plan(
+        raw, macro=macro if macro.get("status") == "active" else None)
+    return saved, messages
 
 
 def run_postworkout(client, knowledge_base: str, metrics: dict, data: dict) -> None:
