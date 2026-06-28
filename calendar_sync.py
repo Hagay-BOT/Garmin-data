@@ -39,8 +39,8 @@ def israel_utc_offset(d: date) -> int:
     return 3 if dst_start <= d < dst_end else 2
 
 STRENGTH = {
-    "A": "💪 כוח A — Push (חזה/יד אחורית/כתפיים)",
-    "B": "💪 כוח B — Pull (גב/יד קדמית)",
+    "A": "💪 כוח A — Pull/משיכה (גב/יד קדמית)",
+    "B": "💪 כוח B — Push/דחיפה (חזה/כתפיים/יד אחורית)",
     "C": "🦵 כוח C — Legs (רגליים)",
 }
 
@@ -95,8 +95,8 @@ def build_events() -> list[dict]:
             hour, dur = TIMING["strength"]
             key = s.get("key", "?")
             summary = STRENGTH.get(key, f"כוח {key}")
-            desc = {"A": "Push: חזה, יד אחורית, כתפיים.",
-                    "B": "Pull: גב, יד קדמית.",
+            desc = {"A": "Pull: גב, יד קדמית.",
+                    "B": "Push: חזה, כתפיים, יד אחורית.",
                     "C": "רגליים: סקוואט, hip thrust, calf raises."}.get(key, "")
             uid = f"{d}-strength-{key}"
         h, m = map(int, hour.split(":"))
