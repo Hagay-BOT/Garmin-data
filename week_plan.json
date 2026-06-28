@@ -8,29 +8,6 @@
     {
       "date": "2026-06-28",
       "day": "ראשון",
-      "type": "run",
-      "subtype": "easy",
-      "name": "ריצה קלה Z2 (לפי דופק)",
-      "desc": "ריצה קלה Z2 (לפי דופק)",
-      "est_km": 5.0,
-      "steps": [
-        {
-          "kind": "warmup",
-          "seconds": 540
-        },
-        {
-          "kind": "interval",
-          "seconds": 1050
-        },
-        {
-          "kind": "cooldown",
-          "seconds": 360
-        }
-      ]
-    },
-    {
-      "date": "2026-06-28",
-      "day": "ראשון",
       "type": "strength",
       "key": "A"
     },
@@ -95,29 +72,6 @@
     {
       "date": "2026-07-02",
       "day": "חמישי",
-      "type": "run",
-      "subtype": "easy",
-      "name": "ריצת התאוששות Z1 (אחרי רגליים)",
-      "desc": "ריצת התאוששות Z1 (אחרי רגליים)",
-      "est_km": 4.0,
-      "steps": [
-        {
-          "kind": "warmup",
-          "seconds": 540
-        },
-        {
-          "kind": "interval",
-          "seconds": 780
-        },
-        {
-          "kind": "cooldown",
-          "seconds": 360
-        }
-      ]
-    },
-    {
-      "date": "2026-07-02",
-      "day": "חמישי",
       "type": "strength",
       "key": "B"
     },
@@ -126,21 +80,13 @@
       "day": "שישי",
       "type": "run",
       "subtype": "easy",
-      "name": "ריצה קלה Z2",
+      "name": "🏃 קל Z2 — 5 ק\"מ @ 6:20–6:40",
       "desc": "ריצה קלה Z2",
-      "est_km": 4.0,
+      "est_km": 5.0,
       "steps": [
         {
-          "kind": "warmup",
-          "seconds": 540
-        },
-        {
           "kind": "interval",
-          "seconds": 660
-        },
-        {
-          "kind": "cooldown",
-          "seconds": 360
+          "seconds": 1950
         }
       ]
     },
@@ -155,13 +101,13 @@
       "day": "שבת",
       "type": "run",
       "subtype": "long",
-      "name": "Long run Z2 (לפי דופק <141)",
+      "name": "🏃 ריצת נפח — 10 ק\"מ Z2",
       "desc": "Long run Z2 (לפי דופק <141)",
-      "est_km": 9.0,
+      "est_km": 10.0,
       "steps": [
         {
           "kind": "interval",
-          "seconds": 3510
+          "seconds": 4000
         }
       ]
     }
