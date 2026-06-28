@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-06-28T17:01:00.036726+00:00",
+  "last_updated": "2026-06-28T17:30:57.887407+00:00",
   "activities": [
     {
       "activity_id": 13381622386,
@@ -122312,8 +122312,8 @@
       "body_battery_impact": -3,
       "avg_respiration": null,
       "max_respiration": null,
-      "moderate_intensity_min": null,
-      "vigorous_intensity_min": null,
+      "moderate_intensity_min": 37,
+      "vigorous_intensity_min": 2,
       "total_ascent_m": null,
       "total_descent_m": null,
       "temperature": null,
@@ -124832,8 +124832,8 @@
       "sleep_score": 81,
       "sleep_end_time": "08:07",
       "body_battery_morning": 100,
-      "calories_resting": 1511.0,
-      "calories_active": 310.0
+      "calories_resting": 1808.0,
+      "calories_active": 592.0
     }
   },
   "shoes": [
