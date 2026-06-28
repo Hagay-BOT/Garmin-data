@@ -23,7 +23,10 @@ from garminconnect.workout import (
     create_warmup_step,
     create_interval_step,
     create_cooldown_step,
+    create_recovery_step,
+    create_repeat_group,
 )
+import re
 
 BASE = Path(__file__).parent
 PLAN_FILE = BASE / "week_plan.json"
@@ -84,19 +87,53 @@ def validate_workout(session: dict) -> None:
         raise ValueError(f"{d}: משך כולל לא סביר ({int(total)} שנ')")
 
 
+def _strides_spec(session: dict):
+    """מחזיר (count, meters, rest_sec) אם לאימון יש strides, אחרת None.
+    קורא קודם שדה מובנה session['strides'], אחרת מפרסר מהשם/תיאור ('6×100מ strides')."""
+    s = session.get("strides")
+    if isinstance(s, dict) and s.get("count"):
+        return int(s["count"]), int(s.get("meters", 100)), int(s.get("rest_sec", 75))
+    text = f"{session.get('name','')} {session.get('desc','')}".lower()
+    if "stride" not in text and "סטרייד" not in text:
+        return None
+    m = re.search(r"(\d+)\s*[×x*]\s*(\d+)\s*מ", text)        # "6×100מ"
+    if m:
+        return int(m.group(1)), int(m.group(2)), 75
+    m2 = re.search(r"(\d+)\s*strides", text)                  # "6 strides"
+    if m2:
+        return int(m2.group(1)), 100, 75
+    return None
+
+
 def build_run(session: dict) -> RunningWorkout:
-    """בונה RunningWorkout מובנה (נתיב מוכח) מהצעדים שב-week_plan.json."""
-    steps = []
-    total = 0
-    for i, st in enumerate(session["steps"], start=1):
-        builder = STEP_BUILDERS[st["kind"]]
-        secs = float(st["seconds"])
-        total += secs
-        # warmup builder uses step_order kw default; pass positionally where needed
-        if st["kind"] == "warmup":
-            steps.append(builder(secs, step_order=i))
-        else:
-            steps.append(builder(secs, step_order=i))
+    """בונה RunningWorkout מובנה (נתיב מוכח) מהצעדים שב-week_plan.json.
+    אם יש strides — מוסיף repeat group **לפני השחרור**: ריצה קצרה (~100מ') + מנוחה, ×count."""
+    plan_steps = session["steps"]
+    mains = [st for st in plan_steps if st["kind"] != "cooldown"]
+    cools = [st for st in plan_steps if st["kind"] == "cooldown"]
+    steps, total, order = [], 0, 1
+
+    for st in mains:
+        secs = float(st["seconds"]); total += secs
+        steps.append(STEP_BUILDERS[st["kind"]](secs, step_order=order)); order += 1
+
+    # ── strides כ-repeat group (לפני השחרור): 100מ' ריצה (~זמן) + מנוחה, ×count ──
+    spec = _strides_spec(session)
+    if spec:
+        count, meters, rest = spec
+        stride_secs = max(15.0, float(round(meters * 0.24)))  # 100מ' ≈ 24ש' @ ~4:00/ק"מ
+        rep_steps = [
+            create_interval_step(stride_secs, step_order=1),   # ריצת ה-stride
+            create_recovery_step(float(rest), step_order=2),    # מנוחה (הליכה)
+        ]
+        steps.append(create_repeat_group(count, rep_steps, step_order=order)); order += 1
+        total += count * (stride_secs + rest)
+        print(f"  + strides: {count}×{meters}מ (~{int(stride_secs)}ש') · מנוחה {rest}ש'")
+
+    for st in cools:
+        secs = float(st["seconds"]); total += secs
+        steps.append(create_cooldown_step(secs, step_order=order)); order += 1
+
     return RunningWorkout(
         workoutName=session["name"],
         estimatedDurationInSecs=int(total),
