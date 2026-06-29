@@ -1265,6 +1265,12 @@ def build_user_prompt(metrics: dict, history: list[dict], compliance: dict) -> s
         if _last_seq else "אין רצף כוח קודם — התחל רוטציה רגילה."
     )
 
+    try:
+        import journal
+        journal_md = journal.recent_notes_md(14)
+    except Exception:
+        journal_md = "אין הערות מהמתאמן."
+
     macro_md = format_macro_for_prompt(metrics.get("macro", {}))
 
     f4 = metrics.get("fitness_4week", {})
@@ -1306,6 +1312,10 @@ def build_user_prompt(metrics: dict, history: list[dict], compliance: dict) -> s
 
 ### ציות לתוכנית שבוע שעבר
 {compliance_md}
+
+### 🗒️ הערות המתאמן (יומן — חובה להתחשב!)
+{journal_md}
+**אם הגיא דיווח על שינוי שביצע (קיצר ריצה), כאב, שינה גרועה או עייפות — קח בחשבון: אל תסמן כחוסר-ציות מה שהיה החלטה מודעת, והתאם את השבוע הבא בהתאם (למשל עומס/התאוששות).**
 
 ### המשכיות אימוני כוח (חובה)
 {last_strength_md}
@@ -1629,9 +1639,19 @@ def build_postworkout_prompt(metrics: dict, workout: dict | None) -> str:
         workout and workout.get("date") == date.today().isoformat()
         and workout.get("activity_type") in RUN_TYPES)
 
+    try:
+        import journal
+        _note = journal.todays_note_md()
+    except Exception:
+        _note = ""
+    note_md = (f"\n### 🗒️ הערת המתאמן היום (חובה להתחשב!)\n{_note}\n"
+               f"**אם דיווח על שינוי מודע (קיצר), כאב או שינה גרועה — אל תזהיר על "
+               f"\"חוסר ביצוע\"; התייחס לזה כהחלטה נכונה והתאם את ההמלצה למחר.**\n"
+               if _note else "")
+
     return f"""
 ## ניתוח אחרי אימון — {date.today().isoformat()}
-
+{note_md}
 ### האימון שתוכנן להיום (מקור-אמת — מ-week_plan.json)
 {_todays_planned_run_md()}
 **שדה "planned" = האימון הזה בדיוק (השם הקונקרטי), לא תיאור כללי מהמאקרו.**

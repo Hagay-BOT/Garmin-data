@@ -37,6 +37,12 @@ jobs:
           GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
 
+      - name: Capture coach-journal notes from Telegram
+        run: python capture_notes.py
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
       - name: Analyze new run if any (self-dedup by activity_id)
         run: python coach.py postworkout
         env:
@@ -60,4 +66,4 @@ jobs:
       - name: Commit reports + state
         run: |
           bash scripts/git_sync.sh "coach: workout watcher $(TZ=Asia/Jerusalem date '+%Y-%m-%d %H:%M')" \
-            data.json postworkout_report.md analyzed_runs.json evening_state.json run_cancellations.json
+            data.json postworkout_report.md analyzed_runs.json evening_state.json run_cancellations.json journal.json
