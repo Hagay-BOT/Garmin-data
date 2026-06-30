@@ -8,6 +8,7 @@ on:
   # שכל workflow שמעדכן נתונים מסתיים, כך שהאתר תמיד עדכני.
   workflow_run:
     workflows:
+      - "Update Garmin Dashboard"
       - "Coach — Workout Watcher (event-driven, all day)"
       - "Coach — Evening Cancellation Reply"
       - "Coach — Weekly Review"
