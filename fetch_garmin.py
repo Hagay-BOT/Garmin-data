@@ -65,13 +65,13 @@ STRENGTH_TYPES = {"strength_training", "weightlifting", "fitness_equipment", "gy
 # Activity types treated as a run (treadmill + trail included)
 RUN_TYPES = {"running", "treadmill_running", "trail_running"}
 
-def classify_quality_subtype(anaerobic_eff, max_hr, avg_hr, ascent_m, dist_km):
+def classify_quality_subtype(anaerobic_eff, max_hr, avg_hr, ascent_m, dist_km, hr_zones=None):
     """
-    תת-קטגוריה של ריצת איכות (נקרא רק כשיודעים שזו ריצת איכות):
-      quality_intervals — אינטרוואלים   (anaerobic גבוה / HR spike חד)
+    תת-קטגוריה של ריצת איכות. **מבחין בעיקר לפי זמן ב-Z5** (עבודת VO2max אמיתית):
+      quality_intervals — אינטרוואלים   (Z5 משמעותי / anaerobic גבוה / HR spike חד)
       quality_hills     — עליות          (עלייה גבוהה לק"מ)
-      quality_segments  — מקטעים        (מאמץ מעורב, fartlek-style)
-      quality_tempo     — קצב/טמפו      (ברירת מחדל — מאמץ sustained)
+      quality_tempo     — קצב/טמפו      (מאמץ רציף ב-Z3/Z4, כמעט בלי Z5)
+      quality_segments  — מקטעים        (מאמץ מעורב — Z5 לא-זניח אך לא אינטרוולים מלאים)
     """
     anaerobic_eff = anaerobic_eff or 0
     max_hr   = max_hr  or 0
@@ -82,19 +82,27 @@ def classify_quality_subtype(anaerobic_eff, max_hr, avg_hr, ascent_m, dist_km):
     hr_spike      = max_hr / avg_hr if avg_hr > 0 else 1.0
     ascent_per_km = ascent_m / dist_km
 
-    # אינטרוואלים: anaerobic גבוה או HR spike בולט
-    if anaerobic_eff >= 2.5 or hr_spike >= 1.28:
+    z = (hr_zones or [0, 0, 0, 0, 0])
+    z5 = z[4] if len(z) > 4 else 0
+    hard = (z[2] + z[3] + z[4]) if len(z) >= 5 else 0   # Z3+Z4+Z5
+    z5_frac = (z5 / hard) if hard > 0 else 0.0
+
+    # אינטרוואלים: עבודת VO2max אמיתית (זמן Z5 ניכר) או anaerobic גבוה / HR spike חד
+    if z5 >= 90 or z5_frac >= 0.20 or anaerobic_eff >= 2.5 or hr_spike >= 1.28:
         return "quality_intervals"
 
     # עליות: >25m/km או >120m כולל
     if ascent_per_km >= 25 or ascent_m >= 120:
         return "quality_hills"
 
-    # מקטעים: anaerobic בינוני — מאמץ מעורב לא מובנה
+    # טמפו/סף: מאמץ רציף ב-Z3/Z4 עם כמעט אפס Z5 — גם אם anaerobic בינוני (טמפו מייצר את זה).
+    if hard > 0 and z5_frac < 0.10:
+        return "quality_tempo"
+
+    # מקטעים: מאמץ מעורב (קצת Z5, לא רציף ולא אינטרוולים מלאים)
     if anaerobic_eff >= 1.5:
         return "quality_segments"
 
-    # קצב/טמפו: ברירת מחדל לריצת איכות
     return "quality_tempo"
 
 
@@ -108,7 +116,7 @@ _QUALITY_LABELS = {"TEMPO", "LACTATE_THRESHOLD", "OVERREACHING", "MAINTAINING"}
 
 def classify(type_key, aerobic_effect, anaerobic_effect=None,
              max_hr=None, avg_hr=None, ascent_m=None, dist_km=None,
-             training_effect_label=None):
+             training_effect_label=None, hr_zones=None):
     """
     סיווג פעילות לקטגוריה.
 
@@ -135,12 +143,12 @@ def classify(type_key, aerobic_effect, anaerobic_effect=None,
 
     # --- שכבה 3: TEMPO / LT ← תת-קטגוריה של איכות ---
     if label in _QUALITY_LABELS:
-        return classify_quality_subtype(anaerobic_effect, max_hr, avg_hr, ascent_m, dist_km)
+        return classify_quality_subtype(anaerobic_effect, max_hr, avg_hr, ascent_m, dist_km, hr_zones)
 
     # --- שכבה 4: Fallback (אין תווית או תווית לא מוכרת) ---
     # סף גבוה יותר (3.5 במקום 2.5) כדי להקטין false-positives
     if (aerobic_effect or 0) > 3.5:
-        return classify_quality_subtype(anaerobic_effect, max_hr, avg_hr, ascent_m, dist_km)
+        return classify_quality_subtype(anaerobic_effect, max_hr, avg_hr, ascent_m, dist_km, hr_zones)
     return "base_run"
 
 
@@ -247,12 +255,7 @@ for activity in activities:
     total_descent_m = round(descent_raw) if descent_raw else None
     training_effect_label = activity.get("trainingEffectLabel")
 
-    category = classify(type_key, aerobic_effect, anaerobic_effect,
-                        activity.get("maxHR"), activity.get("averageHR"),
-                        activity.get("elevationGain"), distance_km,
-                        training_effect_label)
-
-    # HR zones from batch summary fields (seconds per zone, direct from Garmin)
+    # HR zones (seconds per zone) — נחשב **לפני** הסיווג כדי לדייק טמפו מול מקטעים/אינטרוולים.
     hr_zones_sec = [
         round(activity.get("hrTimeInZone_1") or 0),
         round(activity.get("hrTimeInZone_2") or 0),
@@ -260,6 +263,11 @@ for activity in activities:
         round(activity.get("hrTimeInZone_4") or 0),
         round(activity.get("hrTimeInZone_5") or 0),
     ]
+
+    category = classify(type_key, aerobic_effect, anaerobic_effect,
+                        activity.get("maxHR"), activity.get("averageHR"),
+                        activity.get("elevationGain"), distance_km,
+                        training_effect_label, hr_zones_sec)
 
     # RPE (מאמץ נתפס) ו-Feel (הרגשה) — אם דורגו בגרמין בסוף האימון
     perceived_exertion = (activity.get("perceivedExertion")
