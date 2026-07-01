@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-01T14:30:57.165208+00:00",
+  "last_updated": "2026-07-01T15:01:03.596274+00:00",
   "activities": [
     {
       "activity_id": 13381622386,
@@ -123397,9 +123397,9 @@
         {
           "seg": 1,
           "distance_m": 100,
-          "pace_sec_per_km": 530,
+          "pace_sec_per_km": 620,
           "avg_hr": 118,
-          "duration_sec": 53.0
+          "duration_sec": 62.0
         },
         {
           "seg": 2,
@@ -125004,6 +125004,58 @@
           "cadence_spm": 165
         }
       ],
+      "splits_100m": []
+    },
+    {
+      "activity_id": 23442724947,
+      "date": "2026-07-01",
+      "start_time": "2026-07-01 15:25:20",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "rpe": null,
+      "feel": null,
+      "distance_km": null,
+      "duration_sec": 3562,
+      "pace_sec_per_km": null,
+      "best_pace_sec_per_km": null,
+      "avg_hr": 114.0,
+      "max_hr": 156.0,
+      "recovery_hr": null,
+      "cadence_spm": null,
+      "max_cadence_spm": null,
+      "gct_ms": null,
+      "stride_length_m": null,
+      "vertical_oscillation_cm": null,
+      "vertical_ratio_pct": null,
+      "aerobic_effect": 1.600000023841858,
+      "anaerobic_effect": 0.800000011920929,
+      "training_effect_label": "AEROBIC_BASE",
+      "training_stress_score": null,
+      "exercise_load": 24.784088134765625,
+      "vo2max": null,
+      "stamina_start_pct": null,
+      "stamina_end_pct": null,
+      "active_calories": null,
+      "total_calories": 353.0,
+      "sweat_loss_ml": 661,
+      "body_battery_impact": -6,
+      "avg_respiration": null,
+      "max_respiration": null,
+      "moderate_intensity_min": null,
+      "vigorous_intensity_min": null,
+      "total_ascent_m": null,
+      "total_descent_m": null,
+      "temperature": null,
+      "gps": [],
+      "hr_zones_sec": [
+        1597,
+        822,
+        303,
+        0,
+        0
+      ],
+      "hr_drift_bpm": null,
+      "laps": [],
       "splits_100m": []
     }
   ],
