@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-03T09:21:48.918807+00:00",
+  "last_updated": "2026-07-03T09:30:57.913423+00:00",
   "activities": [
     {
       "activity_id": 13381622386,
@@ -123684,9 +123684,9 @@
         {
           "seg": 42,
           "distance_m": 4200,
-          "pace_sec_per_km": 350,
+          "pace_sec_per_km": 710,
           "avg_hr": 172,
-          "duration_sec": 35.0
+          "duration_sec": 71.0
         },
         {
           "seg": 43,
@@ -125108,6 +125108,107 @@
       ],
       "hr_drift_bpm": null,
       "laps": [],
+      "splits_100m": []
+    },
+    {
+      "activity_id": 23462630437,
+      "date": "2026-07-03",
+      "start_time": "2026-07-03 11:34:26",
+      "activity_type": "treadmill_running",
+      "category": "base_run",
+      "rpe": 2.0,
+      "feel": 3,
+      "distance_km": 5.0,
+      "duration_sec": 2096,
+      "pace_sec_per_km": 419,
+      "best_pace_sec_per_km": 269,
+      "avg_hr": 142.0,
+      "max_hr": 152.0,
+      "recovery_hr": 36,
+      "cadence_spm": 171,
+      "max_cadence_spm": 189,
+      "gct_ms": 273,
+      "stride_length_m": 0.84,
+      "vertical_oscillation_cm": 7.8699996948242195,
+      "vertical_ratio_pct": 9.399999618530273,
+      "aerobic_effect": 2.4000000953674316,
+      "anaerobic_effect": 0.0,
+      "training_effect_label": "AEROBIC_BASE",
+      "training_stress_score": null,
+      "exercise_load": 37.988616943359375,
+      "vo2max": null,
+      "stamina_start_pct": 100,
+      "stamina_end_pct": 92,
+      "active_calories": null,
+      "total_calories": 379.0,
+      "sweat_loss_ml": 582,
+      "body_battery_impact": -8,
+      "avg_respiration": 28.670000076293945,
+      "max_respiration": 32.97999954223633,
+      "moderate_intensity_min": 0,
+      "vigorous_intensity_min": 32,
+      "total_ascent_m": null,
+      "total_descent_m": null,
+      "temperature": null,
+      "gps": [],
+      "hr_zones_sec": [
+        30,
+        1149,
+        916,
+        0,
+        0
+      ],
+      "hr_drift_bpm": null,
+      "laps": [
+        {
+          "lap": 1,
+          "distance_km": 1.0,
+          "duration_sec": 433,
+          "pace_sec_per_km": 434,
+          "avg_hr": 137.0,
+          "cadence_spm": 169
+        },
+        {
+          "lap": 2,
+          "distance_km": 1.0,
+          "duration_sec": 416,
+          "pace_sec_per_km": 416,
+          "avg_hr": 143.0,
+          "cadence_spm": 171
+        },
+        {
+          "lap": 3,
+          "distance_km": 1.0,
+          "duration_sec": 402,
+          "pace_sec_per_km": 402,
+          "avg_hr": 144.0,
+          "cadence_spm": 173
+        },
+        {
+          "lap": 4,
+          "distance_km": 1.0,
+          "duration_sec": 442,
+          "pace_sec_per_km": 442,
+          "avg_hr": 143.0,
+          "cadence_spm": 167
+        },
+        {
+          "lap": 5,
+          "distance_km": 0.62,
+          "duration_sec": 255,
+          "pace_sec_per_km": 415,
+          "avg_hr": 144.0,
+          "cadence_spm": 174
+        },
+        {
+          "lap": 6,
+          "distance_km": 0.35,
+          "duration_sec": 146,
+          "pace_sec_per_km": 424,
+          "avg_hr": 146.0,
+          "cadence_spm": 174
+        }
+      ],
       "splits_100m": []
     }
   ],
@@ -127648,8 +127749,8 @@
       "sleep_score": 74,
       "sleep_end_time": "09:00",
       "body_battery_morning": 98,
-      "calories_resting": 821.0,
-      "calories_active": 0.0
+      "calories_resting": 1099.0,
+      "calories_active": 383.0
     }
   },
   "shoes": [
