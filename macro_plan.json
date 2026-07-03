@@ -7,7 +7,7 @@
     { "week": 1,  "phase": "Base",  "target_km": 24, "long_run_km": 9,  "quality": "1× Tempo קל (5:05)", "deload": false, "gate": false, "focus": "בסיס — התחלה רגועה" },
     { "week": 2,  "phase": "Base",  "target_km": 27, "long_run_km": 10, "quality": "1× Tempo (5:00–5:05)", "deload": false, "gate": false, "focus": "+נפח מתון, התאוששות אחרי רגליים" },
     { "week": 3,  "phase": "Base",  "target_km": 29, "long_run_km": 11, "quality": "1× Threshold קצר (4:50)", "deload": false, "gate": false, "focus": "בניית בסיס + נגיעת סף" },
-    { "week": 4,  "phase": "Base",  "target_km": 23, "long_run_km": 8,  "quality": "1× Tempo קל", "deload": true, "gate": true, "focus": "DELOAD + הערכת VDOT מ-4 שבועות" },
+    { "week": 4,  "phase": "Base",  "target_km": 23, "long_run_km": 8,  "quality": "🏁 5K Time Trial (מבחן זמן — טרי מה-deload) → כיול VDOT וקצבי המרוץ", "deload": true, "gate": true, "focus": "DELOAD + מבחן 5K שקובע את קצבי בלוק האיכות (Build). לפי התוצאה מכיילים את יעד ה-15K (4:45? 4:30?) ואת קצבי הסף." },
     { "week": 5,  "phase": "Base",  "target_km": 31, "long_run_km": 12, "quality": "1× Threshold (4:50) + strides", "deload": false, "gate": false, "focus": "שיא Base — long מקסימלי" },
     { "week": 6,  "phase": "Build", "target_km": 33, "long_run_km": 12, "quality": "1× Threshold + 2 ק\"מ @5:20 בלונג", "deload": false, "gate": false, "focus": "התחלת Build — race-pace ראשון בלונג" },
     { "week": 7,  "phase": "Build", "target_km": 35, "long_run_km": 12, "quality": "1× Threshold + 3 ק\"מ @5:20", "deload": false, "gate": false, "focus": "הגדלת race-pace בלונג" },
