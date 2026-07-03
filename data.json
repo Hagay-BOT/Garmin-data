@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-03T09:30:57.913423+00:00",
+  "last_updated": "2026-07-03T10:01:06.581325+00:00",
   "activities": [
     {
       "activity_id": 13381622386,
@@ -123684,9 +123684,9 @@
         {
           "seg": 42,
           "distance_m": 4200,
-          "pace_sec_per_km": 710,
+          "pace_sec_per_km": 350,
           "avg_hr": 172,
-          "duration_sec": 71.0
+          "duration_sec": 35.0
         },
         {
           "seg": 43,
@@ -127749,8 +127749,8 @@
       "sleep_score": 74,
       "sleep_end_time": "09:00",
       "body_battery_morning": 98,
-      "calories_resting": 1099.0,
-      "calories_active": 383.0
+      "calories_resting": 1122.0,
+      "calories_active": 391.0
     }
   },
   "shoes": [
