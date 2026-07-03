@@ -563,15 +563,8 @@ def detect_red_flags(activities: list, metrics: dict) -> list[dict]:
                       "detail": f"נפח השבוע {this_wk:.0f} ק\"מ מול {prior_wk:.0f} בשבוע שעבר (>30%)",
                       "action": "עלייה חדה מדי בנפח. רכך את השבוע הבא."})
 
-    # 5. Long run + knee/ankle rule (user-specific, from user_profile.md)
-    long_runs_7d = [a for a in activities
-                    if a.get("activity_type") in RUN_TYPES
-                    and (a.get("distance_km") or 0) >= 10
-                    and a.get("date", "") >= (date.today() - timedelta(days=7)).isoformat()]
-    if long_runs_7d:
-        flags.append({"flag": "Long run 10+ ק\"מ", "severity": "🟡",
-                      "detail": f"בוצעה ריצה ארוכה ({long_runs_7d[-1]['distance_km']:.1f} ק\"מ) השבוע",
-                      "action": "בדוק כאב ברך/קרסול. אם יש — הגבל את ה-long run הבא."})
+    # (הוסר) דגל "Long run 10+ → בדוק ברך" — היה נדלק 7 ימים אחרי כל לונג ומופיע בכל
+    # הודעה = רעש. כאב אמיתי מגיע עכשיו דרך היומן (journal) שהמתאמן כותב, ומוזן לניתוח.
 
     # 6. אי-התאמה סובייקטיבית — Feel הוא סיגנל מוכנות בלבד; דגל רק עם אישור אובייקטיבי.
     #    "הרגשתי חלש" ≠ "אימון גרוע" — שופטים לפי התוצאה (קצב מול מתוכנן), לא לפי ההרגשה.
@@ -1512,6 +1505,8 @@ POSTWORKOUT_SYSTEM = """
 1. ישיר וקונקרטי. מבוסס נתונים, לא ניחוש.
 2. אל תמציא נתון שלא קיים — כתוב "לא זמין".
 3. בטיחות לפני התקדמות.
+4. **ריצה קלה/Z2 — שפוט לפי דופק, לא קצב!** אם הדופק ב-Z2 (121–141), הקצב (גם 6:50–7:00) הוא **נכון ומכוון** — הקצב הקל נגזר מהכושר האירובי, זו לא "טעות" ולא "איטי מהיעד". **אסור** לרשום ב-improve "קצב איטי מהיעד" לריצה קלה שרצה בדופק הנכון. יעד הקצב בתוכנית הוא הערכה בלבד; הדופק גובר.
+5. **ה-improve חייבים להיות דברים אמיתיים לשיפור** (קדנס, זמן ב-Z3, יציבות) — לא "רצת לאט" כשרצת נכון לפי דופק.
 
 ## פורמט פלט (בסוף, אחרי הניתוח המילולי — JSON תקני להודעת הטלגרם):
 - "planned" = שם האימון הקונקרטי מ-week_plan (למשל "Long Run 9 ק\"מ Z2"), לא תיאור מאקרו כללי.
@@ -1550,18 +1545,38 @@ def _next_sessions_md(run_done_today: bool = False) -> str:
         return "week_plan.json לא קריא — הסק מהמאקרו."
     today = date.today().isoformat()
     tomorrow = (date.today() + timedelta(days=1)).isoformat()
-    lines = []
-    for s in plan.get("sessions", []):
-        d = s.get("date")
-        if not s.get("est_km"):
-            continue
-        # אם ריצת היום כבר בוצעה (זה האימון שניתחנו), אל תציג אותה כ"בהמשך" —
-        # אחרת המודל חושב שיש עוד ריצה היום וממציא "double session" שלא קיים.
-        if d == today and not run_done_today:
-            lines.append(f"- היום (בהמשך): {s.get('subtype','?')} · {s.get('est_km')} ק\"מ")
-        elif d == tomorrow:
-            lines.append(f"- מחר: {s.get('subtype','?')} · {s.get('est_km')} ק\"מ")
-    return "\n".join(lines) or "אין ריצה נוספת מתוכננת (ריצת היום בוצעה). ההמלצה ל-next = אימון מחר."
+    sessions = plan.get("sessions", [])
+
+    def _fmt(s):
+        if s.get("type") == "run":
+            nm = (s.get("name") or f"ריצה {s.get('subtype','')}").strip()
+            prefix = "" if nm[:1] in "🏃🚶" else "🏃 "
+            return f"{prefix}{nm}"
+        return f"💪 כוח {s.get('key','')}"
+
+    # האימון/ים הבא/ים = היום מה שנשאר (כוח, או ריצה אם עוד לא בוצעה), אחרת
+    # היום הקרוב ביותר בעתיד עם אימונים. **כל הסוגים** (ריצה + כוח), לפי התוכנית בפועל —
+    # לא ניחוש מהמאקרו, ולא רק ריצות.
+    today_remaining = [s for s in sessions if s.get("date") == today
+                       and (s.get("type") == "strength"
+                            or (s.get("type") == "run" and not run_done_today))]
+    if today_remaining:
+        day, group = today, today_remaining
+    else:
+        future = sorted({s.get("date") for s in sessions if s.get("date", "") > today})
+        if not future:
+            return "אין אימון נוסף מתוכנן השבוע."
+        day = future[0]
+        group = [s for s in sessions if s.get("date") == day]
+
+    if day == today:
+        label = "היום (בהמשך)"
+    elif day == tomorrow:
+        label = "מחר"
+    else:
+        wd = ["שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת", "ראשון"][date.fromisoformat(day).weekday()]
+        label = f"{wd} ({day[5:]})"
+    return f"{label}: " + " + ".join(_fmt(s) for s in group)
 
 
 def _todays_planned_run_md() -> str:
@@ -2417,6 +2432,8 @@ def _send_postworkout_telegram(pw: dict) -> int | None:
     if red_flags:
         lines += ["", "⚠️ <b>דגלים אדומים</b>"]
         lines += [f"• {f}" for f in red_flags]
+    else:
+        lines += ["", "🚩 <b>דגלים אדומים:</b> אין ✅"]
     lines += ["", f"📅 <b>בהמשך / מחר</b>", nxt]
 
     message_id = tg.send_message("\n".join(lines))
@@ -2582,6 +2599,11 @@ def run_postworkout(client, knowledge_base: str, metrics: dict, data: dict) -> N
         # נחתך/חסר JSON → ניסיון חוזר בריצה הבאה (לא מסמן — אחרת ההודעה אובדת).
         _postworkout_fail(aid, "לא נמצא POSTWORKOUT_JSON (כנראה נחתך)")
         return
+    # דריסת שדה next בערך **דטרמיניסטי** מהתוכנית בפועל (ריצה+כוח, היום הקרוב) —
+    # ה-LLM נטה להמציא "אימון הבא" מהמאקרו (למשל טמפו שכבר היה). זה מדייק אותו.
+    _run_done = bool(workout and workout.get("date") == date.today().isoformat()
+                     and workout.get("activity_type") in RUN_TYPES)
+    pw_json["next"] = _next_sessions_md(_run_done)
     try:
         msg_id = _send_postworkout_telegram(pw_json)
     except Exception as exc:
