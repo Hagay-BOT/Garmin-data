@@ -3,20 +3,14 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
-  # דחיפות הבוט (GITHUB_TOKEN) לא מפעילות workflows אחרים — לכן push לבדו לא
-  # מרענן את Pages כשהמאמן מעדכן data.json. workflow_run מפעיל deploy אחרי
-  # שכל workflow שמעדכן נתונים מסתיים, כך שהאתר תמיד עדכני.
-  workflow_run:
-    workflows:
-      - "Update Garmin Dashboard"
-      - "Coach — Workout Watcher (event-driven, all day)"
-      - "Coach — Evening Cancellation Reply"
-      - "Coach — Weekly Review"
-      - "Calendar Weather Refresh"
-    types: [completed]
-  # רענון שבועי מובטח — שבת 23:59 ישראל (20:59 UTC), אחרי שהתוכנית השבועית נסגרה.
+  # deploy מתוזמן במרווחים קבועים (:15 ו-:45 בכל שעה) — 30 דק' זה מזה, אף פעם
+  # לא מתנגשים. פרסום הנתונים שהבוט דחף (GITHUB_TOKEN לא מפעיל push) קורה תוך ≤30 דק'.
+  #
+  # למה לא workflow_run: הוא ירה deploy אחרי כל workflow (watcher כל 30 דק' + update +
+  # weekly + calendar…). לפעמים שניים ברצף תוך שניות → התנגשות Pages בצד-שרת ("in
+  # progress deployment" 400), גם עם concurrency. מרווחים קבועים פותרים את זה מהשורש.
   schedule:
-    - cron: '59 20 * * 6'
+    - cron: '15,45 * * * *'
   workflow_dispatch:
 
 permissions:
