@@ -1,53 +1,24 @@
 {
-  "week_of": "2026-06-28",
-  "macro_week": 2,
+  "week_of": "2026-07-05",
+  "macro_week": 4,
   "phase": "Base",
   "goal_race": "15K @ 5:20",
   "notes": "נוצר אוטומטית מהסקירה השבועית.",
   "sessions": [
     {
-      "date": "2026-06-28",
+      "date": "2026-07-05",
       "day": "ראשון",
-      "type": "strength",
-      "key": "A"
-    },
-    {
-      "date": "2026-06-29",
-      "day": "שני",
-      "type": "run",
-      "subtype": "quality",
-      "name": "טמפו רציף 3.5 ק\"מ @5:00 + 6×100מ strides",
-      "desc": "טמפו רציף 3.5 ק\"מ @5:00 + 6×100מ strides",
-      "est_km": 6.0,
-      "steps": [
-        {
-          "kind": "warmup",
-          "seconds": 540
-        },
-        {
-          "kind": "interval",
-          "seconds": 900
-        },
-        {
-          "kind": "cooldown",
-          "seconds": 360
-        }
-      ]
-    },
-    {
-      "date": "2026-06-29",
-      "day": "שני",
       "type": "strength",
       "key": "B"
     },
     {
-      "date": "2026-06-30",
-      "day": "שלישי",
+      "date": "2026-07-05",
+      "day": "ראשון",
       "type": "run",
       "subtype": "easy",
-      "name": "ריצה קלה Z2 (לפי דופק)",
-      "desc": "ריצה קלה Z2 (לפי דופק)",
-      "est_km": 6.0,
+      "name": "קל Z2 לפי דופק",
+      "desc": "קל Z2 לפי דופק",
+      "est_km": 5.0,
       "steps": [
         {
           "kind": "warmup",
@@ -55,7 +26,7 @@
         },
         {
           "kind": "interval",
-          "seconds": 1440
+          "seconds": 1150
         },
         {
           "kind": "cooldown",
@@ -64,50 +35,127 @@
       ]
     },
     {
-      "date": "2026-07-01",
+      "date": "2026-07-06",
+      "day": "שני",
+      "type": "run",
+      "subtype": "quality",
+      "name": "Cruise intervals 3×1.5 ק\"מ @ 4:50",
+      "desc": "Cruise intervals 3×1.5 ק\"מ @ 4:50",
+      "est_km": 6.5,
+      "steps": [
+        {
+          "kind": "warmup",
+          "seconds": 540
+        },
+        {
+          "kind": "interval",
+          "seconds": 985
+        },
+        {
+          "kind": "cooldown",
+          "seconds": 360
+        }
+      ]
+    },
+    {
+      "date": "2026-07-06",
+      "day": "שני",
+      "type": "strength",
+      "key": "A"
+    },
+    {
+      "date": "2026-07-08",
       "day": "רביעי",
       "type": "strength",
       "key": "C"
     },
     {
-      "date": "2026-07-02",
-      "day": "חמישי",
-      "type": "strength",
-      "key": "B"
-    },
-    {
-      "date": "2026-07-03",
-      "day": "שישי",
+      "date": "2026-07-08",
+      "day": "רביעי",
       "type": "run",
       "subtype": "easy",
-      "name": "🏃 קל Z2 — 5 ק\"מ @ 6:20–6:40",
-      "desc": "ריצה קלה Z2",
-      "est_km": 5.0,
+      "name": "קל קצר Z2",
+      "desc": "קל קצר Z2",
+      "est_km": 4.0,
       "steps": [
         {
+          "kind": "warmup",
+          "seconds": 540
+        },
+        {
           "kind": "interval",
-          "seconds": 1950
+          "seconds": 760
+        },
+        {
+          "kind": "cooldown",
+          "seconds": 360
         }
       ]
     },
     {
-      "date": "2026-07-03",
-      "day": "שישי",
-      "type": "strength",
-      "key": "A"
+      "date": "2026-07-09",
+      "day": "חמישי",
+      "type": "run",
+      "subtype": "easy",
+      "name": "התאוששות Z1 (אחרי רגליים)",
+      "desc": "התאוששות Z1 (אחרי רגליים)",
+      "est_km": 4.0,
+      "steps": [
+        {
+          "kind": "warmup",
+          "seconds": 540
+        },
+        {
+          "kind": "interval",
+          "seconds": 840
+        },
+        {
+          "kind": "cooldown",
+          "seconds": 360
+        }
+      ]
     },
     {
-      "date": "2026-07-04",
+      "date": "2026-07-10",
+      "day": "שישי",
+      "type": "run",
+      "subtype": "easy",
+      "name": "קל + 6×100מ' strides",
+      "desc": "קל + 6×100מ' strides",
+      "est_km": 4.5,
+      "steps": [
+        {
+          "kind": "warmup",
+          "seconds": 540
+        },
+        {
+          "kind": "interval",
+          "seconds": 945
+        },
+        {
+          "kind": "cooldown",
+          "seconds": 360
+        }
+      ]
+    },
+    {
+      "date": "2026-07-10",
+      "day": "שישי",
+      "type": "strength",
+      "key": "B"
+    },
+    {
+      "date": "2026-07-11",
       "day": "שבת",
       "type": "run",
       "subtype": "long",
-      "name": "🏃 ריצת נפח — 10 ק\"מ Z2",
-      "desc": "Long run Z2 (לפי דופק <141)",
-      "est_km": 10.0,
+      "name": "Long run Z2 לפי דופק",
+      "desc": "Long run Z2 לפי דופק",
+      "est_km": 9.5,
       "steps": [
         {
           "kind": "interval",
-          "seconds": 4000
+          "seconds": 3942
         }
       ]
     }
@@ -118,7 +166,5 @@
     "needs_review": false,
     "safety_adjustments": [],
     "warnings": []
-  },
-  "approved": true,
-  "approved_at": "2026-06-28T19:47:41+00:00"
+  }
 }

@@ -142,6 +142,76 @@
         "B",
         "A"
       ]
+    },
+    {
+      "week_of": "2026-06-29",
+      "generated_at": "2026-07-04 18:35",
+      "headline": "📊 איזון: דשדוש ב-Z3 (26.4%) — לחדד את הקיטוב: קל יותר קל, קשה יותר קשה",
+      "threshold_snapshot": {
+        "current_vdot": 36.9,
+        "required_vdot": 38.3,
+        "vdot_gap": 1.4,
+        "threshold_pace": "5:13/ק\"מ"
+      },
+      "macro": {
+        "week_num": 3,
+        "phase": "Base",
+        "deload": false,
+        "gate": false
+      },
+      "metrics": {
+        "ctl": 35.3,
+        "atl": 39.1,
+        "tsb": -3.8,
+        "acwr": 1.11,
+        "ramp_rate_4w": 3.1
+      },
+      "fitness_4week": {
+        "available": true,
+        "window_days": 28,
+        "runs": 17,
+        "weekly_km_avg": 26.7,
+        "total_km": 106.7,
+        "vdot": 36.9,
+        "vdot_basis": "6.3ק\"מ @ 5:13/ק\"מ (2026-06-08)",
+        "threshold_pace": "5:13/ק\"מ",
+        "threshold_runs": 1,
+        "ef_z2_avg": 1.0269,
+        "z2_runs": 11
+      },
+      "zones_28d": {
+        "easy_pct": 63.3,
+        "hard_pct": 10.3
+      },
+      "week_actual": {
+        "run_count": 5,
+        "total_km": 36.7,
+        "total_load": 292.9
+      },
+      "red_flags": [],
+      "recommended_plan": {
+        "run_count": 6,
+        "total_km_approx": 33.5,
+        "focus": "בסיס אירובי + נגיעת סף — ניקוי Z3 ושיפור קדנס",
+        "key_workout": "Cruise intervals: 3×1.5 ק\"מ @ 4:50 עם 90ש' מנוחה + 6×100מ' strides בשישי"
+      },
+      "compliance": {
+        "prior_week_of": "2026-06-22",
+        "plan_focus": "בסיס אירובי נקי — להוביל ימים קלים לפי דופק (<141), לצמצם Z3, נגיעת סף מבוקרת",
+        "plan_key_workout": "טמפו רציף 3.5 ק\"מ @ 5:00 + 6×100מ' strides",
+        "planned_runs": 6,
+        "actual_runs": 5,
+        "planned_km_approx": 34,
+        "actual_km": 36.7,
+        "km_compliance_pct": 108,
+        "compliance_level": "מלא"
+      },
+      "strength_sequence": [
+        "B",
+        "A",
+        "C",
+        "B"
+      ]
     }
   ]
 }
