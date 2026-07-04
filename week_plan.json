@@ -12,29 +12,6 @@
       "key": "B"
     },
     {
-      "date": "2026-07-05",
-      "day": "ראשון",
-      "type": "run",
-      "subtype": "easy",
-      "name": "קל Z2 לפי דופק",
-      "desc": "קל Z2 לפי דופק",
-      "est_km": 5.0,
-      "steps": [
-        {
-          "kind": "warmup",
-          "seconds": 540
-        },
-        {
-          "kind": "interval",
-          "seconds": 1150
-        },
-        {
-          "kind": "cooldown",
-          "seconds": 360
-        }
-      ]
-    },
-    {
       "date": "2026-07-06",
       "day": "שני",
       "type": "run",
@@ -49,7 +26,7 @@
         },
         {
           "kind": "interval",
-          "seconds": 985
+          "seconds": 1635
         },
         {
           "kind": "cooldown",
@@ -84,7 +61,7 @@
         },
         {
           "kind": "interval",
-          "seconds": 760
+          "seconds": 660
         },
         {
           "kind": "cooldown",
@@ -99,7 +76,7 @@
       "subtype": "easy",
       "name": "התאוששות Z1 (אחרי רגליים)",
       "desc": "התאוששות Z1 (אחרי רגליים)",
-      "est_km": 4.0,
+      "est_km": 3.0,
       "steps": [
         {
           "kind": "warmup",
@@ -107,7 +84,7 @@
         },
         {
           "kind": "interval",
-          "seconds": 840
+          "seconds": 300
         },
         {
           "kind": "cooldown",
@@ -130,7 +107,7 @@
         },
         {
           "kind": "interval",
-          "seconds": 945
+          "seconds": 855
         },
         {
           "kind": "cooldown",
@@ -143,21 +120,6 @@
       "day": "שישי",
       "type": "strength",
       "key": "B"
-    },
-    {
-      "date": "2026-07-11",
-      "day": "שבת",
-      "type": "run",
-      "subtype": "long",
-      "name": "Long run Z2 לפי דופק",
-      "desc": "Long run Z2 לפי דופק",
-      "est_km": 9.5,
-      "steps": [
-        {
-          "kind": "interval",
-          "seconds": 3942
-        }
-      ]
     }
   ],
   "plan_metadata": {
@@ -165,6 +127,8 @@
     "approval_required": true,
     "needs_review": false,
     "safety_adjustments": [],
-    "warnings": []
+    "warnings": [
+      "אין נתון נפח לשבוע הקודם — לא ניתן לאמת התקדמות נפח."
+    ]
   }
 }
