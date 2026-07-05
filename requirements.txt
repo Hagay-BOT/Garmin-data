@@ -1,4 +1,6 @@
-garminconnect>=0.3.3
-anthropic>=0.109.0
-rich>=13.0.0
-requests>=2.31.0
+# Pinned with upper bounds (M1.4): allow patches, block surprise major bumps that
+# silently break a personal project running unattended. Widen deliberately, not by accident.
+garminconnect>=0.3.3,<0.4    # unofficial — most likely to break on a Garmin change
+anthropic>=0.109.0,<1.0
+rich>=13.0.0,<15
+requests>=2.31.0,<3

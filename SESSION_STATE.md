@@ -9,7 +9,11 @@
 Clean. All code compiles. Tests: `test_safety.py`, `test_approval_gates.py`, `test_coach.py`, `test_weekly_analysis.py`.
 
 ## Exact next implementation step
-Executing M1 in order: M1.2 (delete dead morning code) → M1.1 (smoke tests) → M1.4/M1.5 → M1.3 (heartbeat) → M1.6 (prompt caching).
+M1.1 (smoke tests + CI) ✅ and M1.4 (pin deps) ✅ are DONE.
+**Next: M1.2 — delete dead morning-loop code.** See ENGINEERING_BACKLOG.md M1.2 for the exact
+symbol list and the critical caveat (`morning_readiness()` is NOT dead — keep it). Then M1.3
+(heartbeat/health-summary), M1.6 (prompt caching), M1.5 (UTF-8, low).
+Verify after: `python test_telegram_messages.py` + `python -m py_compile coach.py`.
 
 ## Important context
 - Personal project. Deterministic-core law. Sunday week-anchor. See ENGINEERING_DECISIONS.md.

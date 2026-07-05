@@ -4,11 +4,11 @@ Deduped findings from the 3 reviews. Status: TODO · DOING · DONE · REJECTED �
 Grouped by milestone. Discovered-during-work items get appended here.
 
 ## M1 — Reliability quick wins
-- [DOING] M1.1 Smoke-test harness for all Telegram messages (parse/escape/non-empty/fields).
-- [TODO] M1.2 Delete dead morning loop + `check_telegram_reply.py`.
+- [DONE] M1.1 Smoke-test harness `test_telegram_messages.py` (escape/empty/parse) + `ci-tests.yml` (compile + smoke on push).
+- [TODO] M1.2 Delete dead morning loop + `check_telegram_reply.py`. NOTE: `morning_readiness()` (coach.py:677) is NOT dead — it feeds `metrics["readiness"]` used by weekly+postworkout. Only the morning LOOP is dead: `MORNING_SYSTEM`, `build_morning_prompt`, `_todays_planned_md`, `run_morning`, `_parse_morning_json`, `_send_morning_telegram`, `_save_morning_state`, `_has_run_planned_today`, `MODEL_MORNING`, main() `morning` dispatch, `morning_state.json`, `check_telegram_reply.py`.
 - [TODO] M1.3 Heartbeat + weekly health-summary; document 60-day cron-disable risk.
-- [TODO] M1.4 Pin requirements.txt versions.
-- [TODO] M1.5 Global UTF-8 stdout for all scripts.
+- [DONE] M1.4 Pin requirements.txt (upper bounds).
+- [TODO] M1.5 Global UTF-8 stdout for local scripts (calendar_sync crashed on cp1252). Low/dev-experience.
 - [TODO] M1.6 Prompt caching for knowledge_base.
 
 ## M2 — Single sources of truth
