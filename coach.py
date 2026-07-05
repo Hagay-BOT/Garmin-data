@@ -1375,104 +1375,6 @@ EF, VO2max, קדנס, VDOT — מה השתנה? לאן פנים? מה המשמע
 
 # ── Morning Readiness Loop ────────────────────────────────────────────────────
 
-MORNING_SYSTEM = """
-אתה מאמן ריצה אישי. זוהי **בדיקת מוכנות בוקר** — לפני האימון של היום.
-תפקידך: להחליט אם להריץ את האימון המתוכנן כמו שהוא, או להקל עליו, לפי מוכנות הגוף הבוקר.
-
-## בסיס הידע שלך
-{knowledge_base}
-
-## שני מקורות להמלצת התאמה — שניהם שקולים
-התאמת האימון של היום מבוססת על **שני** מקורות, ושניהם יכולים להוביל להמלצת שינוי:
-- **(א) מוכנות גופנית** — שינה, Body Battery, עומס, דגלים אדומים.
-- **(ב) מזג אוויר** — חום מורגש, גשם, רוח (מהסעיף "היכן לרוץ היום").
-
-## חוקים מחייבים
-1. אתה רשאי **רק להקל** — לקצר, להוריד עצימות, לשנות שעה, להעביר לחדר כושר, או מנוחה. **לעולם לא להוסיף עומס**.
-2. מוכנות טובה + מזג אוויר נוח → אל תשנה. בצע כמתוכנן.
-3. מוכנות בינונית → הורד עצימות/קצר ב-20% אם היום איכות.
-4. מוכנות נמוכה (שינה < 6ש' או Body Battery < 40) → Z2 קל או מנוחה.
-5. **מזג אוויר (כמו התאוששות) יכול להמליץ על שינוי:** חום מורגש גבוה → הקדם שעה / הורד עצימות / קצר / חדר כושר. גשם/רוח חזקה → חדר כושר. לונג רגיש יותר לחום.
-6. דגל אדום 🔴 → ראשון.
-7. **זו המלצה לאישורך** — אם משנה תוכנית מאושרת, הצג כהמלצה ("מומלץ ל...") ולא כעובדה. תשובה קצרה וקונקרטית.
-
-## פורמט פלט (בסוף, JSON תקני):
----MORNING_JSON---
-{{
-  "readiness_level": "ירוק | צהוב | אדום",
-  "adjustment_type": "none | easier | shorter | reschedule | indoor | rest",
-  "adjustment_source": "none | recovery | weather | both",
-  "planned": "<האימון שתוכנן>",
-  "adjusted": "<האימון/שינוי המומלץ>",
-  "reason": "<משפט אחד>"
-}}
----END_MORNING---
-"""
-
-
-def build_morning_prompt(metrics: dict) -> str:
-    macro_md = format_macro_for_prompt(metrics.get("macro", {}))
-    todays_planned_md = _todays_planned_md()
-    red_flags = metrics.get("red_flags", [])
-    flags_md = "\n".join(
-        f"- {rf['severity']} {rf['flag']}: {rf['detail']} → {rf['action']}"
-        for rf in red_flags) or "אין דגלים אדומים. ✓"
-
-    rw = metrics.get("run_weather")
-    if rw and "error" not in rw:
-        weather_md = (f"\n### היכן לרוץ היום (מזג אוויר)\n"
-                      f"{rw['verdict']} — {rw['message']}")
-    else:
-        weather_md = ""
-
-    rt = metrics.get("readiness_today", {})
-    if rt.get("is_stale"):
-        today_md = (
-            f"⚠️ **נתוני המוכנות של היום ({rt.get('today_date')}) עדיין לא סונכרנו מגרמין.**\n"
-            f"הנתון האחרון הזמין הוא מ-{rt.get('used_date')}: "
-            f"שינה {rt.get('sleep_score')}, Body Battery {rt.get('body_battery')}.\n"
-            f"**אל תתבסס על נתון אתמול כאילו הוא של היום.** המלץ לסנכרן את השעון לפני החלטה סופית, "
-            f"ובינתיים תן הערכה זהירה בלבד."
-        )
-    else:
-        today_md = (
-            f"**מוכנות היום ({rt.get('today_date')}):** "
-            f"שינה **{rt.get('sleep_score')}** · Body Battery **{rt.get('body_battery')}**"
-        )
-
-    return f"""
-## בדיקת בוקר — {date.today().isoformat()}
-
-### האימון המתוכנן להיום (מקור-אמת — מ-week_plan.json)
-{todays_planned_md}
-**זהו האימון של היום. בסס את שדה "planned" עליו בדיוק — אל תמציא אימון מהמאקרו.**
-
-### מיקום במאקרו (הקשר פאזה בלבד — לא האימון הקונקרטי של היום)
-{macro_md}
-
-### מוכנות היום (זה מה שקובע את ההחלטה)
-{today_md}
-
-### הקשר — מוכנות 3 ימים אחרונים (מגמה בלבד)
-{json.dumps(metrics['readiness'], ensure_ascii=False, indent=2)}
-{weather_md}
-
-### עומס נוכחי
-- ATL (עייפות חריפה): {metrics['load']['atl']}
-- TSB (מאזן/רעננות): {metrics['load']['tsb']}
-- ACWR: {metrics['load']['acwr'] or 'לא זמין'} {metrics['acwr_status']['flag']}
-
-### דגלים אדומים
-{flags_md}
-
----
-
-החלט: האם להריץ את אימון היום כמתוכנן, או להקל? תן הוראה קצרה וקונקרטית, וסיים בבלוק JSON.
-"""
-
-
-# ── Post-Workout Analysis Loop ────────────────────────────────────────────────
-
 POSTWORKOUT_SYSTEM = """
 אתה מאמן ריצה אישי. זוהי **אנליזת אחרי-אימון** — אחרי שהמתאמן סיים אימון היום.
 תפקידך לתת משוב מפורט על האימון, להתאים את אימון מחר, ולזהות דגלים אדומים.
@@ -1785,8 +1687,7 @@ def _today_run_weather() -> dict | None:
 
 
 # מודל לכל לולאה — לפי איזון עלות/איכות שנבחר:
-#   בוקר (פשוט, פרסור) → Haiku · אחרי אימון (ניתוח) → Sonnet · שבועי (תכנון) → Opus
-MODEL_MORNING = "claude-haiku-4-5"
+#   אחרי אימון (ניתוח) → Sonnet · שבועי (תכנון) → Opus
 MODEL_POSTWORKOUT = "claude-sonnet-4-6"
 MODEL_WEEKLY = "claude-opus-4-8"
 
@@ -1830,8 +1731,8 @@ def main():
         sys.exit(1)
 
     mode = sys.argv[1].lower() if len(sys.argv) > 1 else "weekly"
-    if mode not in ("weekly", "morning", "postworkout"):
-        print(f"מצב לא מוכר: {mode}. השתמש ב: weekly | morning | postworkout")
+    if mode not in ("weekly", "postworkout"):
+        print(f"מצב לא מוכר: {mode}. השתמש ב: weekly | postworkout")
         sys.exit(1)
 
     print("טוען נתוני גרמין...")
@@ -1852,9 +1753,7 @@ def main():
     knowledge_base = load_knowledge_base()
     client = anthropic.Anthropic()
 
-    if mode == "morning":
-        run_morning(client, knowledge_base, metrics)
-    elif mode == "postworkout":
+    if mode == "postworkout":
         run_postworkout(client, knowledge_base, metrics, data)
     else:
         run_weekly(client, knowledge_base, metrics)
@@ -2191,200 +2090,10 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
         chat_mode(client, knowledge_base, full_response)
 
 
-def _parse_morning_json(report_text: str) -> dict:
-    """Extract the morning JSON from the report, tolerant of how the model wrapped it.
-
-    The model (especially at effort=low) doesn't always emit the literal
-    ---MORNING_JSON---/---END_MORNING--- markers — it may wrap the object in a
-    ```json fence or just print a bare {...}. Try each strategy in order, then
-    normalize field-name aliases (planned_workout→planned etc.) so downstream
-    code finds the keys it expects.
-    """
-    return extract_llm_json(
-        report_text, "---MORNING_JSON---", "---END_MORNING---",
-        aliases={"planned": ("planned", "planned_workout"),
-                 "adjusted": ("adjusted", "adjusted_workout")})
-
-
-def _readiness_emoji(level: str) -> str:
-    """Map Hebrew readiness level to traffic-light emoji."""
-    if "ירוק" in level:
-        return "🟢"
-    if "אדום" in level:
-        return "🔴"
-    return "🟡"
-
-
-def _send_morning_telegram(morning_json: dict, metrics: dict) -> tuple[int | None, float]:
-    """
-    Send the morning readiness Telegram message.
-    Returns (message_id, sent_at_unix).  message_id is None if Telegram not configured.
-    """
-    import time as _time
-    try:
-        import telegram_notify as tg
-    except ImportError:
-        print("⚠️  telegram_notify not available — skipping Telegram.")
-        return None, _time.time()
-
-    readiness_level = morning_json.get("readiness_level", "צהוב")
-    adjustment_type = morning_json.get("adjustment_type", "none")
-    planned = morning_json.get("planned", "—")
-    adjusted = morning_json.get("adjusted", "—")
-    reason = morning_json.get("reason", "—")
-    emoji = _readiness_emoji(readiness_level)
-
-    today = date.today().strftime("%d/%m/%Y")
-    rt = metrics.get("readiness_today", {})
-    bb = rt.get("body_battery") or "—"
-    sleep = rt.get("sleep_score") or "—"
-
-    if adjustment_type == "none":
-        text = (
-            f"✅ <b>מוכנות בוקר — {today}</b>\n"
-            f"{emoji} מוכנות טובה\n"
-            f"Body Battery: {bb} | שינה: {sleep}\n\n"
-            f"📋 אין שינויים באימון — בצע כמתוכנן."
-        )
-    else:
-        text = (
-            f"{emoji} <b>מוכנות בוקר — {today}</b>\n"
-            f"Body Battery: {bb} | שינה: {sleep}\n\n"
-            f"📋 תוכנן: {planned}\n"
-            f"💡 המלצה: {adjusted}\n"
-            f"📌 סיבה: {reason}\n\n"
-            f"השב:\n"
-            f"✅ כן — שנה את האימון בגרמין\n"
-            f"❌ לא — בצע כמתוכנן (יתועד)"
-        )
-
-    # כפתור "נתח ריצה עכשיו" — מופיע רק אם הוגדר TRIGGER_BUTTON_URL (Cloudflare Worker).
-    # מאפשר להפעיל את ניתוח הריצה מיד אחרי ריצה, בלי להמתין ל-cron. אינרטי בלי הסוד.
-    trigger_url = os.environ.get("TRIGGER_BUTTON_URL")
-    markup = tg.url_button("📊 נתח ריצה עכשיו", trigger_url) if trigger_url else None
-
-    sent_at = _time.time()
-    message_id = tg.send_message(text, reply_markup=markup)
-    if message_id:
-        print(f"✅ Telegram נשלח (message_id={message_id})")
-    else:
-        print("⚠️  Telegram לא נשלח (אין credentials או שגיאה)")
-    return message_id, sent_at
-
-
-def _save_morning_state(morning_json: dict, message_id: int | None, sent_at: float) -> None:
-    """Write morning_state.json with the current session's state."""
-    import time as _time
-    adjustment_type = morning_json.get("adjustment_type", "none")
-    status = "no_adjustment" if adjustment_type == "none" else "pending_reply"
-    state = {
-        "date": date.today().isoformat(),
-        "status": status,
-        "sent_at_unix": sent_at,
-        "message_id": message_id,
-        "adjustment_type": adjustment_type,
-        "planned": morning_json.get("planned", ""),
-        "adjusted": morning_json.get("adjusted", ""),
-        "reason": morning_json.get("reason", ""),
-        "readiness_level": morning_json.get("readiness_level", ""),
-        "adjustment_source": morning_json.get("adjustment_source", "none"),
-    }
-    state_file = BASE_DIR / "morning_state.json"
-    state_file.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"morning_state.json שמור (status={status})")
-
-
-def _todays_sessions() -> list | None:
-    """Today's sessions from week_plan.json (the single source of truth).
-
-    Returns the list of session dicts dated today, or None if the plan can't be
-    read (so callers can apply a fail-safe). An empty list means the plan covers
-    today but schedules nothing (a true rest day).
-    """
-    today = date.today().isoformat()
-    try:
-        wp = json.loads((BASE_DIR / "week_plan.json").read_text(encoding="utf-8"))
-        return [s for s in wp.get("sessions", []) if s.get("date") == today]
-    except Exception:
-        return None
-
-
-def _has_run_planned_today() -> bool:
-    """True if the morning readiness loop should run today.
-
-    Skips strength-only / rest days to save the LLM call and the Telegram message
-    (data tracking via fetch_garmin is a separate step and keeps running).
-
-    Two fail-safes prevent a silent cascade where the user stops getting messages:
-      * plan unreadable → send (don't let a corrupt file swallow the message).
-      * today is OUTSIDE the plan's date span (plan is STALE — e.g. the weekly
-        loop was skipped by GitHub cron) → send. We only treat today as a true
-        rest day when the plan actually COVERS today and schedules no run.
-    """
-    try:
-        wp = json.loads((BASE_DIR / "week_plan.json").read_text(encoding="utf-8"))
-    except Exception:
-        return True  # fail-safe: unreadable plan → still send
-
-    sessions = wp.get("sessions", [])
-    dates = [s.get("date") for s in sessions if s.get("date")]
-    today = date.today().isoformat()
-    if not dates or today < min(dates) or today > max(dates):
-        return True  # plan doesn't cover today (stale/missing) → fail-safe send
-    return any(s.get("date") == today and s.get("type") == "run" for s in sessions)
-
-
-def _todays_planned_md() -> str:
-    """Authoritative 'today's workout' block for the morning prompt, taken from
-    week_plan.json so the message describes the REAL session, not a macro guess."""
-    sessions = _todays_sessions()
-    if not sessions:
-        return "_(אין session בתוכנית להיום — הסתמך על המאקרו בזהירות.)_"
-    lines = []
-    for s in sessions:
-        if s.get("type") == "run":
-            name = s.get("name") or f"ריצה ({s.get('subtype', 'easy')})"
-            desc = s.get("desc", "")
-            lines.append(f"- 🏃 **{name}**" + (f" — {desc}" if desc else ""))
-        elif s.get("type") == "strength":
-            lines.append(f"- 💪 כוח {s.get('key', '')}")
-        else:
-            lines.append(f"- {s.get('type', '?')}")
-    return "\n".join(lines)
-
-
-def run_morning(client, knowledge_base: str, metrics: dict) -> None:
-    """Morning readiness check — adjust today's workout (easier only)."""
-    if not _has_run_planned_today():
-        print("📅 אין ריצה מתוכננת היום — מעקב נתונים בלבד, ללא LLM וללא טלגרם.")
-        return
-    system_prompt = MORNING_SYSTEM.format(knowledge_base=knowledge_base)
-    user_prompt = build_morning_prompt(metrics)
-    print(f"🤖 מודל: {MODEL_MORNING} (בוקר — הזול)")
-    print("בדיקת מוכנות בוקר (streaming)...\n")
-    full = _stream_report(client, system_prompt, user_prompt, max_tokens=2048,
-                          effort="low", model=MODEL_MORNING)
-    out = BASE_DIR / "morning_report.md"
-    out.write_text(f"# בדיקת בוקר — {datetime.now():%Y-%m-%d %H:%M}\n\n{full}\n", encoding="utf-8")
-    print(f"\n\nנשמר: {out}")
-
-    # ── Parse MORNING_JSON and send Telegram notification ──────────────────
-    morning_json = _parse_morning_json(full)
-    if not morning_json:
-        print("⚠️  לא נמצא MORNING_JSON בדוח — Telegram לא נשלח.")
-        return
-
-    try:
-        message_id, sent_at = _send_morning_telegram(morning_json, metrics)
-        _save_morning_state(morning_json, message_id, sent_at)
-    except Exception as exc:
-        print(f"⚠️  שגיאה בשליחת Telegram / שמירת state: {exc}")
-
-
 def _parse_postworkout_json(report_text: str) -> dict:
     """Extract the post-workout JSON, tolerant of how the model wrapped it.
 
-    Same hardening as _parse_morning_json: the model (Sonnet at effort=medium)
+    Uses the shared extract_llm_json hardening: the model (Sonnet at effort=medium)
     doesn't always emit the literal ---POSTWORKOUT_JSON---/---END_POSTWORKOUT---
     markers — it may wrap the object in a ```json fence or print a bare {...}.
     Try each strategy in order, then normalize field-name aliases so the Telegram

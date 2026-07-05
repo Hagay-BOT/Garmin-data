@@ -9,11 +9,12 @@
 Clean. All code compiles. Tests: `test_safety.py`, `test_approval_gates.py`, `test_coach.py`, `test_weekly_analysis.py`.
 
 ## Exact next implementation step
-M1.1 (smoke tests + CI) ✅ and M1.4 (pin deps) ✅ are DONE.
-**Next: M1.2 — delete dead morning-loop code.** See ENGINEERING_BACKLOG.md M1.2 for the exact
-symbol list and the critical caveat (`morning_readiness()` is NOT dead — keep it). Then M1.3
-(heartbeat/health-summary), M1.6 (prompt caching), M1.5 (UTF-8, low).
-Verify after: `python test_telegram_messages.py` + `python -m py_compile coach.py`.
+DONE: M1.1 (smoke+CI), M1.4 (pin deps), M1.2 (deleted dead morning loop, −291 lines +3 files).
+**Next: M1.6 — prompt caching** for the static knowledge_base (add `cache_control` on the KB
+portion of the system prompt in `_stream_report` / the API call path; KB is ~1200 lines injected
+into every weekly/postworkout/chat call). Then M1.3 (heartbeat + weekly health-summary to
+Telegram; note the 60-day cron-disable risk), then M1.5 (UTF-8 for local scripts, low).
+Verify after any coach.py change: `python -m py_compile coach.py` + `python test_telegram_messages.py`.
 
 ## Important context
 - Personal project. Deterministic-core law. Sunday week-anchor. See ENGINEERING_DECISIONS.md.

@@ -5,7 +5,7 @@ Grouped by milestone. Discovered-during-work items get appended here.
 
 ## M1 — Reliability quick wins
 - [DONE] M1.1 Smoke-test harness `test_telegram_messages.py` (escape/empty/parse) + `ci-tests.yml` (compile + smoke on push).
-- [TODO] M1.2 Delete dead morning loop + `check_telegram_reply.py`. NOTE: `morning_readiness()` (coach.py:677) is NOT dead — it feeds `metrics["readiness"]` used by weekly+postworkout. Only the morning LOOP is dead: `MORNING_SYSTEM`, `build_morning_prompt`, `_todays_planned_md`, `run_morning`, `_parse_morning_json`, `_send_morning_telegram`, `_save_morning_state`, `_has_run_planned_today`, `MODEL_MORNING`, main() `morning` dispatch, `morning_state.json`, `check_telegram_reply.py`.
+- [DONE] M1.2 Deleted the entire dead morning loop (291 lines from coach.py: MORNING_SYSTEM, build_morning_prompt, run_morning, _parse_morning_json, _send_morning_telegram, _save_morning_state, _has_run_planned_today, _todays_planned_md, _todays_sessions, _readiness_emoji, MODEL_MORNING, main() morning dispatch) + deleted files `check_telegram_reply.py`, `adjust_today.py` (orphaned), `morning_state.json`. Kept `morning_readiness()` (feeds metrics["readiness"]). Verified: compiles, smoke tests pass, zero residual refs.
 - [TODO] M1.3 Heartbeat + weekly health-summary; document 60-day cron-disable risk.
 - [DONE] M1.4 Pin requirements.txt (upper bounds).
 - [TODO] M1.5 Global UTF-8 stdout for local scripts (calendar_sync crashed on cp1252). Low/dev-experience.
