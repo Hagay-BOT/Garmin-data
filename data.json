@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-05T07:01:04.065752+00:00",
+  "last_updated": "2026-07-05T07:31:00.276948+00:00",
   "activities": [
     {
       "activity_id": 13381622386,
@@ -123397,9 +123397,9 @@
         {
           "seg": 1,
           "distance_m": 100,
-          "pace_sec_per_km": 530,
+          "pace_sec_per_km": 620,
           "avg_hr": 118,
-          "duration_sec": 53.0
+          "duration_sec": 62.0
         },
         {
           "seg": 2,
@@ -123684,9 +123684,9 @@
         {
           "seg": 42,
           "distance_m": 4200,
-          "pace_sec_per_km": 350,
+          "pace_sec_per_km": 710,
           "avg_hr": 172,
-          "duration_sec": 35.0
+          "duration_sec": 71.0
         },
         {
           "seg": 43,
@@ -125559,6 +125559,58 @@
           "cadence_spm": 171
         }
       ],
+      "splits_100m": []
+    },
+    {
+      "activity_id": 23483774387,
+      "date": "2026-07-05",
+      "start_time": "2026-07-05 09:22:12",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "rpe": null,
+      "feel": null,
+      "distance_km": null,
+      "duration_sec": 2963,
+      "pace_sec_per_km": null,
+      "best_pace_sec_per_km": null,
+      "avg_hr": 101.0,
+      "max_hr": 149.0,
+      "recovery_hr": null,
+      "cadence_spm": null,
+      "max_cadence_spm": null,
+      "gct_ms": null,
+      "stride_length_m": null,
+      "vertical_oscillation_cm": null,
+      "vertical_ratio_pct": null,
+      "aerobic_effect": 0.699999988079071,
+      "anaerobic_effect": 0.699999988079071,
+      "training_effect_label": "UNKNOWN",
+      "training_stress_score": null,
+      "exercise_load": 15.386016845703125,
+      "vo2max": null,
+      "stamina_start_pct": null,
+      "stamina_end_pct": null,
+      "active_calories": null,
+      "total_calories": 244.0,
+      "sweat_loss_ml": 366,
+      "body_battery_impact": -4,
+      "avg_respiration": null,
+      "max_respiration": null,
+      "moderate_intensity_min": 27,
+      "vigorous_intensity_min": 2,
+      "total_ascent_m": null,
+      "total_descent_m": null,
+      "temperature": null,
+      "gps": [],
+      "hr_zones_sec": [
+        1124,
+        321,
+        51,
+        0,
+        0
+      ],
+      "hr_drift_bpm": null,
+      "laps": [],
       "splits_100m": []
     }
   ],
@@ -128112,9 +128164,9 @@
     "2026-07-05": {
       "sleep_score": null,
       "sleep_end_time": null,
-      "body_battery_morning": 22,
-      "calories_resting": 754.0,
-      "calories_active": 7.0
+      "body_battery_morning": 70,
+      "calories_resting": 919.0,
+      "calories_active": 238.0
     }
   },
   "shoes": [
