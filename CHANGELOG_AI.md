@@ -3,6 +3,10 @@
 Reverse-chronological. One entry per meaningful change during the engineering program.
 
 ## 2026-07-06
+- **M2.3+M2.4 DONE — M2 milestone COMPLETE.** Athlete constants now injected into all 3 LLM
+  prompts (ATHLETE_PROMPT_VARS): zones, real easy pace, strides pace, cadence, goal race,
+  long cap. Bonus bug fix: REVISE_SYSTEM was sent raw with literal doubled {{}} braces —
+  now formatted at definition. Glossary covered by athlete.py.
 - **M2.2 DONE** `store.py` — single state-access layer, atomic writes (tmp+replace), consistent
   defaults. Migrated journal/weekly_revise/health_report/push_week; deliberately kept
   push_week.load_plan fail-fast (safety semantics). Verified live round-trip + health green.

@@ -14,8 +14,8 @@ Grouped by milestone. Discovered-during-work items get appended here.
 ## M2 — Single sources of truth
 - [DONE] M2.1 `athlete.py` — single source of truth for athlete constants. Wired: push_week, push_strength (fixed live drift — old swapped A=Push names!), calendar_sync, coach.py (cadence ×2, max-hr fallback). VERIFIED: compiles, smoke tests pass, strength names asserted unified across all 3 consumers.
 - [DONE] M2.2 `store.py` — single state-access layer with atomic writes (tmp+os.replace) and consistent defaults. Migrated cross-file consumers: journal.py (proxy), weekly_revise.py (state+plan), health_report.py, push_week.py (created_workouts ×4). Kept push_week.load_plan fail-fast ON PURPOSE (pushing an empty default plan to Garmin would be dangerous). Verified: compile, smoke, live round-trip + health green. Remaining: coach.py's ~28 internal reads migrate incrementally (tracked in M8 refactor).
-- [TODO] M2.3 Inject athlete constants into prompts.
-- [TODO] M2.4 Shared glossary (A/B/C names, categories, zones).
+- [DONE] M2.3 Athlete constants injected into all 3 prompts via ATHLETE_PROMPT_VARS (z2 range, easy pace, strides pace, cadence, goal race, long cap). Bonus fix: REVISE_SYSTEM was sent raw with literal {{}} doubled braces — now formatted at definition. Verified: all templates render, no leftover placeholders, smoke green.
+- [DONE] M2.4 Glossary — covered by athlete.py (strength names/descs, zones, paces). Run categories remain in fetch_garmin (single definition site, no duplication found).
 
 ## M3 — Deterministic core
 - [TODO] M3.1 Audit LLM output fields → move deterministic ones to code.

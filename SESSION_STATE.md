@@ -12,15 +12,16 @@ Clean. All code compiles. Tests: `test_safety.py`, `test_approval_gates.py`, `te
 **M1 is COMPLETE and E2E-verified** (M1.1 smoke+CI incl. YAML validation · M1.2 dead morning
 code · M1.3 health+heartbeat — first report delivered, message_id=44 · M1.4 pinned deps ·
 M1.6 caching verified-existing). M1.5 (UTF-8) folded into M9 hygiene (low).
-**M2.1 + M2.2 DONE** (athlete.py source-of-truth; store.py atomic state layer, 4 consumers
-migrated; coach.py internals deferred to M8).
-**Next: M2.3 — config-drives-prompts.** Inject athlete.py constants into the prompt strings
-(WEEKLY_SYSTEM / POSTWORKOUT_SYSTEM currently hardcode 121–141, 4:50, 5:20, 180, 6:45–7:00 —
-format them from athlete.py so code and prompts cannot diverge). M2.4 glossary largely covered
-by athlete.py — verify and close. Then M2 is complete; next milestone M5 (prompt architecture)
-or M9 quick-hygiene items.
-Pending side-note from M2.1: fetch_garmin zone thresholds use %maxHR semantics — verify before
-wiring athlete zone constants there.
+**M2 milestone COMPLETE** (M2.1 athlete.py · M2.2 store.py · M2.3 constants→prompts via
+ATHLETE_PROMPT_VARS incl. REVISE double-brace bugfix · M2.4 glossary via athlete.py).
+**Next: pick from — (a) M9 quick hygiene wins:** M9.4 single week-anchor util (index.html +
+coach + macro each compute Sunday-anchor independently), M9.1 data.json rotation, M9.5 narrow
+broad excepts; **(b) M5 prompt architecture** (extract prompts to prompts/*.md, consolidate
+duplicated coaching rules between WEEKLY/POSTWORKOUT); **(c) M4.2 one-command Garmin re-sync**.
+Recommended order: M9.4 (small, kills a recurring bug class) → M5 (big maintainability win).
+[PRODUCT-HOLD items M3.2/M3.3/M4.1/M9.7 still await Hagay's explicit OK.]
+Pending side-note: fetch_garmin zone thresholds use %maxHR semantics — verify before wiring
+athlete zone constants there.
 Verify after any coach.py change: `python -m py_compile coach.py` + `python test_telegram_messages.py`.
 
 ## Important context
