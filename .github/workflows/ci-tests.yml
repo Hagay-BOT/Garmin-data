@@ -25,6 +25,7 @@ jobs:
         run: python -m py_compile $(git ls-files '*.py')
       - name: Validate all workflow YAMLs
         run: |
+          pip install pyyaml   # CI-only dep — not needed at runtime, so not in requirements.txt
           python - <<'EOF'
           import yaml, glob
           for f in glob.glob('.github/workflows/*.yml'):
