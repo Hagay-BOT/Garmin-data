@@ -12,10 +12,13 @@ Clean. All code compiles. Tests: `test_safety.py`, `test_approval_gates.py`, `te
 **M1 is COMPLETE and E2E-verified** (M1.1 smoke+CI incl. YAML validation · M1.2 dead morning
 code · M1.3 health+heartbeat — first report delivered, message_id=44 · M1.4 pinned deps ·
 M1.6 caching verified-existing). M1.5 (UTF-8) folded into M9 hygiene (low).
-**Next milestone: M2 — single sources of truth.** Start with M2.1: create `athlete.py`
-(zones 121–141 Z2 etc., real Z2 pace ~6:45–7:00, cadence target 175–180, thresholds, targets,
-strength A=Pull/B=Push/C=Legs names) and wire fetch_garmin/safety/coach + prompts to import it.
-Then M2.2 `store.py` accessors, M2.3 config-into-prompts, M2.4 glossary (partially covered by M2.1).
+**M2.1 in progress:** `athlete.py` created + wired into push_week/push_strength/calendar_sync/
+coach.py (cadence, max-hr fallback). Fixed live drift: push_strength still had OLD swapped
+A=Push names. **NOT YET VERIFIED** (classifier blocked Bash): must run
+`python -m py_compile athlete.py coach.py push_week.py push_strength.py calendar_sync.py`
++ `python test_telegram_messages.py` + assert STRENGTH names unified — then commit M2.1.
+Remaining M2: wire fetch_garmin zone thresholds (uses %maxHR — verify before touching),
+M2.2 `store.py`, M2.3 config-into-prompts, M2.4 glossary (mostly covered by athlete.py).
 Verify after any coach.py change: `python -m py_compile coach.py` + `python test_telegram_messages.py`.
 
 ## Important context

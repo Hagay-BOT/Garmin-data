@@ -38,11 +38,9 @@ def israel_utc_offset(d: date) -> int:
     dst_end = _last_weekday(d.year, 10, 6)
     return 3 if dst_start <= d < dst_end else 2
 
-STRENGTH = {
-    "A": "💪 כוח A — Pull/משיכה (גב/יד קדמית)",
-    "B": "💪 כוח B — Push/דחיפה (חזה/כתפיים/יד אחורית)",
-    "C": "🦵 כוח C — Legs (רגליים)",
-}
+import athlete
+
+STRENGTH = athlete.STRENGTH_NAMES  # מקור-אמת יחיד — athlete.py
 
 # (שעת התחלה, משך בדקות) לכל סוג
 TIMING = {
@@ -95,9 +93,7 @@ def build_events() -> list[dict]:
             hour, dur = TIMING["strength"]
             key = s.get("key", "?")
             summary = STRENGTH.get(key, f"כוח {key}")
-            desc = {"A": "Pull: גב, יד קדמית.",
-                    "B": "Push: חזה, כתפיים, יד אחורית.",
-                    "C": "רגליים: סקוואט, hip thrust, calf raises."}.get(key, "")
+            desc = athlete.STRENGTH_DESCS.get(key, "")
             uid = f"{d}-strength-{key}"
         h, m = map(int, hour.split(":"))
         start = datetime.fromisoformat(d).replace(hour=h, minute=m)

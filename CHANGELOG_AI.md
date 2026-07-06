@@ -2,6 +2,13 @@
 
 Reverse-chronological. One entry per meaningful change during the engineering program.
 
+## 2026-07-06
+- **M2.1 (in progress)** Created `athlete.py` — single source of truth for all athlete
+  constants (zones, real Z2 pace, cadence targets, race goal, strength A/B/C names).
+  Wired into push_week, push_strength, calendar_sync, coach.py. **Found live drift while
+  wiring: push_strength.py still carried the old swapped A=Push names — exactly the bug
+  class this milestone eliminates.** Verification pending (classifier window).
+
 ## 2026-07-05
 - **M1.3-fix** Colon inside a plain YAML scalar broke the new workflow at parse time (GitHub
   created a nameless failed run). Fixed + CI now validates ALL workflow YAMLs on push

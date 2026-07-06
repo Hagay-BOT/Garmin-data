@@ -22,15 +22,11 @@ sys.stdout.reconfigure(encoding="utf-8")
 # sportType של כוח בגרמין (לא קיים ב-enum של הספרייה — מוזן ידנית)
 STRENGTH_SPORT = {"sportTypeId": 5, "sportTypeKey": "strength_training", "displayOrder": 5}
 
-# הגדרות 3 אימוני הכוח (פיצול PPL של הגיא)
-STRENGTH_WORKOUTS = {
-    "A": {"name": "💪 כוח A — Push (חזה/יד אחורית/כתפיים)", "minutes": 60,
-          "desc": "Push: חזה, יד אחורית, כתפיים. פלג גוף עליון."},
-    "B": {"name": "💪 כוח B — Pull (גב/יד קדמית)", "minutes": 60,
-          "desc": "Pull: גב, יד קדמית. פלג גוף עליון."},
-    "C": {"name": "🦵 כוח C — Legs (רגליים)", "minutes": 60,
-          "desc": "רגליים: סקוואט, hip thrust, calf raises, חיזוק ברך/קרסול."},
-}
+# הגדרות 3 אימוני הכוח — מקור-אמת יחיד ב-athlete.py.
+# (הגרסה הישנה כאן החזיקה A=Push הפוך — בדיוק ה-drift ש-athlete.py מחסל.)
+import athlete
+STRENGTH_WORKOUTS = {k: {"name": athlete.STRENGTH_NAMES[k], "minutes": athlete.STRENGTH_MINUTES,
+                         "desc": athlete.STRENGTH_DESCS[k]} for k in ("A", "B", "C")}
 
 
 def build_time_step(seconds: float, order: int = 1) -> dict:

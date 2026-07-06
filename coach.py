@@ -14,6 +14,7 @@ if sys.stdout.encoding != "utf-8":
 from datetime import datetime, date, timedelta
 from pathlib import Path
 import anthropic
+import athlete
 
 
 BASE_DIR = Path(__file__).parent
@@ -424,8 +425,8 @@ def compute_fitness_trends(activities: list, global_max_hr: float, weeks: int = 
             "trend_slope": cad_trend,
             "trend_direction": ("עולה" if cad_trend and cad_trend > 0.1 else
                                 "יורד" if cad_trend and cad_trend < -0.1 else "יציב"),
-            "target_spm": 180,
-            "gap_to_target": round(180 - cad_current, 1) if cad_current else None,
+            "target_spm": athlete.CADENCE_TARGET,
+            "gap_to_target": round(athlete.CADENCE_TARGET - cad_current, 1) if cad_current else None,
         },
         "vdot": {
             "estimate": vdot,
@@ -1623,7 +1624,7 @@ def build_metrics(data: dict) -> dict:
     """Compute the full metrics bundle shared by all three loops."""
     activities = data.get("activities", [])
     daily = data.get("daily", {})
-    global_max_hr = data.get("global_max_hr") or 201.0
+    global_max_hr = data.get("global_max_hr") or float(athlete.MAX_HR_FALLBACK)
 
     daily_load = build_daily_load(activities)
     load_metrics = compute_ctl_atl(daily_load, date.today())

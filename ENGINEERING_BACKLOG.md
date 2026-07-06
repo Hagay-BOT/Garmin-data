@@ -12,7 +12,7 @@ Grouped by milestone. Discovered-during-work items get appended here.
 - [DONE] M1.6 Prompt caching — verified already implemented (`cache_control: ephemeral` on the full system prompt in `_stream_report`, coach.py). Honest caveat: benefit is small (5-min TTL; weekly/postworkout calls are far apart; frequent watcher runs skip the API entirely). No further change justified.
 
 ## M2 — Single sources of truth
-- [TODO] M2.1 `athlete.py` constants.
+- [DONE] M2.1 `athlete.py` — single source of truth for athlete constants. Wired: push_week, push_strength (fixed live drift — old swapped A=Push names!), calendar_sync, coach.py (cadence ×2, max-hr fallback). VERIFIED: compiles, smoke tests pass, strength names asserted unified across all 3 consumers.
 - [TODO] M2.2 `store.py` state accessor layer.
 - [TODO] M2.3 Inject athlete constants into prompts.
 - [TODO] M2.4 Shared glossary (A/B/C names, categories, zones).

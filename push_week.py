@@ -32,15 +32,12 @@ BASE = Path(__file__).parent
 PLAN_FILE = BASE / "week_plan.json"
 CREATED_FILE = BASE / "created_workouts.json"
 
+import athlete
+
 STRENGTH_SPORT = {"sportTypeId": 5, "sportTypeKey": "strength_training", "displayOrder": 5}
-STRENGTH_DEFS = {
-    "A": {"name": "💪 כוח A — Pull/משיכה (גב/יד קדמית)", "minutes": 60,
-          "desc": "Pull: גב, יד קדמית. פלג גוף עליון."},
-    "B": {"name": "💪 כוח B — Push/דחיפה (חזה/כתפיים/יד אחורית)", "minutes": 60,
-          "desc": "Push: חזה, כתפיים, יד אחורית. פלג גוף עליון."},
-    "C": {"name": "🦵 כוח C — Legs (רגליים)", "minutes": 60,
-          "desc": "רגליים: סקוואט, hip thrust, calf raises, חיזוק ברך/קרסול."},
-}
+# מקור-אמת יחיד לשמות הכוח: athlete.py (A/B היו הפוכים כשהוגדרו בכל קובץ בנפרד)
+STRENGTH_DEFS = {k: {"name": athlete.STRENGTH_NAMES[k], "minutes": athlete.STRENGTH_MINUTES,
+                     "desc": athlete.STRENGTH_DESCS[k]} for k in ("A", "B", "C")}
 
 STEP_BUILDERS = {
     "warmup": create_warmup_step,
