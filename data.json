@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-06T20:30:58.533704+00:00",
+  "last_updated": "2026-07-06T20:49:38.595913+00:00",
   "activities": [
     {
       "activity_id": 13381622386,
@@ -126657,16 +126657,16 @@
         {
           "seg": 1,
           "distance_m": 100,
-          "pace_sec_per_km": 780,
+          "pace_sec_per_km": 420,
           "avg_hr": 112,
-          "duration_sec": 78.0
+          "duration_sec": 42.0
         },
         {
           "seg": 2,
           "distance_m": 200,
-          "pace_sec_per_km": 400,
+          "pace_sec_per_km": 390,
           "avg_hr": 113,
-          "duration_sec": 40.0
+          "duration_sec": 39.0
         },
         {
           "seg": 3,
