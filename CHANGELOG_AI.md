@@ -3,7 +3,10 @@
 Reverse-chronological. One entry per meaningful change during the engineering program.
 
 ## 2026-07-06
-- **M2.1 (in progress)** Created `athlete.py` — single source of truth for all athlete
+- **CI-fix** pyyaml was missing on the CI runner (local global install masked it) — the
+  YAML-validation step had been failing since added. Installed in-step. CI green again.
+  Lesson recorded: a new CI step must be verified on CI, not just locally.
+- **M2.1 DONE** Created `athlete.py` — single source of truth for all athlete
   constants (zones, real Z2 pace, cadence targets, race goal, strength A/B/C names).
   Wired into push_week, push_strength, calendar_sync, coach.py. **Found live drift while
   wiring: push_strength.py still carried the old swapped A=Push names — exactly the bug
