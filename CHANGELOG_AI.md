@@ -3,6 +3,9 @@
 Reverse-chronological. One entry per meaningful change during the engineering program.
 
 ## 2026-07-05
+- **M1.3-fix** Colon inside a plain YAML scalar broke the new workflow at parse time (GitHub
+  created a nameless failed run). Fixed + CI now validates ALL workflow YAMLs on push
+  (new failure class → new permanent guard). Health report verified E2E (message_id=44).
 - **M1.3** Added `health_report.py` + `health-heartbeat.yml` — weekly deterministic health
   summary to Telegram (freshness/unanalyzed/pending/plan-coverage/journal/repo-idle) +
   heartbeat commit that resets GitHub's 60-day scheduled-workflow disable timer.

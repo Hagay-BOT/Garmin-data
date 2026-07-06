@@ -9,8 +9,9 @@
 Clean. All code compiles. Tests: `test_safety.py`, `test_approval_gates.py`, `test_coach.py`, `test_weekly_analysis.py`.
 
 ## Exact next implementation step
-**M1 is COMPLETE** (M1.1 smoke+CI · M1.2 dead morning code · M1.3 health+heartbeat ·
-M1.4 pinned deps · M1.6 caching verified-existing). M1.5 (UTF-8) folded into M9 hygiene (low).
+**M1 is COMPLETE and E2E-verified** (M1.1 smoke+CI incl. YAML validation · M1.2 dead morning
+code · M1.3 health+heartbeat — first report delivered, message_id=44 · M1.4 pinned deps ·
+M1.6 caching verified-existing). M1.5 (UTF-8) folded into M9 hygiene (low).
 **Next milestone: M2 — single sources of truth.** Start with M2.1: create `athlete.py`
 (zones 121–141 Z2 etc., real Z2 pace ~6:45–7:00, cadence target 175–180, thresholds, targets,
 strength A=Pull/B=Push/C=Legs names) and wire fetch_garmin/safety/coach + prompts to import it.
