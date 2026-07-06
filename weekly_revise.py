@@ -18,25 +18,17 @@ import html as _html
 from pathlib import Path
 
 import telegram_notify as tg
+import store
 
 BASE = Path(__file__).parent
-STATE = BASE / "weekly_state.json"
-PLAN = BASE / "week_plan.json"
 DAYS = ["ב", "ג", "ד", "ה", "ו", "ש", "א"]  # Mon..Sun → weekday()
 
 APPROVE = {"אשר", "אשרר", "כן", "מאשר", "אישור", "מעולה", "אוקיי",
            "ok", "okay", "yes", "👍", "✅"}
 
-
-def _load_state() -> dict:
-    try:
-        return json.loads(STATE.read_text(encoding="utf-8"))
-    except Exception:
-        return {}
-
-
-def _save_state(s: dict) -> None:
-    STATE.write_text(json.dumps(s, ensure_ascii=False, indent=2), encoding="utf-8")
+# גישת state דרך store.py (M2.2)
+_load_state = store.load_weekly_state
+_save_state = store.save_weekly_state
 
 
 def _is_approval(text: str) -> bool:
@@ -93,7 +85,7 @@ def main() -> None:
                         "\"שישי 5 ק\"מ, שבת 10, חמישי בלי ריצה\".")
         return
 
-    plan = json.loads(PLAN.read_text(encoding="utf-8"))
+    plan = store.load_week_plan()
     lines = ["📝 <b>עדכנתי את התוכנית לפי בקשתך:</b>", ""] + _plan_lines(plan)
     if messages:
         lines += ["", "🛡️ " + " · ".join(_html.escape(str(m)) for m in messages)]

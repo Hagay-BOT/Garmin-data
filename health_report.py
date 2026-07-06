@@ -38,10 +38,9 @@ def _age_days(path: Path) -> float | None:
 
 
 def _load(name: str) -> dict:
-    try:
-        return json.loads((BASE / name).read_text(encoding="utf-8"))
-    except Exception:
-        return {}
+    # דרך store.py (M2.2) — ברירות-מחדל עקביות במקום אחד
+    import store
+    return store._read(name, {})
 
 
 def build_report() -> tuple[str, bool]:

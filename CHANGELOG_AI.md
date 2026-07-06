@@ -3,6 +3,9 @@
 Reverse-chronological. One entry per meaningful change during the engineering program.
 
 ## 2026-07-06
+- **M2.2 DONE** `store.py` — single state-access layer, atomic writes (tmp+replace), consistent
+  defaults. Migrated journal/weekly_revise/health_report/push_week; deliberately kept
+  push_week.load_plan fail-fast (safety semantics). Verified live round-trip + health green.
 - **CI-fix** pyyaml was missing on the CI runner (local global install masked it) — the
   YAML-validation step had been failing since added. Installed in-step. CI green again.
   Lesson recorded: a new CI step must be verified on CI, not just locally.

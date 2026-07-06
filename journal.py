@@ -3,26 +3,12 @@
 נרשמות ל-journal.json ומוזנות לניתוח אחרי-אימון ולסיכום השבועי כדי שהמאמן
 יבין את ההקשר הסובייקטיבי ויתחשב בו (לא רק נתוני גרמין).
 """
-import json
 import datetime
-from pathlib import Path
+import store
 
-JOURNAL = Path(__file__).parent / "journal.json"
-
-
-def _load() -> dict:
-    try:
-        d = json.loads(JOURNAL.read_text(encoding="utf-8"))
-        d.setdefault("notes", [])
-        d.setdefault("last_ts", 0)
-        return d
-    except Exception:
-        return {"notes": [], "last_ts": 0}
-
-
-def _save(d: dict) -> None:
-    d["notes"] = d.get("notes", [])[-300:]
-    JOURNAL.write_text(json.dumps(d, ensure_ascii=False, indent=2), encoding="utf-8")
+# גישת ה-state דרך store.py (M2.2) — כתיבה אטומית + ברירות-מחדל במקום אחד.
+_load = store.load_journal
+_save = store.save_journal
 
 
 def add_note(text: str, when: str | None = None) -> None:

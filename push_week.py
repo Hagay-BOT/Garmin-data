@@ -33,6 +33,7 @@ PLAN_FILE = BASE / "week_plan.json"
 CREATED_FILE = BASE / "created_workouts.json"
 
 import athlete
+import store
 
 STRENGTH_SPORT = {"sportTypeId": 5, "sportTypeKey": "strength_training", "displayOrder": 5}
 # מקור-אמת יחיד לשמות הכוח: athlete.py (A/B היו הפוכים כשהוגדרו בכל קובץ בנפרד)
@@ -230,10 +231,10 @@ def main():
         return
 
     if "--cleanup" in args:
-        if not CREATED_FILE.exists():
-            print("אין created_workouts.json — אין מה למחוק.")
+        ids = store.load_created()
+        if not ids:
+            print("אין אימונים רשומים — אין מה למחוק.")
             return
-        ids = json.loads(CREATED_FILE.read_text(encoding="utf-8"))
         client = login()
         for item in ids:
             try:
@@ -243,7 +244,7 @@ def main():
                 print(f"⚠️  כשל במחיקת {item['workout_id']}: {e}")
         # כותבים רשימה ריקה (לא מוחקים את הקובץ) — כדי שה-git_sync ישמור מצב נקי
         # ב-repo. אחרת ה-repo ימשיך להחזיק IDs מחוקים והדחיפה הבאה תדלג עליהם.
-        CREATED_FILE.write_text("[]", encoding="utf-8")
+        store.save_created([])
         print("✅ created_workouts.json נוקה (רשימה ריקה).")
         return
 
@@ -264,13 +265,7 @@ def main():
             sys.exit(1)
 
         # ── מניעת כפילויות: דלג על מה שכבר נוצר (אלא אם --force) ──────────
-        already = {}
-        if CREATED_FILE.exists():
-            try:
-                already = {(c["date"], c["name"]): c
-                           for c in json.loads(CREATED_FILE.read_text(encoding="utf-8"))}
-            except Exception:
-                already = {}
+        already = {(c["date"], c["name"]): c for c in store.load_created()}
 
         client = login()
         created = list(already.values()) if not force else []
@@ -296,7 +291,7 @@ def main():
                 print(f"⚠️  כשל ב-{s['date']} · {name}: {e}")
 
         # תמיד שומרים את מה שהצליח — אין אימונים יתומים שלא מתועדים
-        CREATED_FILE.write_text(json.dumps(created, ensure_ascii=False, indent=2), encoding="utf-8")
+        store.save_created(created)
         ok = len(created) - (0 if force else len(already))
         print(f"\n🎯 {ok} אימונים חדשים שובצו · {len(failures)} כשלונות.")
         if failures:
