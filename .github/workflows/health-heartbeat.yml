@@ -30,4 +30,4 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python health_report.py
       - name: Heartbeat commit
-        run: bash scripts/git_sync.sh "heartbeat: weekly health check" heartbeat.txt
+        run: bash scripts/git_sync.sh "heartbeat — weekly health check" heartbeat.txt

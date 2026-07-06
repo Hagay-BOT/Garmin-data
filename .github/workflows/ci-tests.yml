@@ -23,5 +23,13 @@ jobs:
         run: pip install -r requirements.txt
       - name: Compile all modules
         run: python -m py_compile $(git ls-files '*.py')
+      - name: Validate all workflow YAMLs
+        run: |
+          python - <<'EOF'
+          import yaml, glob
+          for f in glob.glob('.github/workflows/*.yml'):
+              yaml.safe_load(open(f, encoding='utf-8'))
+          print('all workflow YAMLs valid')
+          EOF
       - name: Telegram message smoke tests
         run: python test_telegram_messages.py
