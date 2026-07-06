@@ -9,11 +9,12 @@
 Clean. All code compiles. Tests: `test_safety.py`, `test_approval_gates.py`, `test_coach.py`, `test_weekly_analysis.py`.
 
 ## Exact next implementation step
-DONE: M1.1 (smoke+CI), M1.4 (pin deps), M1.2 (deleted dead morning loop, −291 lines +3 files).
-**Next: M1.6 — prompt caching** for the static knowledge_base (add `cache_control` on the KB
-portion of the system prompt in `_stream_report` / the API call path; KB is ~1200 lines injected
-into every weekly/postworkout/chat call). Then M1.3 (heartbeat + weekly health-summary to
-Telegram; note the 60-day cron-disable risk), then M1.5 (UTF-8 for local scripts, low).
+**M1 is COMPLETE** (M1.1 smoke+CI · M1.2 dead morning code · M1.3 health+heartbeat ·
+M1.4 pinned deps · M1.6 caching verified-existing). M1.5 (UTF-8) folded into M9 hygiene (low).
+**Next milestone: M2 — single sources of truth.** Start with M2.1: create `athlete.py`
+(zones 121–141 Z2 etc., real Z2 pace ~6:45–7:00, cadence target 175–180, thresholds, targets,
+strength A=Pull/B=Push/C=Legs names) and wire fetch_garmin/safety/coach + prompts to import it.
+Then M2.2 `store.py` accessors, M2.3 config-into-prompts, M2.4 glossary (partially covered by M2.1).
 Verify after any coach.py change: `python -m py_compile coach.py` + `python test_telegram_messages.py`.
 
 ## Important context

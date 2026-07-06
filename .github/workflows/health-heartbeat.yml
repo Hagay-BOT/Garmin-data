@@ -1,0 +1,33 @@
+name: Health Report + Heartbeat
+
+# M1.3 dead-man's switch: weekly deterministic health summary to Telegram +
+# heartbeat commit that resets GitHub's 60-day scheduled-workflow disable timer.
+# If THIS message ever stops arriving on Fridays — something is wrong at the infra level.
+
+on:
+  schedule:
+    - cron: '0 10 * * 5'   # שישי 13:00 IL — פעם בשבוע
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # git log timestamps needed for freshness checks
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Build + send health report
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python health_report.py
+      - name: Heartbeat commit
+        run: bash scripts/git_sync.sh "heartbeat: weekly health check" heartbeat.txt

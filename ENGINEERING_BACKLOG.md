@@ -6,10 +6,10 @@ Grouped by milestone. Discovered-during-work items get appended here.
 ## M1 — Reliability quick wins
 - [DONE] M1.1 Smoke-test harness `test_telegram_messages.py` (escape/empty/parse) + `ci-tests.yml` (compile + smoke on push).
 - [DONE] M1.2 Deleted the entire dead morning loop (291 lines from coach.py: MORNING_SYSTEM, build_morning_prompt, run_morning, _parse_morning_json, _send_morning_telegram, _save_morning_state, _has_run_planned_today, _todays_planned_md, _todays_sessions, _readiness_emoji, MODEL_MORNING, main() morning dispatch) + deleted files `check_telegram_reply.py`, `adjust_today.py` (orphaned), `morning_state.json`. Kept `morning_readiness()` (feeds metrics["readiness"]). Verified: compiles, smoke tests pass, zero residual refs.
-- [TODO] M1.3 Heartbeat + weekly health-summary; document 60-day cron-disable risk.
+- [DONE] M1.3 `health_report.py` + `health-heartbeat.yml` (Fri 13:00 IL): deterministic weekly health summary to Telegram (data freshness · unanalyzed runs · pending retries · plan covers week+approved · journal · repo-idle/60-day risk) + heartbeat commit resets GitHub's cron-disable timer. Verified locally: builds, all-green on live state.
 - [DONE] M1.4 Pin requirements.txt (upper bounds).
 - [TODO] M1.5 Global UTF-8 stdout for local scripts (calendar_sync crashed on cp1252). Low/dev-experience.
-- [TODO] M1.6 Prompt caching for knowledge_base.
+- [DONE] M1.6 Prompt caching — verified already implemented (`cache_control: ephemeral` on the full system prompt in `_stream_report`, coach.py). Honest caveat: benefit is small (5-min TTL; weekly/postworkout calls are far apart; frequent watcher runs skip the API entirely). No further change justified.
 
 ## M2 — Single sources of truth
 - [TODO] M2.1 `athlete.py` constants.
