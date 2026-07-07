@@ -520,6 +520,21 @@ for d in to_fetch:
         "calories_active": calories_active,
     }
 
+# ── M9.1 · Slim, don't drop: פעילויות ישנות (>180 יום) מאבדות את השדות הכבדים ──
+# gps (59% מהמשקל!) / laps / splits_100m נצרכים רק לאחרונות: גלריית GPS = 6 ריצות
+# אחרונות, ניתוח laps = היום/שבוע. שדות-הסיכום (מרחק/קצב/דופק/תאריך) נשמרים לתמיד
+# → PRs ותצוגת "הכל" בדשבורד לא נפגעים, והקובץ מפסיק לצמוח ללא-גבול (~-1MB מיד).
+_SLIM_CUTOFF = (date.today() - timedelta(days=180)).isoformat()
+_HEAVY_FIELDS = ("gps", "laps", "splits_100m")
+_slimmed = 0
+for _r in records:
+    if (_r.get("date") or "") < _SLIM_CUTOFF:
+        for _k in _HEAVY_FIELDS:
+            if _r.pop(_k, None) is not None:
+                _slimmed += 1
+if _slimmed:
+    print(f"slim: removed {_slimmed} heavy fields from activities older than {_SLIM_CUTOFF}")
+
 output = {
     "last_updated": datetime.now(timezone.utc).isoformat(),
     "activities": sorted(records, key=lambda r: r["date"]),
