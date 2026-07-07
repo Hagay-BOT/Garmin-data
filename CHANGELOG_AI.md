@@ -3,6 +3,8 @@
 Reverse-chronological. One entry per meaningful change during the engineering program.
 
 ## 2026-07-06
+- **M5.1 DONE** Prompts extracted from coach.py to `prompts/*.md` (4 files), loaded at import.
+  Golden-check verified byte-identical rendering. Editing coach voice no longer touches code.
 - **M4.2 DONE** One-command Garmin re-sync: `resync` checkbox on Approve Week → cleanup runs
   automatically before the push (RESYNC env through confirm_week). No more two-step dance.
 - **M9.4 DONE** Single week-anchor util `athlete.week_start()` (Sunday). Found & fixed live

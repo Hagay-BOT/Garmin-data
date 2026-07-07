@@ -27,9 +27,9 @@ Grouped by milestone. Discovered-during-work items get appended here.
 - [DONE] M4.2 One-command clean re-sync: approve-week.yml now has a `resync` checkbox input → confirm_week runs cleanup before push (RESYNC env). Replaces the manual cleanup→wait→approve dance (done ~6× by hand). Verified: compiles, YAML valid, flag path exercised, smoke green.
 
 ## M5 — Prompt architecture
-- [TODO] M5.1 Extract prompts to `prompts/*.md` + version tags.
-- [TODO] M5.2 Consolidate shared coaching rules into one referenced block.
-- [TODO] M5.3 Prompt gardening pass (dedupe accumulated "חובה" rules).
+- [DONE] M5.1 All 4 prompts extracted to `prompts/*.md` (weekly/postworkout/revise/chat), loaded via `_load_prompt()`. Extraction from LIVE module values (regex-from-source hit Python `\"` escapes — caught by golden check). revise.md stored pre-formatted (athlete values literal; note in code). **Verified byte-identical rendering before/after.** coach.py: 2731→2231 lines since program start.
+- [TODO] M5.2 Consolidate shared coaching rules into one referenced block (now easy — prompts are files).
+- [TODO] M5.3 Prompt gardening pass (dedupe accumulated "חובה" rules). Note: revise.md athlete literals → consider placeholders+format when gardening.
 
 ## M6 — Telegram intake unification
 - [TODO] M6.1 One state-machine intake service replacing the pollers.
