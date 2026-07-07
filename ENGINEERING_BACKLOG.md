@@ -42,7 +42,7 @@ Grouped by milestone. Discovered-during-work items get appended here.
 - [TODO] M8.2 Split `index.html`.
 
 ## M9 — Long-term hygiene
-- [TODO] M9.1 `data.json` rotation/archival.
+- [DONE] M9.1 data.json rotation — **design changed after evidence** ("challenge the plan"): dropping old activities would break live features (all-time PRs, dashboard "הכל" view). Instead: **slim-don't-drop** — activities >180d lose heavy fields only (gps=59% of weight, laps, splits_100m; consumed only for recent runs: GPS gallery=last 6, laps=this week). All summary fields kept forever. Verified E2E in production: 812 fields removed, 3189→1508 KB (−53%), growth structurally capped. All 525 activities + PRs intact.
 - [TODO] M9.2 `garmin_client.py` isolation.
 - [TODO] M9.3 JSON schema validation on load.
 - [DONE] M9.4 Single week-anchor util: `athlete.week_start(_iso)` (Sunday). Fixed live drift: coach's `current_week_monday()` still returned MONDAY (vs Sunday decision) → history/weekly_state week_of mismatched the plan's. Renamed to `current_week_start()`, health_report inline calc unified. JS side (index.html weekBounds) documented as the single JS twin. Verified: anchor asserts on 4 dates, health green, smoke green.

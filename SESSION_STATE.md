@@ -16,11 +16,15 @@ M1.6 caching verified-existing). M1.5 (UTF-8) folded into M9 hygiene (low).
 ATHLETE_PROMPT_VARS incl. REVISE double-brace bugfix · M2.4 glossary via athlete.py).
 M9.4 DONE (single Sunday week-anchor via athlete.week_start; fixed Monday-drift in
 current_week_monday→current_week_start).
-M5.1 DONE (prompts → prompts/*.md, golden byte-identical). coach.py now 2231 lines.
-**Next options:** M5.2/M5.3 (rule consolidation + gardening — CONTENT changes to prompts, no
-longer byte-preserving; needs care + maybe Hagay review of wording), or small wins: M9.1
-data.json rotation, M9.5 narrow excepts, M9.6 make-ship DX. Recommended: M9.1 (unbounded
-growth risk) then M5.2+M5.3 as one focused prompt-content session.
+M5.1 + M9.1 DONE (prompts extracted byte-identical; data.json slim-rotation −53%, verified in prod).
+**Next options (remaining meaningful items):**
+- M5.2+M5.3 prompt content consolidation + gardening (CONTENT changes — one focused session,
+  ideally with Hagay reviewing wording changes).
+- M9.5 narrow broad excepts + logging; M9.6 make-ship DX; M9.2 garmin_client isolation;
+  M9.3 JSON schema validation.
+- M6 (unify Telegram pollers) / M7 (workflow consolidation) — medium refactors.
+- [PRODUCT-HOLD] M3.2/M3.3/M4.1/M9.7 — awaiting Hagay's explicit OK.
+Recommended next: M9.5 (small, kills silent-failure class) then M6 (real reliability value).
 Note: prompts/revise.md stores athlete values as literals (documented in coach.py).
 [PRODUCT-HOLD items M3.2/M3.3/M4.1/M9.7 still await Hagay's explicit OK.]
 Pending side-note: fetch_garmin zone thresholds use %maxHR semantics — verify before wiring
