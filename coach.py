@@ -805,10 +805,11 @@ def compute_neuromuscular_atl(activities: list, reference_date: date) -> float:
 
 # ── History & Memory ────────────────────────────────────────────────────────
 
-def current_week_monday() -> str:
-    """Return ISO date string for the Monday of the current week."""
-    today = date.today()
-    return (today - timedelta(days=today.weekday())).isoformat()
+def current_week_start() -> str:
+    """תחילת שבוע-האימון הנוכחי (ראשון, ISO) — דרך העוגן היחיד ב-athlete.py.
+    (הוחלף מ-current_week_monday: החזיר עוגן-שני בניגוד להחלטת ה-Sunday-anchor,
+    כך ש-week_of בהיסטוריה לא תאם את week_of של התוכנית.)"""
+    return athlete.week_start_iso()
 
 
 def load_history() -> list[dict]:
@@ -2036,7 +2037,7 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
             if not dry:
                 WEEKLY_STATE_FILE.write_text(json.dumps(
                     {"status": "pending_review", "sent_at": __import__("time").time(),
-                     "week_of": current_week_monday()}, ensure_ascii=False, indent=2),
+                     "week_of": current_week_start()}, ensure_ascii=False, indent=2),
                     encoding="utf-8")
         except Exception as exc:
             print(f"⚠️  שגיאה בשליחת דוח שבועי לטלגרם: {exc}")
@@ -2048,7 +2049,7 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
     macro = metrics["macro"]
     thr = analysis.get("threshold_progress", {})
     history_entry = {
-        "week_of": current_week_monday(),
+        "week_of": current_week_start(),
         "generated_at": timestamp,
         "headline": analysis["priority"]["headline"],
         "threshold_snapshot": {

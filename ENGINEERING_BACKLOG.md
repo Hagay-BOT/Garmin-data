@@ -45,7 +45,7 @@ Grouped by milestone. Discovered-during-work items get appended here.
 - [TODO] M9.1 `data.json` rotation/archival.
 - [TODO] M9.2 `garmin_client.py` isolation.
 - [TODO] M9.3 JSON schema validation on load.
-- [TODO] M9.4 Single date/week-anchor util (finish the Sunday-anchor consolidation).
+- [DONE] M9.4 Single week-anchor util: `athlete.week_start(_iso)` (Sunday). Fixed live drift: coach's `current_week_monday()` still returned MONDAY (vs Sunday decision) → history/weekly_state week_of mismatched the plan's. Renamed to `current_week_start()`, health_report inline calc unified. JS side (index.html weekBounds) documented as the single JS twin. Verified: anchor asserts on 4 dates, health green, smoke green.
 - [TODO] M9.5 Narrow broad `except Exception` + add logging.
 - [TODO] M9.6 `make ship` + local `preview-messages` (developer experience).
 - [PRODUCT-HOLD] M9.7 Auto-approve weekly plan if no safety flags + no reply within X.

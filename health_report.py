@@ -78,7 +78,8 @@ def build_report() -> tuple[str, bool]:
     # 3. Weekly plan covers current week (Sunday anchor)?
     plan = _load("week_plan.json")
     week_of = plan.get("week_of", "")
-    sunday = (TODAY - datetime.timedelta(days=(TODAY.weekday() + 1) % 7)).isoformat()
+    import athlete
+    sunday = athlete.week_start_iso(TODAY)  # העוגן היחיד (M9.4)
     item(week_of == sunday,
          f"תוכנית שבועית: מכסה את השבוע ({week_of})" if week_of == sunday
          else f"תוכנית שבועית: ישנה! (week_of={week_of}, צריך {sunday})")

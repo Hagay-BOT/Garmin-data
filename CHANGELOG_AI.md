@@ -3,6 +3,9 @@
 Reverse-chronological. One entry per meaningful change during the engineering program.
 
 ## 2026-07-06
+- **M9.4 DONE** Single week-anchor util `athlete.week_start()` (Sunday). Found & fixed live
+  drift: `current_week_monday()` still anchored Monday → history/weekly_state week_of
+  mismatched the plan's Sunday week_of. All Python week math now goes through one function.
 - **M2.3+M2.4 DONE — M2 milestone COMPLETE.** Athlete constants now injected into all 3 LLM
   prompts (ATHLETE_PROMPT_VARS): zones, real easy pace, strides pace, cadence, goal race,
   long cap. Bonus bug fix: REVISE_SYSTEM was sent raw with literal doubled {{}} braces —

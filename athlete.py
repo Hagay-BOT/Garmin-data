@@ -49,6 +49,19 @@ STRENGTH_DESCS = {
 STRENGTH_MINUTES = 60
 
 
+def week_start(d=None):
+    """תחילת שבוע-האימון (ראשון) עבור תאריך נתון — העוגן היחיד במערכת (M9.4).
+    כל חישוב-שבוע בפייתון עובר כאן; המקבילה ב-JS (index.html weekBounds) מתועדת
+    ב-ENGINEERING_DECISIONS ומוצמדת לאותה סמנטיקה: ראשון–שבת."""
+    import datetime as _dt
+    d = d or _dt.date.today()
+    return d - _dt.timedelta(days=(d.weekday() + 1) % 7)
+
+
+def week_start_iso(d=None) -> str:
+    return week_start(d).isoformat()
+
+
 def zone_of(hr: float, max_hr: float | None = None) -> int:
     """זון 1–5 לפי דופק, על גבולות הזונות של הגיא."""
     if not hr:

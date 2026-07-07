@@ -14,11 +14,12 @@ code · M1.3 health+heartbeat — first report delivered, message_id=44 · M1.4 
 M1.6 caching verified-existing). M1.5 (UTF-8) folded into M9 hygiene (low).
 **M2 milestone COMPLETE** (M2.1 athlete.py · M2.2 store.py · M2.3 constants→prompts via
 ATHLETE_PROMPT_VARS incl. REVISE double-brace bugfix · M2.4 glossary via athlete.py).
-**Next: pick from — (a) M9 quick hygiene wins:** M9.4 single week-anchor util (index.html +
-coach + macro each compute Sunday-anchor independently), M9.1 data.json rotation, M9.5 narrow
-broad excepts; **(b) M5 prompt architecture** (extract prompts to prompts/*.md, consolidate
-duplicated coaching rules between WEEKLY/POSTWORKOUT); **(c) M4.2 one-command Garmin re-sync**.
-Recommended order: M9.4 (small, kills a recurring bug class) → M5 (big maintainability win).
+M9.4 DONE (single Sunday week-anchor via athlete.week_start; fixed Monday-drift in
+current_week_monday→current_week_start).
+**Next: M4.2 — one-command Garmin re-sync** (cleanup+approve as a single workflow action;
+we manually ran the two-step dance ~6 times). Then **M5 prompt architecture** (extract
+prompts to prompts/*.md, consolidate duplicated WEEKLY/POSTWORKOUT coaching rules) — larger,
+start fresh. Also available: M9.1 data rotation, M9.5 narrow excepts, M9.6 make ship.
 [PRODUCT-HOLD items M3.2/M3.3/M4.1/M9.7 still await Hagay's explicit OK.]
 Pending side-note: fetch_garmin zone thresholds use %maxHR semantics — verify before wiring
 athlete zone constants there.
