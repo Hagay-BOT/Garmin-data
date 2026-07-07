@@ -3,6 +3,8 @@
 Reverse-chronological. One entry per meaningful change during the engineering program.
 
 ## 2026-07-06
+- **M4.2 DONE** One-command Garmin re-sync: `resync` checkbox on Approve Week → cleanup runs
+  automatically before the push (RESYNC env through confirm_week). No more two-step dance.
 - **M9.4 DONE** Single week-anchor util `athlete.week_start()` (Sunday). Found & fixed live
   drift: `current_week_monday()` still anchored Monday → history/weekly_state week_of
   mismatched the plan's Sunday week_of. All Python week math now goes through one function.

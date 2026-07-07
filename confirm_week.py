@@ -50,6 +50,12 @@ def main():
     else:
         try:
             import push_week
+            # RESYNC=true (M4.2): ניקוי מלא לפני הדחיפה — פעולה אחת במקום הריקוד
+            # הידני cleanup→המתנה→approve שביצענו ידנית אחרי כל שינוי-תוכנית.
+            if os.environ.get("RESYNC", "").lower() in ("1", "true", "yes"):
+                print("🧹 RESYNC — מנקה את האימונים הקיימים בגרמין לפני דחיפה נקייה...")
+                sys.argv = ["push_week", "--cleanup"]
+                push_week.main()
             sys.argv = ["push_week", "--push"]
             push_week.main()
             print("✅ 3/3 אימונים סונכרנו ל-Garmin")

@@ -4,6 +4,11 @@ name: 🛑 Approve Week (unified)
 # פעולה אחת: נועל את התוכנית + מעדכן יומן + דוחף לגרמין — ביחד.
 on:
   workflow_dispatch:
+    inputs:
+      resync:
+        description: "נקה את גרמין לפני הדחיפה (אחרי שינוי תוכנית) — פעולה אחת במקום cleanup+approve"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -23,6 +28,7 @@ jobs:
         env:
           GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+          RESYNC: ${{ github.event.inputs.resync }}
         run: python confirm_week.py
 
       - name: Commit locked plan + calendar + workout ids

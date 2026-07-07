@@ -24,7 +24,7 @@ Grouped by milestone. Discovered-during-work items get appended here.
 
 ## M4 — Garmin sync (⚠️ behaviour)
 - [PRODUCT-HOLD] M4.1 Reconcile against Garmin scheduled workouts; atomic re-sync by plan-hash.
-- [TODO] M4.2 One-command clean re-sync (cleanup+approve as a single action).
+- [DONE] M4.2 One-command clean re-sync: approve-week.yml now has a `resync` checkbox input → confirm_week runs cleanup before push (RESYNC env). Replaces the manual cleanup→wait→approve dance (done ~6× by hand). Verified: compiles, YAML valid, flag path exercised, smoke green.
 
 ## M5 — Prompt architecture
 - [TODO] M5.1 Extract prompts to `prompts/*.md` + version tags.
