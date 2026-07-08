@@ -3,6 +3,10 @@
 Reverse-chronological. One entry per meaningful change during the engineering program.
 
 ## 2026-07-06
+- **M9.5 DONE** Silent-failure triage: analyzed-runs state → store.py (logged+atomic; corruption
+  would have silently re-analyzed all runs); corrupt macro now screams; **fixed latent data-loss
+  bug — corrupt coach_history read was silently wiping all history on the next weekly save,
+  now raises loudly**. CI upgraded to run the FULL test suite after catching test_coach drift.
 - **M9.1 DONE** data.json slim-don't-drop rotation: heavy fields (gps/laps/splits) stripped
   from activities >180d; summaries kept forever so PRs & all-time views intact. Verified in
   production: 3189→1508 KB (−53%), unbounded growth capped. (Original "archive old activities"

@@ -106,7 +106,7 @@ up = coach.build_user_prompt(metrics, hist, comp)
 check("user prompt builds", isinstance(up, str) and len(up) > 500, f"{len(up)} chars")
 kb = coach.load_knowledge_base()
 check("knowledge base loads", len(kb) > 1000, f"{len(kb)} chars")
-sp = coach.SYSTEM_PROMPT_TEMPLATE.format(knowledge_base=kb)
+sp = coach.SYSTEM_PROMPT_TEMPLATE.format(knowledge_base=kb, **coach.ATHLETE_PROMPT_VARS)
 check("system prompt builds", "{knowledge_base}" not in sp and len(sp) > 1000)
 
 # PLAN_JSON extraction roundtrip

@@ -24,7 +24,8 @@ M5.1 + M9.1 DONE (prompts extracted byte-identical; data.json slim-rotation −5
   M9.3 JSON schema validation.
 - M6 (unify Telegram pollers) / M7 (workflow consolidation) — medium refactors.
 - [PRODUCT-HOLD] M3.2/M3.3/M4.1/M9.7 — awaiting Hagay's explicit OK.
-Recommended next: M9.5 (small, kills silent-failure class) then M6 (real reliability value).
+M9.5 DONE (silent-failure triage incl. latent history-wipe data-loss bug; CI now runs full suite).
+Recommended next: M6 (unify Telegram pollers — real reliability value) or M9.6 make-ship DX.
 Note: prompts/revise.md stores athlete values as literals (documented in coach.py).
 [PRODUCT-HOLD items M3.2/M3.3/M4.1/M9.7 still await Hagay's explicit OK.]
 Pending side-note: fetch_garmin zone thresholds use %maxHR semantics — verify before wiring

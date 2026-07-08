@@ -34,3 +34,9 @@ jobs:
           EOF
       - name: Telegram message smoke tests
         run: python test_telegram_messages.py
+      - name: Full test suite
+        run: |
+          python test_coach.py
+          python test_safety.py
+          python test_approval_gates.py
+          python test_weekly_analysis.py

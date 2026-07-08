@@ -51,7 +51,9 @@ def load_macro_plan() -> dict | None:
         return None
     try:
         return json.loads(MACRO_FILE.read_text(encoding="utf-8"))
-    except Exception:
+    except Exception as e:
+        # קובץ פגום שנבלע בשקט = המערכת מתנהגת כ"אין תוכנית מאקרו" בלי שאיש ידע.
+        print(f"🔴 macro_plan.json פגום ({e}) — המערכת רצה ללא מאקרו! תקן את הקובץ.")
         return None
 
 
@@ -819,7 +821,8 @@ def load_history() -> list[dict]:
     try:
         data = json.loads(HISTORY_FILE.read_text(encoding="utf-8"))
         return data.get("weeks", [])[-HISTORY_WEEKS_TO_INJECT:]
-    except Exception:
+    except Exception as e:
+        print(f"🔴 coach_history.json פגום ({e}) — ממשיך ללא היסטוריה (ציות לא יחושב).")
         return []
 
 
@@ -828,8 +831,11 @@ def save_history_entry(entry: dict) -> None:
     if HISTORY_FILE.exists():
         try:
             data = json.loads(HISTORY_FILE.read_text(encoding="utf-8"))
-        except Exception:
-            data = {"version": 1, "weeks": []}
+        except Exception as e:
+            # M9.5: קריאה פגומה שנבלעה כאן הייתה מאפסת את כל ההיסטוריה ודורסת את
+            # הקובץ בשמירה — אובדן-נתונים שקט. עדיף כשל רועש מאובדן שקט.
+            raise RuntimeError(
+                f"coach_history.json פגום ({e}) — מסרב לדרוס את ההיסטוריה. תקן ידנית.") from e
     else:
         data = {"version": 1, "weeks": []}
 
@@ -1972,15 +1978,12 @@ def _send_postworkout_telegram(pw: dict) -> int | None:
 ANALYZED_RUNS_FILE = BASE_DIR / "analyzed_runs.json"
 
 
+# M9.5: גישה דרך store.py — פגם בקובץ מודפס (לא נבלע בשקט: קובץ פגום שנבלע
+# היה גורם לניתוח-מחדש של כל הריצות = ספאם API וטלגרם), וכתיבה אטומית.
 def _load_analyzed_runs() -> set:
     """קבוצת activity_id של ריצות שכבר נותחו (dedup חוצה-זמן — לא תלוי שעה)."""
-    if not ANALYZED_RUNS_FILE.exists():
-        return set()
-    try:
-        data = json.loads(ANALYZED_RUNS_FILE.read_text(encoding="utf-8"))
-        return set(str(x) for x in data.get("analyzed", []))
-    except Exception:
-        return set()
+    import store
+    return set(store.load_analyzed()["analyzed"])
 
 
 MAX_POSTWORKOUT_ATTEMPTS = 3  # תקרת ניסיונות חוזרים לפני ויתור (חוסם בזבוז API אינסופי)
@@ -1988,19 +1991,13 @@ MAX_POSTWORKOUT_ATTEMPTS = 3  # תקרת ניסיונות חוזרים לפני 
 
 def _load_pw_pending() -> dict:
     """מונה כשלונות פתוחים per activity_id (ניסיון חוזר עד התקרה)."""
-    if not ANALYZED_RUNS_FILE.exists():
-        return {}
-    try:
-        data = json.loads(ANALYZED_RUNS_FILE.read_text(encoding="utf-8"))
-        return {str(k): int(v) for k, v in (data.get("pending") or {}).items()}
-    except Exception:
-        return {}
+    import store
+    return store.load_analyzed()["pending"]
 
 
 def _write_analyzed_payload(analyzed: set, pending: dict) -> None:
-    payload = {"version": 1, "analyzed": sorted(analyzed)[-200:], "pending": pending}
-    ANALYZED_RUNS_FILE.write_text(json.dumps(payload, ensure_ascii=False, indent=2),
-                                  encoding="utf-8")
+    import store
+    store.save_analyzed(analyzed, pending)
 
 
 def _mark_run_analyzed(activity_id) -> None:
