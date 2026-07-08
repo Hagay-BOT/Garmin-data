@@ -8,7 +8,7 @@ X-WR-TIMEZONE:Asia/Jerusalem
 REFRESH-INTERVAL;VALUE=DURATION:PT6H
 BEGIN:VEVENT
 UID:2026-07-05-strength-B@garmin-coach
-DTSTAMP:20260704T202843Z
+DTSTAMP:20260708T181434Z
 DTSTART:20260705T150000Z
 DTEND:20260705T160000Z
 SUMMARY:💪 כוח B — Push/דחיפה (חזה/כתפיים/יד אחורית)
@@ -16,15 +16,15 @@ DESCRIPTION:Push: חזה, כתפיים, יד אחורית.
 END:VEVENT
 BEGIN:VEVENT
 UID:2026-07-06-run-quality@garmin-coach
-DTSTAMP:20260704T202843Z
+DTSTAMP:20260708T181434Z
 DTSTART:20260706T040000Z
 DTEND:20260706T044500Z
 SUMMARY:Cruise intervals 3×1.5 ק"מ @ 4:50
-DESCRIPTION:Cruise intervals 3×1.5 ק"מ @ 4:50\n\n🌦️ 🏃 חוץ — תנאים נוחים: 26° (מרגיש 30°), גשם 0%, רוח 7 קמ"ש.
+DESCRIPTION:Cruise intervals 3×1.5 ק"מ @ 4:50
 END:VEVENT
 BEGIN:VEVENT
 UID:2026-07-06-strength-A@garmin-coach
-DTSTAMP:20260704T202843Z
+DTSTAMP:20260708T181434Z
 DTSTART:20260706T150000Z
 DTEND:20260706T160000Z
 SUMMARY:💪 כוח A — Pull/משיכה (גב/יד קדמית)
@@ -32,39 +32,39 @@ DESCRIPTION:Pull: גב, יד קדמית.
 END:VEVENT
 BEGIN:VEVENT
 UID:2026-07-08-strength-C@garmin-coach
-DTSTAMP:20260704T202843Z
+DTSTAMP:20260708T181434Z
 DTSTART:20260708T150000Z
 DTEND:20260708T160000Z
 SUMMARY:🦵 כוח C — Legs (רגליים)
-DESCRIPTION:רגליים: סקוואט, hip thrust, calf raises.
+DESCRIPTION:רגליים: סקוואט, hip thrust, calf raises, חיזוק ברך/קרסול.
 END:VEVENT
 BEGIN:VEVENT
 UID:2026-07-08-run-easy@garmin-coach
-DTSTAMP:20260704T202843Z
+DTSTAMP:20260708T181434Z
 DTSTART:20260708T040000Z
 DTEND:20260708T044500Z
 SUMMARY:קל קצר Z2
-DESCRIPTION:קל קצר Z2\n\n🌦️ התחזית תתעדכן ~3 ימים לפני הריצה.
+DESCRIPTION:קל קצר Z2\n\n🌦️ 🏃 חוץ — תנאים נוחים: 24° (מרגיש 27°), גשם 0%, רוח 5 קמ"ש.
 END:VEVENT
 BEGIN:VEVENT
 UID:2026-07-09-run-easy@garmin-coach
-DTSTAMP:20260704T202843Z
+DTSTAMP:20260708T181434Z
 DTSTART:20260709T040000Z
 DTEND:20260709T044500Z
 SUMMARY:התאוששות Z1 (אחרי רגליים)
-DESCRIPTION:התאוששות Z1 (אחרי רגליים)\n\n🌦️ התחזית תתעדכן ~3 ימים לפני הריצה.
+DESCRIPTION:התאוששות Z1 (אחרי רגליים)\n\n🌦️ 🏃 חוץ — תנאים נוחים: 23° (מרגיש 26°), גשם 0%, רוח 3 קמ"ש.
 END:VEVENT
 BEGIN:VEVENT
 UID:2026-07-10-run-easy@garmin-coach
-DTSTAMP:20260704T202843Z
+DTSTAMP:20260708T181434Z
 DTSTART:20260710T040000Z
 DTEND:20260710T044500Z
 SUMMARY:קל + 6×100מ' strides
-DESCRIPTION:קל + 6×100מ' strides\n\n🌦️ התחזית תתעדכן ~3 ימים לפני הריצה.
+DESCRIPTION:קל + 6×100מ' strides\n\n🌦️ 🏃 חוץ — תנאים נוחים: 21° (מרגיש 25°), גשם 0%, רוח 1 קמ"ש.
 END:VEVENT
 BEGIN:VEVENT
 UID:2026-07-10-strength-B@garmin-coach
-DTSTAMP:20260704T202843Z
+DTSTAMP:20260708T181434Z
 DTSTART:20260710T150000Z
 DTEND:20260710T160000Z
 SUMMARY:💪 כוח B — Push/דחיפה (חזה/כתפיים/יד אחורית)
