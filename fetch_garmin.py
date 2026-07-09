@@ -10,29 +10,9 @@ from splits import compute_segments
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger("fetch_garmin")
 
-email = os.environ.get("GARMIN_EMAIL")
-password = os.environ.get("GARMIN_PASSWORD")
-if not email or not password:
-    print("ERROR: GARMIN_EMAIL or GARMIN_PASSWORD not set", file=sys.stderr)
-    sys.exit(1)
-
-# Garmin login עם retry+backoff — התחברות מקבלת לעיתים 429 (rate limit) או timeout
-# חולפים, שמפילים את כל ה-workflow ושולחים מייל כשל מיותר. ניסיון חוזר עד 4 פעמים
-# (backoff 20/40/60ש') תופס את רוב המקרים החולפים; רק כשל מתמשך אמיתי → exit 1.
-client = None
-for _attempt in range(1, 5):
-    try:
-        client = Garmin(email, password)
-        client.login()
-        break
-    except Exception as e:  # noqa: BLE001 — סוג השגיאה משתנה (429/timeout/JWT) — מטפלים אחיד
-        if _attempt >= 4:
-            print(f"ERROR: Garmin login failed after {_attempt} attempts — {e}", file=sys.stderr)
-            sys.exit(1)
-        _wait = _attempt * 20
-        logger.warning("Garmin login attempt %d failed (%s) — retrying in %ds",
-                       _attempt, str(e)[:90], _wait)
-        time.sleep(_wait)
+# M9.2: התחברות דרך garmin_client — retry/backoff במקום אחד לכל הנתיבים.
+from garmin_client import login as _garmin_login
+client = _garmin_login()
 
 START_DATE = "2024-01-01"
 end_date = date.today().isoformat()

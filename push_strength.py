@@ -147,16 +147,9 @@ WEEK1_STRENGTH_SCHEDULE = {
 
 
 def login():
-    from garminconnect import Garmin
-    email = os.environ.get("GARMIN_EMAIL")
-    password = os.environ.get("GARMIN_PASSWORD")
-    if not email or not password:
-        print("שגיאה: GARMIN_EMAIL / GARMIN_PASSWORD לא מוגדרים.")
-        sys.exit(1)
-    client = Garmin(email, password)
-    client.login()
-    print("✅ התחברות לגרמין הצליחה")
-    return client
+    # M9.2: דרך garmin_client — retry/backoff אחיד לכל הנתיבים.
+    from garmin_client import login as _login
+    return _login()
 
 
 def main():

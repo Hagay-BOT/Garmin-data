@@ -20,16 +20,9 @@ DEFAULT_IDS = [23170600098]
 
 
 def login():
-    from garminconnect import Garmin
-    email = os.environ.get("GARMIN_EMAIL")
-    password = os.environ.get("GARMIN_PASSWORD")
-    if not email or not password:
-        print("ERROR: GARMIN_EMAIL / GARMIN_PASSWORD not set", file=sys.stderr)
-        sys.exit(1)
-    c = Garmin(email, password)
-    c.login()
-    print("✅ התחברות הצליחה")
-    return c
+    # M9.2: דרך garmin_client — retry/backoff אחיד לכל הנתיבים.
+    from garmin_client import login as _login
+    return _login()
 
 
 def main():

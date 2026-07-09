@@ -182,30 +182,9 @@ def build_strength(key: str) -> dict:
 
 
 def login():
-    from garminconnect import Garmin
-    try:
-        from garminconnect import (
-            GarminConnectAuthenticationError,
-            GarminConnectConnectionError,
-        )
-    except Exception:  # pragma: no cover - older lib without named errors
-        GarminConnectAuthenticationError = GarminConnectConnectionError = Exception
-    email = os.environ.get("GARMIN_EMAIL")
-    password = os.environ.get("GARMIN_PASSWORD")
-    if not email or not password:
-        print("שגיאה: GARMIN_EMAIL / GARMIN_PASSWORD לא מוגדרים (Secrets).")
-        sys.exit(1)
-    try:
-        client = Garmin(email, password)
-        client.login()
-    except GarminConnectAuthenticationError as e:
-        print(f"שגיאה: אימות גרמין נכשל — {e}")
-        sys.exit(1)
-    except GarminConnectConnectionError as e:
-        print(f"שגיאה: חיבור לגרמין נכשל — {e}")
-        sys.exit(1)
-    print("✅ התחברות לגרמין הצליחה")
-    return client
+    # M9.2: דרך garmin_client — הנתיב הזה נפל עד כה על ה-429 הראשון; עכשיו retry אחיד.
+    from garmin_client import login as _login
+    return _login()
 
 
 def main():
