@@ -67,6 +67,13 @@ def main() -> None:
         print("🧪 DRY — לא נשמר, לא נשלח, לא נדחף.")
         return
 
+    # ── שומר-סיווג (M6): הערת-יומן ("כאב ברך") אינה בקשת-עריכה — בלי LLM ──
+    import telegram_intake
+    kind = telegram_intake.classify(reply)
+    if kind == "note":
+        print(f"📝 סווג כהערת-יומן (לא עריכת-תוכנית) — מדלג. capture_notes ירשום אותה.")
+        return
+
     # ── נתיב אישור → push לגרמין ──────────────────────────────────────────
     if _is_approval(reply):
         print("✅ זוהה אישור — מריץ confirm_week (נעילה + יומן + גרמין).")

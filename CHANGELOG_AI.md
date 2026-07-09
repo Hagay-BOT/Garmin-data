@@ -3,6 +3,10 @@
 Reverse-chronological. One entry per meaningful change during the engineering program.
 
 ## 2026-07-06
+- **M6 DONE (re-scoped)** Shared Telegram classifier `telegram_intake.py` + guards in
+  weekly_revise (notes no longer trigger the revise-LLM — live bug) and capture_notes
+  (approvals/A-B don't pollute the journal). 16 classification tests in CI+ship. Full
+  single-poller unification deferred to M7 with written justification (different schedules).
 - **M9.6 DONE** DX: `ship.py` one-command verified shipping (compile→YAML→full tests→commit→
   rebase→push, halt-on-fail) — verified by shipping itself; `preview_messages.py` renders
   Telegram messages from live data (no send/LLM) — verified, escape path proven.

@@ -32,7 +32,7 @@ Grouped by milestone. Discovered-during-work items get appended here.
 - [TODO] M5.3 Prompt gardening pass (dedupe accumulated "חובה" rules). Note: revise.md athlete literals → consider placeholders+format when gardening.
 
 ## M6 — Telegram intake unification
-- [TODO] M6.1 One state-machine intake service replacing the pollers.
+- [DONE] M6.1 **Re-scoped after evidence** (challenge-the-plan): full single-poller unification belongs with M7 (the pollers run on different schedules by design). Implemented the actual value: shared classifier `telegram_intake.py` (approval/choice/revision/note, deterministic) + wired guards — **fixed live bug: a journal note ("כאב ברך") sent on Sunday would have triggered the revise-LLM and rewritten the plan**; approvals/choices no longer pollute the journal. 16 classification tests added to CI+ship.
 
 ## M7 — Workflow consolidation
 - [TODO] M7.1 13 → ~5 workflows; remove near-duplicates; re-evaluate cron-job.org need.

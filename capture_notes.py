@@ -31,6 +31,11 @@ def main() -> None:
         text = (msg.get("text") or "").strip()
         if not text:
             continue
+        # M6: אישורים ("אשר") ובחירות A/B הם פקודות-זרימה, לא הערות-יומן — לא מזהמים.
+        import telegram_intake
+        if telegram_intake.classify(text, awaiting_choice=True) in ("approval", "choice"):
+            print(f"⏭️  פקודת-זרימה ({text[:20]!r}) — לא נרשמת ליומן.")
+            continue
         # תאריך לפי שעון ישראל (UTC+3) — קירוב מספיק טוב לרישום יומי
         day = (datetime.datetime.utcfromtimestamp(ts) +
                datetime.timedelta(hours=3)).date().isoformat()
