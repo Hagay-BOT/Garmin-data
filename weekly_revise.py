@@ -52,6 +52,11 @@ def _plan_lines(plan: dict) -> list:
 
 def main() -> None:
     st = _load_state()
+    # M10: לולאת האישור/עריכה פועלת רק כשיש תוכנית שממתינה לתגובה. במצב
+    # awaiting_availability התשובות שייכות למחולל (capture_notes קולט אותן).
+    if not os.environ.get("REVISE_TEXT") and st.get("status") not in ("pending_review",):
+        print(f"מצב {st.get('status')!r} — אין תוכנית בהמתנה, מדלג.")
+        return
     reply = os.environ.get("REVISE_TEXT") or tg.find_text_reply(st.get("sent_at", 0))
     if not reply:
         print("אין תשובה חדשה — מדלג.")

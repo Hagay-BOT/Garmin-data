@@ -1,0 +1,30 @@
+name: Coach — Ask Weekly Availability
+
+# M10: שבת בבוקר, לפני בניית התוכנית (20:30) — שואל את הגיא מה התוכניות שלו
+# לשבוע הבא. התשובות נקלטות ע"י ה-watcher (capture_notes) ומוזנות למחולל.
+
+on:
+  schedule:
+    - cron: '0 7 * * 6'   # שבת 10:00 IL
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ask:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Send availability question
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python ask_availability.py
+      - name: Commit state
+        run: bash scripts/git_sync.sh "ask-availability — awaiting answers" weekly_state.json

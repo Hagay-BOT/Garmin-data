@@ -4,6 +4,9 @@ Reverse-chronological. One entry per meaningful change during the engineering pr
 
 ## 2026-07-06
 ## 2026-07-09
+- **M10 Stage B** Availability ask-flow: ask_availability.py + Sat-morning workflow;
+  capture_notes routes window-answers to weekly_state.availability_raw; weekly_revise
+  gained a status==pending_review state-machine guard; run_weekly preserves availability.
 - **M3.3+M10 Stage A** `plan_generator.py` — deterministic weekly plan (Hagay's structure
   rules + macro + strength-rotation continuity + busy-day constraints) + availability parser
   + 4 rule-tests in ship/CI. E2E dry-verified through materialize+safety.

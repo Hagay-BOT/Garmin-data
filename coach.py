@@ -1846,11 +1846,13 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
         try:
             _send_weekly_telegram(weekly_report, safety_messages, needs_review, test=dry)
             # חותמת זמן לשער העריכה: weekly_revise.py יחפש תשובות שנשלחו אחרי רגע זה.
+            # M10: משמרים את availability_raw (אילוצי-הזמינות שנקלטו) — לא דורסים.
             if not dry:
-                WEEKLY_STATE_FILE.write_text(json.dumps(
-                    {"status": "pending_review", "sent_at": __import__("time").time(),
-                     "week_of": current_week_start()}, ensure_ascii=False, indent=2),
-                    encoding="utf-8")
+                import store as _store
+                _st = _store.load_weekly_state()
+                _st.update(status="pending_review", sent_at=__import__("time").time(),
+                           week_of=current_week_start())
+                _store.save_weekly_state(_st)
         except Exception as exc:
             print(f"⚠️  שגיאה בשליחת דוח שבועי לטלגרם: {exc}")
     elif not weekly_report and not is_conflict:
