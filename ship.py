@@ -17,8 +17,8 @@ import subprocess
 import sys
 import glob
 
-TESTS = ["test_telegram_messages.py", "test_telegram_intake.py", "test_coach.py",
-         "test_safety.py", "test_approval_gates.py", "test_weekly_analysis.py"]
+TESTS = ["test_telegram_messages.py", "test_telegram_intake.py", "test_plan_generator.py",
+         "test_coach.py", "test_safety.py", "test_approval_gates.py", "test_weekly_analysis.py"]
 
 
 def run(cmd: list, name: str) -> None:

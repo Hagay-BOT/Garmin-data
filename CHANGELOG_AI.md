@@ -3,6 +3,10 @@
 Reverse-chronological. One entry per meaningful change during the engineering program.
 
 ## 2026-07-06
+## 2026-07-09
+- **M3.3+M10 Stage A** `plan_generator.py` — deterministic weekly plan (Hagay's structure
+  rules + macro + strength-rotation continuity + busy-day constraints) + availability parser
+  + 4 rule-tests in ship/CI. E2E dry-verified through materialize+safety.
 - **M9.2 DONE** `garmin_client.py` — single login entry-point, retry/backoff uniform across
   all 5 call sites (push paths previously died on the first 429; only fetch had retry).
 - **M9.3 DONE** Loud structure-validation on load for the 3 propagating-state files

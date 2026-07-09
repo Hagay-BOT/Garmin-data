@@ -42,8 +42,18 @@ question ("מה התוכניות שלך לשבוע הבא?" → constraints feed
 2. **M3.2** — deterministic daily status; LLM insight only on red-flag/quality/journal/on-demand.
 3. **M4.1** — reconcile sync against get_scheduled_workouts.
 M5.2-3 (prompt gardening) explained to Hagay — awaiting his interest; low priority.
-Next session: start build #1 (M10+M3.3). Design the availability state in weekly flow first
-(Sat morning ask → capture → Sat evening build).
+**Build #1 STAGE A DONE:** `plan_generator.py` (deterministic WEEK_PLAN: Sat=long,
+quality ≥48h before, C mid-week + Z1 recovery after, A/B×2+C rotation continuity, busy-days
+shift sessions & redistribute km) + `parse_availability` (conservative: day+busy-word) +
+`test_plan_generator.py` (4 rule-tests, in ship+CI). E2E dry-verified through
+materialize+safety on real macro.
+**STAGE B next:** M10 ask-flow — `ask_availability.py` (Sat ~10:00 IL: sends "מה התוכניות
+שלך לשבוע הבא?", sets weekly_state{status:awaiting_availability, sent_at}) + capture wiring
+(capture_notes: if awaiting_availability → append text to weekly_state.availability_raw
+instead of journal) + workflow schedule.
+**STAGE C after:** wire generator into run_weekly (replace LLM WEEK_PLAN_JSON emission;
+prompt surgery: LLM gets the BUILT plan, writes narrative only; PLAN_JSON summary computed
+deterministically from generator output). Verify with preview_messages + DRY weekly.
 Note: prompts/revise.md stores athlete values as literals (documented in coach.py).
 [PRODUCT-HOLD items M3.2/M3.3/M4.1/M9.7 still await Hagay's explicit OK.]
 Pending side-note: fetch_garmin zone thresholds use %maxHR semantics — verify before wiring

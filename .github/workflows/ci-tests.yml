@@ -37,6 +37,7 @@ jobs:
       - name: Full test suite
         run: |
           python test_telegram_intake.py
+          python test_plan_generator.py
           python test_coach.py
           python test_safety.py
           python test_approval_gates.py
