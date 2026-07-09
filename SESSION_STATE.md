@@ -31,8 +31,11 @@ M6 DONE (re-scoped: shared classifier + guards; fixed note→revise-LLM live bug
 unification if still worth it) · M9.2 garmin_client isolation · M9.3 schema validation ·
 M5.2-3 prompt gardening (content — with Hagay) · M8 structural split (coach.py/index.html) ·
 [PRODUCT-HOLD] M3.2/M3.3/M4.1/M9.7 (need Hagay's OK).
+M9.3 DONE (loud load-validation on week_plan/macro/strength).
 The high-value reliability work is now DONE; what remains is consolidation/refactor-scale.
-Recommended: pause for Hagay's product decisions before M3/M7; M9.2/M9.3 are safe fillers.
+**Remaining:** M9.2 garmin_client isolation (last safe filler) · M7 workflow consolidation ·
+M8 structural split · M5.2-3 prompt gardening (with Hagay) · [PRODUCT-HOLD] M3.2/M3.3/M4.1/M9.7.
+Recommended: M9.2 next, then pause for Hagay's product decisions.
 Note: prompts/revise.md stores athlete values as literals (documented in coach.py).
 [PRODUCT-HOLD items M3.2/M3.3/M4.1/M9.7 still await Hagay's explicit OK.]
 Pending side-note: fetch_garmin zone thresholds use %maxHR semantics — verify before wiring

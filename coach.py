@@ -50,11 +50,19 @@ def load_macro_plan() -> dict | None:
     if not MACRO_FILE.exists():
         return None
     try:
-        return json.loads(MACRO_FILE.read_text(encoding="utf-8"))
+        plan = json.loads(MACRO_FILE.read_text(encoding="utf-8"))
     except Exception as e:
         # קובץ פגום שנבלע בשקט = המערכת מתנהגת כ"אין תוכנית מאקרו" בלי שאיש ידע.
         print(f"🔴 macro_plan.json פגום ({e}) — המערכת רצה ללא מאקרו! תקן את הקובץ.")
         return None
+    # M9.3: ולידציית-מבנה — שבוע חסר-שדות שובר את get_macro_week באמצע העונה.
+    weeks = plan.get("weeks")
+    if (not isinstance(weeks, list) or not weeks
+            or not plan.get("start_sunday", plan.get("start_monday"))
+            or any(not (w.get("week") and w.get("phase") and "target_km" in w) for w in weeks)):
+        print("🔴 macro_plan.json — מבנה לא-תקין (weeks/start/target_km) — רץ ללא מאקרו!")
+        return None
+    return plan
 
 
 def get_macro_week(today: date | None = None) -> dict:

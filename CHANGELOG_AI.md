@@ -3,6 +3,9 @@
 Reverse-chronological. One entry per meaningful change during the engineering program.
 
 ## 2026-07-06
+- **M9.3 DONE** Loud structure-validation on load for the 3 propagating-state files
+  (week_plan sessions · macro weeks · strength A/B/C). Corrupt → screams / safe-None /
+  raises instead of silent degradation.
 - **M6 DONE (re-scoped)** Shared Telegram classifier `telegram_intake.py` + guards in
   weekly_revise (notes no longer trigger the revise-LLM — live bug) and capture_notes
   (approvals/A-B don't pollute the journal). 16 classification tests in CI+ship. Full

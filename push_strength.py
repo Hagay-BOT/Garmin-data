@@ -71,7 +71,15 @@ def _first_int(s, default=3):
     return int(m.group()) if m else default
 
 def _load_strength_db():
-    return json.loads((Path(__file__).parent / "strength_workouts.json").read_text(encoding="utf-8"))
+    db = json.loads((Path(__file__).parent / "strength_workouts.json").read_text(encoding="utf-8"))
+    # M9.3: ולידציה רועשת — מאגר חסר/פגום היה נופל בשקט למשבצת-זמן בלי פירוט תרגילים.
+    wos = db.get("workouts") or {}
+    bad = [k for k in ("A", "B", "C")
+           if not (wos.get(k, {}).get("name") and wos.get(k, {}).get("exercises"))]
+    if bad:
+        raise ValueError(f"strength_workouts.json — אימונים פגומים/חסרים: {bad} "
+                         f"(חובה name + exercises לכל A/B/C)")
+    return db
 
 def build_reps_step(order: int, reps: int, name: str) -> dict:
     """צעד תרגיל יחיד — יעד חזרות, עם שם התרגיל כתיאור."""
