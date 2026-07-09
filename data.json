@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-09T18:31:07.610172+00:00",
+  "last_updated": "2026-07-09T19:01:07.051748+00:00",
   "activities": [
     {
       "activity_id": 13381622386,
@@ -54132,9 +54132,9 @@
         {
           "seg": 13,
           "distance_m": 1300,
-          "pace_sec_per_km": 550,
+          "pace_sec_per_km": 370,
           "avg_hr": 131,
-          "duration_sec": 55.0
+          "duration_sec": 37.0
         },
         {
           "seg": 14,
@@ -54237,9 +54237,9 @@
         {
           "seg": 28,
           "distance_m": 2800,
-          "pace_sec_per_km": 1440,
+          "pace_sec_per_km": 250,
           "avg_hr": 145,
-          "duration_sec": 144.0
+          "duration_sec": 25.0
         },
         {
           "seg": 29,
@@ -54342,9 +54342,9 @@
         {
           "seg": 43,
           "distance_m": 4300,
-          "pace_sec_per_km": 1690,
+          "pace_sec_per_km": 270,
           "avg_hr": 149,
-          "duration_sec": 169.0
+          "duration_sec": 27.0
         },
         {
           "seg": 44,
@@ -58914,8 +58914,8 @@
       "sleep_score": 88,
       "sleep_end_time": "09:01",
       "body_battery_morning": 100,
-      "calories_resting": 1818.0,
-      "calories_active": 169.0
+      "calories_resting": 1902.0,
+      "calories_active": 415.0
     }
   },
   "shoes": [
