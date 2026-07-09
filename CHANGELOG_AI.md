@@ -3,6 +3,9 @@
 Reverse-chronological. One entry per meaningful change during the engineering program.
 
 ## 2026-07-06
+- **M9.6 (written, verify pending)** DX: `ship.py` one-command local pipeline (compile→YAML→
+  full tests→commit→rebase→push, halt-on-fail) + `preview_messages.py` (render Telegram
+  messages from live data, no send/LLM).
 - **M9.5 DONE** Silent-failure triage: analyzed-runs state → store.py (logged+atomic; corruption
   would have silently re-analyzed all runs); corrupt macro now screams; **fixed latent data-loss
   bug — corrupt coach_history read was silently wiping all history on the next weekly save,

@@ -24,8 +24,12 @@ M5.1 + M9.1 DONE (prompts extracted byte-identical; data.json slim-rotation −5
   M9.3 JSON schema validation.
 - M6 (unify Telegram pollers) / M7 (workflow consolidation) — medium refactors.
 - [PRODUCT-HOLD] M3.2/M3.3/M4.1/M9.7 — awaiting Hagay's explicit OK.
-M9.5 DONE (silent-failure triage incl. latent history-wipe data-loss bug; CI now runs full suite).
-Recommended next: M6 (unify Telegram pollers — real reliability value) or M9.6 make-ship DX.
+M9.5 DONE. M9.6 WRITTEN, pending shell-verify: run `python preview_messages.py` (expect 2
+rendered messages) then `python ship.py "M9.6: ship+preview DX tools" ship.py preview_messages.py
+ENGINEERING_BACKLOG.md SESSION_STATE.md CHANGELOG_AI.md` (ship verifies+commits itself).
+After M9.6: **M6 (unify Telegram pollers)** — needs a fresh session + behaviour map first
+(consumers: capture_notes=journal-everything, weekly_revise=first-text-after-sent_at,
+check_weekly_choice=A/B, check_evening_reply=cancel; overlaps are partly by design).
 Note: prompts/revise.md stores athlete values as literals (documented in coach.py).
 [PRODUCT-HOLD items M3.2/M3.3/M4.1/M9.7 still await Hagay's explicit OK.]
 Pending side-note: fetch_garmin zone thresholds use %maxHR semantics — verify before wiring
