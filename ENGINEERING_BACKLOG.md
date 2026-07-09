@@ -17,13 +17,23 @@ Grouped by milestone. Discovered-during-work items get appended here.
 - [DONE] M2.3 Athlete constants injected into all 3 prompts via ATHLETE_PROMPT_VARS (z2 range, easy pace, strides pace, cadence, goal race, long cap). Bonus fix: REVISE_SYSTEM was sent raw with literal {{}} doubled braces — now formatted at definition. Verified: all templates render, no leftover placeholders, smoke green.
 - [DONE] M2.4 Glossary — covered by athlete.py (strength names/descs, zones, paces). Run categories remain in fetch_garmin (single definition site, no duplication found).
 
-## M3 — Deterministic core
+## M3 — Deterministic core  ✅ APPROVED by Hagay 2026-07-09
 - [TODO] M3.1 Audit LLM output fields → move deterministic ones to code.
-- [PRODUCT-HOLD] M3.2 Reduce daily per-run LLM analysis (user-facing).
-- [PRODUCT-HOLD] M3.3 Deterministic weekly plan generator (user-facing).
+- [TODO] M3.2 Reduce daily per-run LLM analysis → deterministic status message; deep LLM
+  insight only on-demand (Hagay asks) or when something meaningful happened (red flag /
+  quality run / journal note). Design the trigger rules before building.
+- [TODO] M3.3 Deterministic weekly plan generator: rules-engine builds WEEK_PLAN (macro km,
+  session placement per Hagay's week-structure rules, strength rotation continuity);
+  LLM keeps: weekly narrative/summary + revision NLU + **M10 availability parsing**.
+
+## M10 — Pre-plan availability question  ✅ NEW, approved 2026-07-09
+- [TODO] M10.1 Sat (before weekly build): bot asks "מה התוכניות שלך לשבוע הבא?" →
+  Hagay's free-text reply captured (telegram_intake gets an `availability` state) →
+  fed into the planner (constraints: busy days, travel, preferred workout days).
+  Integrates with M3.3 (generator consumes constraints) — build together.
 
 ## M4 — Garmin sync (⚠️ behaviour)
-- [PRODUCT-HOLD] M4.1 Reconcile against Garmin scheduled workouts; atomic re-sync by plan-hash.
+- [TODO] M4.1 ✅ APPROVED 2026-07-09 — reconcile against Garmin's actual scheduled workouts (get_scheduled_workouts) instead of trusting created_workouts.json; atomic replace.
 - [DONE] M4.2 One-command clean re-sync: approve-week.yml now has a `resync` checkbox input → confirm_week runs cleanup before push (RESYNC env). Replaces the manual cleanup→wait→approve dance (done ~6× by hand). Verified: compiles, YAML valid, flag path exercised, smoke green.
 
 ## M5 — Prompt architecture
@@ -48,7 +58,7 @@ Grouped by milestone. Discovered-during-work items get appended here.
 - [DONE] M9.4 Single week-anchor util: `athlete.week_start(_iso)` (Sunday). Fixed live drift: coach's `current_week_monday()` still returned MONDAY (vs Sunday decision) → history/weekly_state week_of mismatched the plan's. Renamed to `current_week_start()`, health_report inline calc unified. JS side (index.html weekBounds) documented as the single JS twin. Verified: anchor asserts on 4 dates, health green, smoke green.
 - [DONE] M9.5 Silent-failure triage (targeted, not blanket): (1) coach _load_analyzed/_load_pw_pending/_write_analyzed_payload → store.py (corrupt file now logged + atomic writes; silent swallow would have re-analyzed ALL runs = API/Telegram spam); (2) load_macro_plan corrupt → loud 🔴 print (was silently "no macro"); (3) **save_history_entry corrupt-read was WIPING the entire history on next save — now raises loudly instead of silent data loss**; (4) load_history corrupt → logged. Benign parse-fallbacks left as-is (deliberate). BONUS: test_coach.py had drifted (pre-M2.3 format call) and CI didn't catch it because it only ran smoke → **CI now runs the FULL test suite** (new guard for the tests-drift class).
 - [DONE] M9.6 DX tools: `ship.py` (one-command compile→YAML-validate→full-tests→add/commit/rebase/push, halt-on-fail) + `preview_messages.py` (render Telegram messages from live data, no send/LLM). VERIFIED: preview rendered both messages from live data (escape proven working); ship.py shipped ITSELF end-to-end incl. handling an incoming rebase.
-- [PRODUCT-HOLD] M9.7 Auto-approve weekly plan if no safety flags + no reply within X.
+- [REJECTED] M9.7 Auto-approve — Hagay 2026-07-09: never auto-push; the plan must fit his actual schedule, so it always waits for his explicit reply.
 
 ## Discovered during work
 (append here)

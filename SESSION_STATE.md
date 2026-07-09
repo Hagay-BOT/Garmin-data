@@ -32,15 +32,18 @@ unification if still worth it) · M9.2 garmin_client isolation · M9.3 schema va
 M5.2-3 prompt gardening (content — with Hagay) · M8 structural split (coach.py/index.html) ·
 [PRODUCT-HOLD] M3.2/M3.3/M4.1/M9.7 (need Hagay's OK).
 M9.2 + M9.3 DONE. **All safe-filler engineering is COMPLETE.**
-**Program status: paused at the product-decision gate.** Everything that can be done
-autonomously without changing user-facing behaviour has been done and verified.
-**Remaining (all need Hagay or a deliberate refactor decision):**
-- [PRODUCT-HOLD] M3.2 reduce daily LLM analysis · M3.3 deterministic plan generator ·
-  M4.1 reconcile-with-Garmin sync · M9.7 auto-approve — need explicit product OK.
-- M5.2-3 prompt content gardening — wording changes, review with Hagay.
-- M7 workflow consolidation (13→~5) · M8 split coach.py/index.html — larger refactors,
-  fine autonomously but lower value; do only if desired.
-Next session: present the product-decision menu to Hagay, or pick M7/M8 if he says continue.
+**PRODUCT DECISIONS RECEIVED 2026-07-09** (see DECISIONS): M3.2 ✅ M3.3 ✅ M4.1 ✅ ·
+M9.7 ❌ rejected (always wait for explicit approval) · **NEW M10** ✅ pre-plan availability
+question ("מה התוכניות שלך לשבוע הבא?" → constraints feed the planner).
+**Build order (each is a session-scale build; verify heavily, these are user-facing):**
+1. **M10 + M3.3 together** — availability question → constraints → deterministic plan
+   generator (rules from athlete.py + user_profile week-structure + macro km + strength
+   rotation continuity from history). LLM keeps narrative + revision NLU + availability parsing.
+2. **M3.2** — deterministic daily status; LLM insight only on red-flag/quality/journal/on-demand.
+3. **M4.1** — reconcile sync against get_scheduled_workouts.
+M5.2-3 (prompt gardening) explained to Hagay — awaiting his interest; low priority.
+Next session: start build #1 (M10+M3.3). Design the availability state in weekly flow first
+(Sat morning ask → capture → Sat evening build).
 Note: prompts/revise.md stores athlete values as literals (documented in coach.py).
 [PRODUCT-HOLD items M3.2/M3.3/M4.1/M9.7 still await Hagay's explicit OK.]
 Pending side-note: fetch_garmin zone thresholds use %maxHR semantics — verify before wiring

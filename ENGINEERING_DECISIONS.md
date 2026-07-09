@@ -32,5 +32,15 @@ Unescaped `<`/`&` caused 400 Bad Request → lost messages. All senders escape d
 workflow_run fan-out caused near-simultaneous Pages deploys → collisions. Fixed cadence,
 spaced, cannot collide. Data freshness ≤30 min is acceptable for this project.
 
+## 2026-07-09 · Product decisions (Hagay)
+- **M3.2 APPROVED** — reduce daily per-run LLM analysis (deterministic status; deep insight on demand).
+- **M3.3 APPROVED** — deterministic weekly plan generator; LLM only for narrative + Telegram revision NLU.
+- **M4.1 APPROVED** — reconcile Garmin sync against the watch's actual scheduled workouts.
+- **M9.7 REJECTED** — no auto-approve, ever: the plan must wait for Hagay's explicit reply
+  (schedule fit is personal). Weekly flow stays approval-gated.
+- **NEW M10 APPROVED** — before building next week's plan, the bot ASKS Hagay "מה התוכניות
+  שלך לשבוע הבא?" (availability/constraints); his free-text answer feeds the planner.
+  Natural flow: Sat pre-plan question → answer captured → plan built around it.
+
 ## 2026-07-05 · Postworkout: mark-analyzed only after a verified Telegram send (message_id)
 Prevents silent loss. Failures retry up to MAX_POSTWORKOUT_ATTEMPTS then give up (cost cap).
