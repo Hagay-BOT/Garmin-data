@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-10T09:30:59.561761+00:00",
+  "last_updated": "2026-07-10T09:39:13.793028+00:00",
   "activities": [
     {
       "activity_id": 13381622386,
@@ -54132,9 +54132,9 @@
         {
           "seg": 13,
           "distance_m": 1300,
-          "pace_sec_per_km": 550,
+          "pace_sec_per_km": 370,
           "avg_hr": 131,
-          "duration_sec": 55.0
+          "duration_sec": 37.0
         },
         {
           "seg": 14,
@@ -54237,9 +54237,9 @@
         {
           "seg": 28,
           "distance_m": 2800,
-          "pace_sec_per_km": 1440,
+          "pace_sec_per_km": 250,
           "avg_hr": 145,
-          "duration_sec": 144.0
+          "duration_sec": 25.0
         },
         {
           "seg": 29,
@@ -54342,9 +54342,9 @@
         {
           "seg": 43,
           "distance_m": 4300,
-          "pace_sec_per_km": 1690,
+          "pace_sec_per_km": 270,
           "avg_hr": 149,
-          "duration_sec": 169.0
+          "duration_sec": 27.0
         },
         {
           "seg": 44,
@@ -55468,9 +55468,9 @@
         {
           "seg": 1,
           "distance_m": 100,
-          "pace_sec_per_km": 430,
+          "pace_sec_per_km": 440,
           "avg_hr": 97,
-          "duration_sec": 43.0
+          "duration_sec": 44.0
         },
         {
           "seg": 2,
@@ -55748,9 +55748,9 @@
         {
           "seg": 41,
           "distance_m": 4100,
-          "pace_sec_per_km": 620,
+          "pace_sec_per_km": 1550,
           "avg_hr": 108,
-          "duration_sec": 62.0
+          "duration_sec": 155.0
         },
         {
           "seg": 42,
