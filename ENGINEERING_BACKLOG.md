@@ -61,4 +61,5 @@ Grouped by milestone. Discovered-during-work items get appended here.
 - [REJECTED] M9.7 Auto-approve — Hagay 2026-07-09: never auto-push; the plan must fit his actual schedule, so it always waits for his explicit reply.
 
 ## Discovered during work
-(append here)
+- [TODO] run_weekly writes REPORT_FILE even in WEEKLY_DRY_RUN — dry runs overwrite the last real coach_report.md. Guard the write with `if not dry`.
+- [TODO] Post-Build-#1 cleanup: verify-and-delete the dead A/B-gate pieces — `_handle_weekly_conflict` in coach.py, `check_weekly_choice.py` + `coach-weekly-choice.yml`, `extract_plan_json` (unused). NOTE: `extract_week_plan` is still used by run_revise — keep.
