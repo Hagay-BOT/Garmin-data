@@ -933,11 +933,6 @@ def extract_llm_json(report_text: str, start_marker: str = "", end_marker: str =
     return parsed
 
 
-def extract_plan_json(report_text: str) -> dict:
-    """Extract the structured plan block Claude writes at the end of each report."""
-    return extract_llm_json(report_text, "---PLAN_JSON---", "---END_PLAN---")
-
-
 # ── Structured Week Plan (the bridge to Garmin + calendar) ────────────────────
 
 WEEK_DAY_NAMES = ["שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת", "ראשון"]  # Mon..Sun
@@ -1698,55 +1693,6 @@ def _send_weekly_telegram(wr: dict, safety_messages: list, needs_review: bool,
 WEEKLY_STATE_FILE = BASE_DIR / "weekly_state.json"
 
 
-def _handle_weekly_conflict(raw_week: dict, analysis: dict, metrics: dict,
-                            prev_week_km: float, dry: bool = False) -> None:
-    """
-    שער הכרעה A/B: שולח לטלגרם את שתי האפשרויות (מאקרו מול שמרני) וכותב
-    weekly_state.json. לא כותב week_plan.json — זה קורה ב-check_weekly_choice.py
-    אחרי שתבחר. שני הווריאנטים נשמרים גולמיים + הקשר לבטיחות.
-    """
-    import time as _time
-    conf = analysis["conflict"]
-    base = {k: raw_week.get(k) for k in ("week_of", "macro_week", "phase")}
-    state = {
-        "date": date.today().isoformat(),
-        "status": "pending_choice",
-        "sent_at_unix": _time.time(),
-        "base": base,
-        "variant_a": raw_week.get("variant_a"),
-        "variant_b": raw_week.get("variant_b"),
-        "prev_week_km": prev_week_km,
-        "macro": metrics.get("macro"),
-        "acwr": metrics["load"].get("acwr"),
-        "tradeoff": raw_week.get("tradeoff", ""),
-    }
-    if dry:
-        print("🧪 בדיקה — weekly_state.json לא נכתב (שאלת A/B תישלח לתצוגה בלבד).")
-    else:
-        WEEKLY_STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=2),
-                                     encoding="utf-8")
-        print(f"⚖️  weekly_state.json נכתב (status=pending_choice).")
-
-    try:
-        import telegram_notify as tg
-    except ImportError:
-        return
-    a_km = conf.get("macro_target_km")
-    b_km = conf.get("conservative_target_km")
-    test_hdr = "🧪 <b>בדיקה — אל תפעל לפי זה</b>\n\n" if dry else ""
-    text = (
-        f"{test_hdr}📅 <b>סיכום שבועי — נדרשת הכרעה</b>\n\n"
-        f"🧭 {analysis['priority']['headline']}\n\n"
-        f"⚖️ <b>{conf.get('summary','')}</b>\n"
-        f"{state['tradeoff']}\n\n"
-        f"<b>A</b> · נאמן למאקרו — {a_km} ק\"מ (התקדמות מהירה, סיכון מעט גבוה)\n"
-        f"<b>B</b> · שמרני — {b_km} ק\"מ (בטוח, קרוב למה שבוצע)\n\n"
-        f"השב <b>A</b> או <b>B</b> ואבנה את התוכנית בהתאם."
-    )
-    mid = tg.send_message(text)
-    print(f"✅ שאלת A/B נשלחה (message_id={mid})" if mid else "⚠️  A/B לא נשלח")
-
-
 def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
     """Weekly review — the macro-driven plan for next week. Saves history. Chat."""
     import os
@@ -1807,7 +1753,8 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
     full_response = _stream_report(client, system_prompt, user_prompt, max_tokens=12000)
 
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
-    REPORT_FILE.write_text(f"# דוח מאמן שבועי — {timestamp}\n\n{full_response}\n", encoding="utf-8")
+    if not dry:  # ריצת-בדיקה לא דורסת את הדוח האמיתי האחרון
+        REPORT_FILE.write_text(f"# דוח מאמן שבועי — {timestamp}\n\n{full_response}\n", encoding="utf-8")
 
     # M3.3: PLAN_JSON כבר לא נחלץ מה-LLM — מסונתז דטרמיניסטית מהמאקרו+המחולל.
     plan_json = {
@@ -1823,7 +1770,6 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
     prev_week_km = metrics["last_week"].get("total_km", 0) or 0
     safety_messages: list[str] = []
     needs_review = False
-    is_conflict = False
     if raw_week and dry:
         print("🧪 בדיקה — week_plan.json לא נכתב (היה עובר שכבת בטיחות ב-prod).")
     elif raw_week:
@@ -1857,9 +1803,8 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
             pass
 
     # ── שליחת דוח שבועי מובנה לטלגרם (סעיפים A–F) ─────────────────────────
-    # בקונפליקט — _handle_weekly_conflict כבר שלח הודעת A/B משולבת, לא משכפלים.
     weekly_report = _parse_weekly_report_json(full_response)
-    if weekly_report and not is_conflict:
+    if weekly_report:
         try:
             _send_weekly_telegram(weekly_report, safety_messages, needs_review, test=dry)
             # חותמת זמן לשער העריכה: weekly_revise.py יחפש תשובות שנשלחו אחרי רגע זה.
@@ -1872,7 +1817,7 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
                 _store.save_weekly_state(_st)
         except Exception as exc:
             print(f"⚠️  שגיאה בשליחת דוח שבועי לטלגרם: {exc}")
-    elif not weekly_report and not is_conflict:
+    elif not weekly_report:
         print("⚠️  לא נמצא WEEKLY_REPORT_JSON — דוח טלגרם לא נשלח.")
 
     load_metrics = metrics["load"]

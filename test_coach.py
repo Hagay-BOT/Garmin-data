@@ -109,10 +109,7 @@ check("knowledge base loads", len(kb) > 1000, f"{len(kb)} chars")
 sp = coach.SYSTEM_PROMPT_TEMPLATE.format(knowledge_base=kb, **coach.ATHLETE_PROMPT_VARS)
 check("system prompt builds", "{knowledge_base}" not in sp and len(sp) > 1000)
 
-# PLAN_JSON extraction roundtrip
-sample = 'דוח...\n---PLAN_JSON---\n{"run_count": 4, "total_km_approx": 29}\n---END_PLAN---'
-pj = coach.extract_plan_json(sample)
-check("PLAN_JSON extraction", pj.get("run_count") == 4, f"{pj}")
+# (extract_plan_json הוסר ב-cleanup — plan_json מסונתז דטרמיניסטית מהמחולל)
 
 # Reliability: load_data fallback on missing file
 import push_week

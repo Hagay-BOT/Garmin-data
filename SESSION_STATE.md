@@ -62,7 +62,11 @@ dry-guards held. **First real-world run: this Saturday 20:30 — watch it.**
 Legacy now likely dead (verify + clean next): _handle_weekly_conflict, check_weekly_choice.py
 + coach-weekly-choice.yml, extract_week_plan/extract_plan_json (still used by run_revise? —
 extract_week_plan IS used by run_revise; keep it), prompts/weekly variant text (removed).
-**Next: build #2 (M3.2 reduce daily analysis) or cleanup of the dead A/B-gate pieces.**
+**Cleanup DONE (2026-07-10):** A/B-gate fully deleted (fn+files+workflow+plumbing, zero refs),
+DRY report-overwrite fixed. System is clean for Saturday's first production run.
+**Next: WATCH SATURDAY** (10:00 availability question · 20:30 first generated plan — Hagay
+logged an intentional rest day 10.7 in journal; plan must not compensate the missed km).
+After Saturday validates: build #2 (M3.2 reduce daily analysis) → build #3 (M4.1 reconcile).
 Note: prompts/revise.md stores athlete values as literals (documented in coach.py).
 [PRODUCT-HOLD items M3.2/M3.3/M4.1/M9.7 still await Hagay's explicit OK.]
 Pending side-note: fetch_garmin zone thresholds use %maxHR semantics — verify before wiring

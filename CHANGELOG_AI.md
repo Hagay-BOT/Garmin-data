@@ -5,6 +5,11 @@ Reverse-chronological. One entry per meaningful change during the engineering pr
 ## 2026-07-06
 ## 2026-07-09
 ## 2026-07-10
+- **Cleanup** Deleted the dead A/B-gate (superseded by the Telegram revision loop):
+  `_handle_weekly_conflict`, `extract_plan_json`, `check_weekly_choice.py`,
+  `coach-weekly-choice.yml`, `is_conflict` plumbing. Zero residual refs. Also fixed:
+  DRY weekly run no longer overwrites the real coach_report.md. Ready for Saturday's
+  first production run of the new system.
 - **M3.3+M10 Stage C — BUILD #1 COMPLETE.** The weekly plan is now built by the deterministic
   generator (macro + availability + rotation) BEFORE the LLM; the LLM writes narrative +
   WEEKLY_REPORT_JSON only. plan_json synthesized from the generator. A/B conflict gate
