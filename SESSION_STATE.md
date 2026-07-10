@@ -52,9 +52,17 @@ materialize+safety on real macro.
 window (after sent_at) to availability_raw (plan-vocab allowed — answers naturally contain it)
 · weekly_revise now acts ONLY on status==pending_review (state-machine guard) · run_weekly's
 state-write preserves availability_raw. Flow simulated E2E with state restore.
-**STAGE C after:** wire generator into run_weekly (replace LLM WEEK_PLAN_JSON emission;
-prompt surgery: LLM gets the BUILT plan, writes narrative only; PLAN_JSON summary computed
-deterministically from generator output). Verify with preview_messages + DRY weekly.
+**STAGE C DONE — BUILD #1 (M10+M3.3) COMPLETE.** run_weekly now: generator builds the plan
+(next-Sunday macro + availability + rotation continuity) BEFORE the LLM → plan injected into
+prompt ("נתונה, אל תבנה") → LLM emits narrative + WEEKLY_REPORT_JSON only → plan_json
+synthesized deterministically → save_week_plan (safety) unchanged. A/B conflict gate removed
+from prompt+flow (superseded by the Telegram revision loop). max_tokens 20000→12000.
+Verified: no-API DRY integration (mock LLM) — generator ran, plan in prompt, report parsed,
+dry-guards held. **First real-world run: this Saturday 20:30 — watch it.**
+Legacy now likely dead (verify + clean next): _handle_weekly_conflict, check_weekly_choice.py
++ coach-weekly-choice.yml, extract_week_plan/extract_plan_json (still used by run_revise? —
+extract_week_plan IS used by run_revise; keep it), prompts/weekly variant text (removed).
+**Next: build #2 (M3.2 reduce daily analysis) or cleanup of the dead A/B-gate pieces.**
 Note: prompts/revise.md stores athlete values as literals (documented in coach.py).
 [PRODUCT-HOLD items M3.2/M3.3/M4.1/M9.7 still await Hagay's explicit OK.]
 Pending side-note: fetch_garmin zone thresholds use %maxHR semantics — verify before wiring

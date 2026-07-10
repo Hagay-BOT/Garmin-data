@@ -4,6 +4,12 @@ Reverse-chronological. One entry per meaningful change during the engineering pr
 
 ## 2026-07-06
 ## 2026-07-09
+## 2026-07-10
+- **M3.3+M10 Stage C — BUILD #1 COMPLETE.** The weekly plan is now built by the deterministic
+  generator (macro + availability + rotation) BEFORE the LLM; the LLM writes narrative +
+  WEEKLY_REPORT_JSON only. plan_json synthesized from the generator. A/B conflict gate
+  removed (superseded by Telegram revision loop). max_tokens 20000→12000. Verified with a
+  no-API mock-LLM DRY integration run. First production run: Saturday 20:30.
 - **M10 Stage B** Availability ask-flow: ask_availability.py + Sat-morning workflow;
   capture_notes routes window-answers to weekly_state.availability_raw; weekly_revise
   gained a status==pending_review state-machine guard; run_weekly preserves availability.

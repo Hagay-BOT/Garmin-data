@@ -1765,49 +1765,66 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
     if analysis["conflict"]["conflict"]:
         print(f"⚖️  קונפליקט מאקרו↔מציאות: {analysis['conflict']['summary']}")
 
+    # ── M3.3+M10: התוכנית נבנית דטרמיניסטית, לפני ה-LLM ולא על-ידו ──────────
+    # plan_generator: כללי-המבנה של הגיא + מאקרו + המשכיות-כוח + אילוצי-הזמינות
+    # שנקלטו משאלת-שבת-בבוקר. ה-LLM מקבל את התוכנית המוכנה וכותב רק נרטיב.
+    import plan_generator as pg
+    import store as _store
+    next_sunday = athlete.week_start() + timedelta(days=7)
+    next_macro = get_macro_week(next_sunday)
+    if next_macro.get("status") != "active":
+        next_macro = {"week_num": None, "phase": "", "target_km": 25,
+                      "long_run_km": 9, "quality": "טמפו", "deload": False}
+    availability = pg.parse_availability(
+        _store.load_weekly_state().get("availability_raw", ""))
+    if availability.get("raw"):
+        print(f"🗓️ אילוצי זמינות: {availability['raw'][:80]!r} → ימים עמוסים {availability['busy_days']}")
+    last_seq = (history[-1].get("strength_sequence") if history else None) or []
+    raw_week = pg.generate(next_sunday, next_macro, last_seq, availability)
+
+    _plan_runs = [s for s in raw_week["sessions"] if s["type"] == "run"]
+    plan_md = "\n".join(
+        f"- {s['date']} · " + (f"🏃 {s['name']} ({s['est_km']} ק\"מ)" if s["type"] == "run"
+                               else f"💪 כוח {s['key']}")
+        for s in raw_week["sessions"])
+
     system_prompt = SYSTEM_PROMPT_TEMPLATE.format(knowledge_base=knowledge_base,
                                                   **ATHLETE_PROMPT_VARS)
     user_prompt = (_format_weekly_analysis_section(analysis)
                    + _format_weekly_quality_segments(metrics)
-                   + build_user_prompt(metrics, history, compliance))
+                   + build_user_prompt(metrics, history, compliance)
+                   + "\n\n### התוכנית לשבוע הבא — נבנתה דטרמיניסטית (נתונה. אל תבנה/תשנה תוכנית!)\n"
+                   + plan_md
+                   + (f"\n\nאילוצי הזמינות שהמתאמן מסר: {availability['raw']}"
+                      if availability.get("raw") else "")
+                   + "\n\nכתוב את הדוח והנרטיב סביב התוכנית הזו. אל תפלוט PLAN_JSON או "
+                     "WEEK_PLAN_JSON — רק את הדוח ו-WEEKLY_REPORT_JSON.")
 
     print(f"🤖 מודל: {MODEL_WEEKLY} (שבועי — תכנון כבד)")
     print("קורא ל-Claude Opus (weekly, streaming)...\n")
-    # 20000: דוח A–F מלא + 3 בלוקי JSON (PLAN+WEEK_PLAN+WEEKLY_REPORT) + חשיבה אדפטיבית.
-    # ב-8192 (20.06) הבלוק האחרון WEEKLY_REPORT_JSON נחתך באמצע → הדוח לא נשלח לטלגרם.
-    # שבועי רץ פעם בשבוע — תקרה גבוהה זולה ומונעת truncation לתמיד.
-    full_response = _stream_report(client, system_prompt, user_prompt, max_tokens=20000)
+    # 12000: דוח + WEEKLY_REPORT_JSON בלבד (מאז M3.3 ה-LLM לא פולט תוכנית — היא
+    # נבנית דטרמיניסטית). עדיין מרווח גדול מעל הנצפה כדי למנוע truncation.
+    full_response = _stream_report(client, system_prompt, user_prompt, max_tokens=12000)
 
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
     REPORT_FILE.write_text(f"# דוח מאמן שבועי — {timestamp}\n\n{full_response}\n", encoding="utf-8")
 
-    plan_json = extract_plan_json(full_response)
-    if not plan_json:
-        print("\n⚠️  לא נמצא בלוק PLAN_JSON בדוח.")
+    # M3.3: PLAN_JSON כבר לא נחלץ מה-LLM — מסונתז דטרמיניסטית מהמאקרו+המחולל.
+    plan_json = {
+        "focus": next_macro.get("focus", ""),
+        "key_workout": str(next_macro.get("quality", "")),
+        "run_count": len(_plan_runs),
+        "total_km_approx": round(sum(s.get("est_km") or 0 for s in _plan_runs), 1),
+    }
 
-    # ── כתיבת week_plan.json המובנה (הגשר לגרמין + יומן) ──────────────────
-    # עובר דרך שכבת הבטיחות הדטרמיניסטית (safety.py) לפני כל כתיבה.
-    raw_week = extract_week_plan(full_response)
-
-    # דריסה דטרמיניסטית של "מתוכנן" — מספר הריצות והק"מ נלקחים מהסשנים האמיתיים
-    # של ה-WEEK_PLAN, לא ממספר שה-LLM כתב ב-PLAN_JSON. אי-התאמה ביניהם גרמה
-    # ל"ציות חלקי 4/5" שגוי גם כשבוצעה כל התוכנית (20.06). כך הציות מדויק.
-    if plan_json is not None:
-        _run_sessions = [s for s in ((raw_week or {}).get("sessions") or [])
-                         if s.get("type") == "run"]
-        if _run_sessions:
-            plan_json["run_count"] = len(_run_sessions)
-            plan_json["total_km_approx"] = round(sum((s.get("est_km") or 0) for s in _run_sessions), 1)
+    # ── כתיבת week_plan.json (הגשר לגרמין + יומן) — התוכנית מהמחולל ─────────
+    # שער-ה-A/B הישן הוסר: לולאת העריכה-בטלגרם (weekly_revise) מחליפה אותו —
+    # הגיא פשוט עונה בשינויים חופשיים והתוכנית מתעדכנת.
     prev_week_km = metrics["last_week"].get("total_km", 0) or 0
     safety_messages: list[str] = []
     needs_review = False
-    is_conflict = bool(raw_week and raw_week.get("conflict")
-                       and (raw_week.get("variant_a") or raw_week.get("variant_b")))
-    if is_conflict:
-        # שער הכרעה A/B — לא כותבים week_plan עד שתבחר
-        _handle_weekly_conflict(raw_week, analysis, metrics, prev_week_km, dry=dry)
-        needs_review = True
-    elif raw_week and dry:
+    is_conflict = False
+    if raw_week and dry:
         print("🧪 בדיקה — week_plan.json לא נכתב (היה עובר שכבת בטיחות ב-prod).")
     elif raw_week:
         saved, safety_messages, needs_review = save_week_plan(
