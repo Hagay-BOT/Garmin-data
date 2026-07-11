@@ -212,6 +212,84 @@
         "C",
         "B"
       ]
+    },
+    {
+      "week_of": "2026-07-05",
+      "generated_at": "2026-07-11 18:28",
+      "headline": "📊 איזון: דשדוש ב-Z3 (22.1%) — לחדד את הקיטוב: קל יותר קל, קשה יותר קשה",
+      "threshold_snapshot": {
+        "current_vdot": 33.7,
+        "required_vdot": 38.3,
+        "vdot_gap": 4.6,
+        "threshold_pace": null
+      },
+      "macro": {
+        "week_num": 4,
+        "phase": "Base",
+        "deload": true,
+        "gate": true
+      },
+      "metrics": {
+        "ctl": 34.7,
+        "atl": 30.9,
+        "tsb": 3.8,
+        "acwr": 0.89,
+        "ramp_rate_4w": 1.3
+      },
+      "fitness_4week": {
+        "available": true,
+        "window_days": 28,
+        "runs": 17,
+        "weekly_km_avg": 24.8,
+        "total_km": 99.3,
+        "vdot": 33.7,
+        "vdot_basis": "6.3ק\"מ @ 5:38/ק\"מ (2026-07-06)",
+        "threshold_pace": null,
+        "threshold_runs": 0,
+        "ef_z2_avg": 1.0183,
+        "z2_runs": 11
+      },
+      "zones_28d": {
+        "easy_pct": 69.3,
+        "hard_pct": 8.6
+      },
+      "week_actual": {
+        "run_count": 4,
+        "total_km": 22.4,
+        "total_load": 198.7
+      },
+      "red_flags": [
+        {
+          "flag": "מאמץ נתפס גבוה בריצה קלה",
+          "severity": "🟡",
+          "detail": "ריצה קלה (2026-07-09) — RPE 10/10. מאמץ גבוה על אימון קל.",
+          "action": "סימן לתת-התאוששות. הקל בימים הקרובים."
+        }
+      ],
+      "recommended_plan": {
+        "focus": "שיא Base — long מקסימלי",
+        "key_workout": "1× Threshold (4:50) + strides",
+        "run_count": 5,
+        "total_km_approx": 31.0
+      },
+      "compliance": {
+        "prior_week_of": "2026-06-29",
+        "plan_focus": "בסיס אירובי + נגיעת סף — ניקוי Z3 ושיפור קדנס",
+        "plan_key_workout": "Cruise intervals: 3×1.5 ק\"מ @ 4:50 עם 90ש' מנוחה + 6×100מ' strides בשישי",
+        "planned_runs": 6,
+        "actual_runs": 4,
+        "planned_km_approx": 33.5,
+        "actual_km": 22.4,
+        "km_compliance_pct": 67,
+        "compliance_level": "נמוך"
+      },
+      "strength_sequence": [
+        "A",
+        "B",
+        "C",
+        "A",
+        "B"
+      ]
     }
   ]
 }
