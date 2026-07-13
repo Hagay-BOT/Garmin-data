@@ -68,9 +68,13 @@ DRY report-overwrite fixed. System is clean for Saturday's first production run.
 logged an intentional rest day 10.7 in journal; plan must not compensate the missed km).
 **M4.1 (build #3) DONE 2026-07-13** — Garmin-truth reconcile (audit/push/cleanup), E2E-verified
 against the real watch; ownership markers extended to detailed strength names.
-Remaining approved: **build #2 (M3.2 reduce daily analysis)**. Next immediate action per Hagay:
-**/calibrate on the last run + the first generated weekly report (Saturday's)** — and Hagay is
-about to share a problem that happened in yesterday's run; fold it into the calibration.
+**Calibrate DONE (13.07):** RPE-boundary bug fixed (+data re-fetched), safety-clamp name-sync
+fixed. **OPEN PRODUCT QUESTION for Hagay:** the whole live week (12-18.07) was clamped ×0.51
+(31→15.7 km; Saturday long shows "12 ק"מ" but is 6.1) because the volume cap anchors on
+prev-week ACTUAL (which was low after his intentional rest). Options: (a) keep conservative
+week + name-sync&resync the watch, (b) soften the cap rule to anchor on
+max(prev_week, 4-week chronic avg)×1.15 and regenerate. Awaiting his call.
+Remaining approved build: **#2 (M3.2 reduce daily analysis)**.
 Note: prompts/revise.md stores athlete values as literals (documented in coach.py).
 [PRODUCT-HOLD items M3.2/M3.3/M4.1/M9.7 still await Hagay's explicit OK.]
 Pending side-note: fetch_garmin zone thresholds use %maxHR semantics — verify before wiring

@@ -2,6 +2,15 @@
 
 Reverse-chronological. One entry per meaningful change during the engineering program.
 
+## 2026-07-13
+- **Calibrate (first real week):** two production bugs found via Hagay's 12.07 run and fixed
+  at root: (1) Garmin RPE boundary — raw 10 (=very easy, scale is ×10) passed the `>10`
+  check and displayed "RPE 10/10" + false red flag; now `>=10`, stored data re-fetched
+  (rpe 10→1.0). (2) safety volume-clamp scaled est_km/steps but NOT the km inside
+  name/desc — Telegram/watch showed "4.5 ק"מ" while the workout was 2.3 → Hagay stopped
+  confused at 2.8. _scale_run now rewrites km in name/desc.
+- **M4.1 DONE (build #3)** Garmin-truth reconcile — see backlog; audit verified vs real watch.
+
 ## 2026-07-06
 ## 2026-07-09
 ## 2026-07-10
