@@ -364,8 +364,10 @@ for activity in activities:
         "activity_type": type_key,
         "category": category,
         # RPE 0-10 (גרמין שומר ×10), Feel 1-5 (0/25/50/75/100)
+        # באג-גבול (12.07): "קל מאוד" נשמר בגרמין כ-10 (=RPE 1.0), והתנאי >10 העביר
+        # אותו גולמי → הוצג "RPE 10/10" ודגל אדום שגוי. הסולם של גרמין הוא 10..100.
         "rpe": (round(perceived_exertion / 10, 1)
-                if isinstance(perceived_exertion, (int, float)) and perceived_exertion > 10
+                if isinstance(perceived_exertion, (int, float)) and perceived_exertion >= 10
                 else perceived_exertion),
         "feel": ({0: 1, 25: 2, 50: 3, 75: 4, 100: 5}.get(workout_feel, workout_feel)
                  if isinstance(workout_feel, (int, float)) else workout_feel),

@@ -41,10 +41,19 @@ def _total_km(plan: dict) -> float:
 
 
 def _scale_run(session: dict, factor: float) -> None:
-    """מקטין run בודד (est_km + seconds של כל step) ב-factor. עובד in-place."""
-    session["est_km"] = round(float(session.get("est_km") or 0) * factor, 1)
+    """מקטין run בודד (est_km + seconds של כל step) ב-factor. עובד in-place.
+    מעדכן גם את הק"מ שכתוב ב-name/desc — באג 12.07: הבטיחות קיצצה 4.5→2.3
+    אבל השם/הטלגרם/השעון המשיכו להציג "4.5 ק"מ" והגיא עצר מבולבל ב-2.8."""
+    import re
+    new_km = round(float(session.get("est_km") or 0) * factor, 1)
+    session["est_km"] = new_km
     for st in session.get("steps", []):
         st["seconds"] = int(round(float(st.get("seconds") or 0) * factor))
+    km_str = f"{new_km:g}"
+    for field in ("name", "desc"):
+        if session.get(field):
+            session[field] = re.sub(r"\d+(?:\.\d+)?(?=\s*ק[\"״']?מ)", km_str,
+                                    session[field])
 
 
 def validate_structure(plan: dict) -> list[str]:
