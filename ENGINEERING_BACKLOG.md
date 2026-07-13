@@ -33,7 +33,7 @@ Grouped by milestone. Discovered-during-work items get appended here.
   Integrates with M3.3 (generator consumes constraints) — build together.
 
 ## M4 — Garmin sync (⚠️ behaviour)
-- [TODO] M4.1 ✅ APPROVED 2026-07-09 — reconcile against Garmin's actual scheduled workouts (get_scheduled_workouts) instead of trusting created_workouts.json; atomic replace.
+- [DONE] M4.1 — reconcile against Garmin truth: `garmin_client.scheduled_workouts` (shape/range/ours-filter, month-crossing tested); push dedup + cleanup now read the watch's actual calendar; new read-only `--audit` mode + workflow input. **Verified E2E against the real watch**: truth=10, matched all 5 planned runs, exposed 22 stale ghost entries in the local file (auto-heal on next push), and caught that detailed strength names lacked our ownership marker (fixed: משיכה/דחיפה/רגליים added to OUR_MARKERS).
 - [DONE] M4.2 One-command clean re-sync: approve-week.yml now has a `resync` checkbox input → confirm_week runs cleanup before push (RESYNC env). Replaces the manual cleanup→wait→approve dance (done ~6× by hand). Verified: compiles, YAML valid, flag path exercised, smoke green.
 
 ## M5 — Prompt architecture
