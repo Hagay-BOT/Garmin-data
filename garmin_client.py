@@ -42,3 +42,40 @@ def login(attempts: int = 4):
             logger.warning("Garmin login attempt %d failed (%s) — retrying in %ds",
                            attempt, str(e)[:90], wait)
             time.sleep(wait)
+
+
+# ── M4.1 · reconcile: האמת היא לוח-השנה של גרמין, לא קובץ מקומי ──────────────
+
+OUR_MARKERS = ("🏃", "💪", "🦵", "🚶")  # קונבנציית-השמות שלנו — מזהה את האימונים שאנחנו יצרנו
+
+
+def scheduled_workouts(client, start_iso: str, end_iso: str) -> list[dict]:
+    """כל האימונים המתוזמנים בלוח גרמין בטווח התאריכים (כולל) — האמת מהשעון.
+    מחזיר [{'date','name','workout_id','schedule_id','ours'}]. עמיד לווריאציות
+    בשמות-השדות של ה-API (calendarItems/title/workoutId וכו')."""
+    import datetime
+    start = datetime.date.fromisoformat(start_iso)
+    end = datetime.date.fromisoformat(end_iso)
+    months, cur = [], start.replace(day=1)
+    while cur <= end:
+        months.append((cur.year, cur.month))
+        cur = (cur.replace(day=28) + datetime.timedelta(days=5)).replace(day=1)
+    items = []
+    for y, m in months:
+        cal = client.get_scheduled_workouts(y, m) or {}
+        raw = (cal.get("calendarItems") or cal.get("items")
+               or (cal if isinstance(cal, list) else []))
+        for it in raw:
+            if (it.get("itemType") or "workout") != "workout":
+                continue
+            d = it.get("date") or it.get("scheduleDate") or ""
+            if not (start_iso <= d[:10] <= end_iso):
+                continue
+            name = it.get("title") or it.get("workoutName") or ""
+            items.append({
+                "date": d[:10], "name": name,
+                "workout_id": it.get("workoutId") or it.get("workoutUuid"),
+                "schedule_id": it.get("id") or it.get("scheduleId"),
+                "ours": name.startswith(OUR_MARKERS),
+            })
+    return items

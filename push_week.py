@@ -209,22 +209,50 @@ def main():
         print("✅ הבנייה תקינה.")
         return
 
-    if "--cleanup" in args:
-        ids = store.load_created()
-        if not ids:
-            print("אין אימונים רשומים — אין מה למחוק.")
-            return
+    # M4.1: טווח התאריכים של התוכנית — הבסיס לכל reconcile מול לוח גרמין.
+    _dates = sorted(s["date"] for s in sessions)
+    _start, _end = _dates[0], _dates[-1]
+
+    if "--audit" in args:
+        # קריאה-בלבד: האמת מהשעון מול הקובץ המקומי מול התוכנית. לאימות ולניפוי.
+        import garmin_client
         client = login()
-        for item in ids:
+        truth = garmin_client.scheduled_workouts(client, _start, _end)
+        local = {(c["date"], c["name"]) for c in store.load_created()}
+        planned = {(s["date"], s["name"] if s["type"] == "run"
+                    else STRENGTH_DEFS[s["key"]]["name"]) for s in sessions}
+        print(f"=== AUDIT {_start}..{_end} · גרמין={len(truth)} · קובץ={len(local)} · תוכנית={len(planned)} ===")
+        for t in truth:
+            key = (t["date"], t["name"])
+            flags = ("שלנו" if t["ours"] else "חיצוני",
+                     "בקובץ" if key in local else "לא-בקובץ",
+                     "בתוכנית" if key in planned else "לא-בתוכנית")
+            print(f"  {t['date']} · {t['name'][:45]} · {' | '.join(flags)}")
+        for key in sorted(local - {(t['date'], t['name']) for t in truth}):
+            print(f"  👻 בקובץ אך לא בגרמין: {key[0]} · {key[1][:45]}")
+        return
+
+    if "--cleanup" in args:
+        # M4.1: מוחקים לפי האמת מהשעון — לא לפי הקובץ המקומי (שיכול להיות עבש).
+        # נוגעים רק באימונים שלנו (קונבנציית-האמוג'י) — לא באירועים חיצוניים.
+        import garmin_client
+        client = login()
+        truth = [t for t in garmin_client.scheduled_workouts(client, _start, _end) if t["ours"]]
+        if not truth:
+            print("לוח גרמין נקי בטווח התוכנית — אין מה למחוק.")
+            store.save_created([])
+            return
+        for t in truth:
             try:
-                client.delete_workout(item["workout_id"])
-                print(f"🗑️  נמחק {item['workout_id']} ({item['name']})")
+                if t.get("schedule_id"):
+                    client.unschedule_workout(t["schedule_id"])
+                if t.get("workout_id"):
+                    client.delete_workout(t["workout_id"])
+                print(f"🗑️  {t['date']} · {t['name'][:45]}")
             except Exception as e:
-                print(f"⚠️  כשל במחיקת {item['workout_id']}: {e}")
-        # כותבים רשימה ריקה (לא מוחקים את הקובץ) — כדי שה-git_sync ישמור מצב נקי
-        # ב-repo. אחרת ה-repo ימשיך להחזיק IDs מחוקים והדחיפה הבאה תדלג עליהם.
+                print(f"⚠️  כשל במחיקת {t['date']} · {t['name'][:30]}: {e}")
         store.save_created([])
-        print("✅ created_workouts.json נוקה (רשימה ריקה).")
+        print(f"✅ נוקו {len(truth)} אימונים לפי לוח גרמין (האמת), הקובץ אופס.")
         return
 
     if "--push" in args:
@@ -243,10 +271,15 @@ def main():
             print(f"🛑 ולידציה נכשלה — לא נדחף כלום: {e}")
             sys.exit(1)
 
-        # ── מניעת כפילויות: דלג על מה שכבר נוצר (אלא אם --force) ──────────
-        already = {(c["date"], c["name"]): c for c in store.load_created()}
-
+        # ── מניעת כפילויות (M4.1): האמת מלוח גרמין, לא מהקובץ המקומי ──────
+        # קובץ עבש (למשל אחרי מחיקה ידנית בשעון) גרם בעבר לדילוגים/כפילויות.
+        import garmin_client
         client = login()
+        truth = [t for t in garmin_client.scheduled_workouts(client, _start, _end)
+                 if t["ours"]]
+        already = {(t["date"], t["name"]): {"date": t["date"], "name": t["name"],
+                                            "workout_id": t["workout_id"]}
+                   for t in truth}
         created = list(already.values()) if not force else []
         failures = []
         for s in sessions:

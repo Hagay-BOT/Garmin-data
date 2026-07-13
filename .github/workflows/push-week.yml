@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "build (JSON only) | push (to Garmin calendar) | cleanup (delete created)"
+        description: "build (JSON only) | push (to Garmin) | cleanup (delete ours per Garmin truth) | audit (read-only reconcile view)"
         required: false
         default: "build"
 
@@ -27,6 +27,13 @@ jobs:
       - name: Build only (no credentials, no push)
         if: ${{ github.event.inputs.mode == 'build' }}
         run: python push_week.py --build-only
+
+      - name: Audit — Garmin truth vs local vs plan (read-only)
+        if: ${{ github.event.inputs.mode == 'audit' }}
+        env:
+          GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+        run: python push_week.py --audit
 
       - name: Push full week to Garmin calendar
         if: ${{ github.event.inputs.mode == 'push' }}
