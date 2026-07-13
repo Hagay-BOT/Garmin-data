@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-13T02:31:10.641080+00:00",
+  "last_updated": "2026-07-13T02:52:06.921356+00:00",
   "activities": [
     {
       "activity_id": 13381622386,
@@ -53480,7 +53480,7 @@
       "start_time": "2026-07-08 07:46:24",
       "activity_type": "running",
       "category": "quality_tempo",
-      "rpe": 10,
+      "rpe": 1.0,
       "feel": 3,
       "distance_km": 4.31,
       "duration_sec": 1976,
@@ -54402,9 +54402,9 @@
         {
           "seg": 1,
           "distance_m": 100,
-          "pace_sec_per_km": 430,
+          "pace_sec_per_km": 440,
           "avg_hr": 97,
-          "duration_sec": 43.0
+          "duration_sec": 44.0
         },
         {
           "seg": 2,
@@ -54682,9 +54682,9 @@
         {
           "seg": 41,
           "distance_m": 4100,
-          "pace_sec_per_km": 620,
+          "pace_sec_per_km": 1550,
           "avg_hr": 108,
-          "duration_sec": 62.0
+          "duration_sec": 155.0
         },
         {
           "seg": 42,
@@ -54760,7 +54760,7 @@
       "start_time": "2026-07-09 20:15:13",
       "activity_type": "running",
       "category": "base_run",
-      "rpe": 10,
+      "rpe": 1.0,
       "feel": 3,
       "distance_km": 1.73,
       "duration_sec": 1022,
@@ -55326,7 +55326,7 @@
       "start_time": "2026-07-12 13:36:13",
       "activity_type": "treadmill_running",
       "category": "base_run",
-      "rpe": 10,
+      "rpe": 1.0,
       "feel": 3,
       "distance_km": 2.8,
       "duration_sec": 1012,
