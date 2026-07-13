@@ -1002,7 +1002,8 @@ def materialize_week_plan(raw: dict) -> dict:
 
 
 def save_week_plan(raw: dict, prev_week_km: float = 0.0,
-                   macro: dict | None = None, acwr: float | None = None) -> tuple[bool, list, bool]:
+                   macro: dict | None = None, acwr: float | None = None,
+                   chronic_week_km: float = 0.0) -> tuple[bool, list, bool]:
     """
     שומר week_plan.json — אך ורק אחרי מעבר בשכבת הבטיחות הדטרמיניסטית (safety.py).
     מחזיר (saved, messages, needs_review):
@@ -1017,7 +1018,7 @@ def save_week_plan(raw: dict, prev_week_km: float = 0.0,
         return False, ["לא נמצאו אימונים בתוכנית."], False
 
     plan, adjustments, warnings, needs_review = safety.clamp_and_validate_week_plan(
-        full, prev_week_km, macro, acwr)
+        full, prev_week_km, macro, acwr, chronic_week_km=chronic_week_km)
     if plan is None:
         # דחייה מבנית — לא כותבים שום דבר.
         return False, warnings, True
@@ -1775,7 +1776,8 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
     elif raw_week:
         saved, safety_messages, needs_review = save_week_plan(
             raw_week, prev_week_km=prev_week_km,
-            macro=metrics.get("macro"), acwr=metrics["load"].get("acwr"))
+            macro=metrics.get("macro"), acwr=metrics["load"].get("acwr"),
+            chronic_week_km=metrics.get("fitness_4week", {}).get("weekly_km_avg") or 0)
         if saved:
             n = len(raw_week.get("sessions", []))
             print(f"✅ week_plan.json עודכן — {n} אימונים לשבוע {raw_week.get('week_of','?')}.")

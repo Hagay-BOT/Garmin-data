@@ -132,6 +132,7 @@ def clamp_and_validate_week_plan(
     macro: dict | None = None,
     acwr: float | None = None,
     factors: set[str] | None = None,
+    chronic_week_km: float = 0.0,
 ) -> tuple[dict | None, list[str], list[str], bool]:
     """
     שכבת הבטיחות המרכזית.
@@ -156,7 +157,11 @@ def clamp_and_validate_week_plan(
     total = _total_km(full_plan)
 
     # 2) תקרת נפח / deload — clamp אוטומטי
+    # עוגן התקרה (תוקן 13.07): max(שבוע-שעבר, בסיס-כרוני 4-שבועות). עיגון על
+    # שבוע-שעבר בלבד ענש מנוחה מכוונת — שבוע קל אחד קרס את השבוע הבא ב-50%
+    # למרות שהבסיס הכרוני תמך בנפח המאקרו. deload נשאר על שבוע-שעבר (מכוון).
     is_deload = bool(macro.get("deload"))
+    anchor = max(prev_week_km or 0, chronic_week_km or 0)
     cap: float | None = None
     if prev_week_km and prev_week_km > 0:
         if is_deload:
@@ -164,7 +169,7 @@ def clamp_and_validate_week_plan(
             target_factor = DELOAD_DEEP_FACTOR if deep else DELOAD_TARGET_FACTOR
             cap = round(prev_week_km * target_factor, 1)
         else:
-            cap = round(max(prev_week_km * VOLUME_CAP_FACTOR, prev_week_km + VOLUME_FLOOR_KM), 1)
+            cap = round(max(anchor * VOLUME_CAP_FACTOR, anchor + VOLUME_FLOOR_KM), 1)
     elif total > 0:
         warnings.append("אין נתון נפח לשבוע הקודם — לא ניתן לאמת התקדמות נפח.")
 
