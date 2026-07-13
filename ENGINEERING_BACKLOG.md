@@ -61,5 +61,6 @@ Grouped by milestone. Discovered-during-work items get appended here.
 - [REJECTED] M9.7 Auto-approve — Hagay 2026-07-09: never auto-push; the plan must fit his actual schedule, so it always waits for his explicit reply.
 
 ## Discovered during work
+- [TODO] **Strength double-system** (audit 13.07): push_week pushes generic 💪 strength AND strength-schedule pushes detailed (משיכה/דחיפה/רגליים) for the same days. Post-resync calendar shows only the detailed 5 — the 5 generic pushed at 10:47 got ids but don't appear in get_scheduled_workouts (replaced/failed silently?). Days align so no user harm, but unify to ONE strength push path (detailed wins) — fold into M3.2/M7. Hagay: glance at the watch to confirm no doubled strength entries.
 - [DONE] DRY-run report overwrite — REPORT_FILE write now guarded with `if not dry`.
 - [DONE] Post-Build-#1 cleanup: deleted `_handle_weekly_conflict`, `extract_plan_json`, `check_weekly_choice.py`, `coach-weekly-choice.yml`, `is_conflict` plumbing. Verified zero residual refs; `extract_week_plan` kept (used by run_revise). All tests green.

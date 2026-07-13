@@ -71,9 +71,12 @@ against the real watch; ownership markers extended to detailed strength names.
 **Calibrate DONE (13.07):** RPE-boundary bug fixed (+data re-fetched), safety-clamp name-sync
 fixed. **OPEN PRODUCT QUESTION for Hagay:** the whole live week (12-18.07) was clamped ×0.51
 (31→15.7 km; Saturday long shows "12 ק"מ" but is 6.1) because the volume cap anchors on
-prev-week ACTUAL (which was low after his intentional rest). Options: (a) keep conservative
-week + name-sync&resync the watch, (b) soften the cap rule to anchor on
-max(prev_week, 4-week chronic avg)×1.15 and regenerate. Awaiting his call.
+prev-week ACTUAL (which was low after his intentional rest). **Hagay chose (b) — EXECUTED 13.07:** cap anchor now max(prev_week, chronic-4wk)×1.15
+(safety.py + save_week_plan chronic_week_km wiring). Live week rebuilt (cap 26.8, −14%
+instead of −49%; Sunday-as-executed preserved; long back to 10.4 real) → approved+resynced
+to watch (10/10, 0 failures) → audit confirms all 5 runs matched with correct kms.
+New finding logged in backlog: strength double-system (generic vs detailed push paths) —
+unify later; days align, no user harm.
 Remaining approved build: **#2 (M3.2 reduce daily analysis)**.
 Note: prompts/revise.md stores athlete values as literals (documented in coach.py).
 [PRODUCT-HOLD items M3.2/M3.3/M4.1/M9.7 still await Hagay's explicit OK.]
