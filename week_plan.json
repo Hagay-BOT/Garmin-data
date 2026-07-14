@@ -1,144 +1,114 @@
 {
   "week_of": "2026-07-12",
-  "macro_week": 5,
+  "macro_week": 6,
   "phase": "Base",
   "goal_race": "15K @ 5:20",
-  "notes": "נבנה דטרמיניסטית (plan_generator). ",
+  "notes": "שבוע-טיול מעודכן 13.7 (שינה חזרה ל-8ש): ריצות לפי תוכנית כולל לונג; כוח = 2× פול-באדי משקל-גוף (אין חדר-כושר). הוחלט ע\"י המאמן בסמכות שהגיא האציל.",
   "sessions": [
     {
       "date": "2026-07-12",
       "day": "ראשון",
       "type": "run",
       "subtype": "easy",
-      "name": "🏃 קל Z2 — 4.5 ק\"מ",
-      "desc": "ריצת בסיס לפי דופק Z2 (6:45–7:00).",
+      "name": "🏃 קל Z2 — 2.3 ק\"מ",
+      "desc": "בוצע.",
       "est_km": 2.3,
       "steps": [
         {
           "kind": "warmup",
-          "seconds": 273
+          "seconds": 532
         },
         {
           "kind": "interval",
-          "seconds": 479
+          "seconds": 296
         },
         {
           "kind": "cooldown",
-          "seconds": 182
-        }
-      ]
-    },
-    {
-      "date": "2026-07-12",
-      "day": "ראשון",
-      "type": "strength",
-      "key": "A"
-    },
-    {
-      "date": "2026-07-13",
-      "day": "שני",
-      "type": "run",
-      "subtype": "quality",
-      "name": "🏃 1× Threshold (4:50) + strides",
-      "desc": "איכות לפי המאקרו: 1× Threshold (4:50) + strides. + strides בסיום.",
-      "est_km": 5.2,
-      "steps": [
-        {
-          "kind": "warmup",
-          "seconds": 467
-        },
-        {
-          "kind": "interval",
-          "seconds": 726
-        },
-        {
-          "kind": "cooldown",
-          "seconds": 311
+          "seconds": 355
         }
       ]
     },
     {
       "date": "2026-07-13",
       "day": "שני",
-      "type": "strength",
-      "key": "B"
-    },
-    {
-      "date": "2026-07-14",
-      "day": "שלישי",
       "type": "run",
       "subtype": "easy",
-      "name": "🏃 קל Z2 — 3.9 ק\"מ",
-      "desc": "ריצת בסיס לפי דופק Z2 (6:45–7:00).",
-      "est_km": 3.9,
+      "name": "🏃 קל Z2 — 6.9 ק\"מ (בוצע, החליף סף)",
+      "desc": "סף בוטל (חסך-שינה); בוצע קל ומצוין.",
+      "est_km": 6.9,
       "steps": [
         {
           "kind": "warmup",
-          "seconds": 467
+          "seconds": 532
         },
         {
           "kind": "interval",
-          "seconds": 817
+          "seconds": 1769
         },
         {
           "kind": "cooldown",
-          "seconds": 311
+          "seconds": 355
         }
       ]
     },
     {
       "date": "2026-07-15",
       "day": "רביעי",
-      "type": "strength",
-      "key": "C"
-    },
-    {
-      "date": "2026-07-16",
-      "day": "חמישי",
       "type": "run",
       "subtype": "easy",
-      "name": "🚶 התאוששות Z1 — 3.5 ק\"מ (אחרי רגליים)",
-      "desc": "קל מאוד/הליכה-ריצה. אחרי יום רגליים.",
-      "est_km": 3.5,
+      "name": "🏃 קל Z2 — 4.4 ק\"מ",
+      "desc": "בסיס לפי דופק Z2 (עד 141).",
+      "est_km": 4.4,
       "steps": [
         {
           "kind": "warmup",
-          "seconds": 467
+          "seconds": 532
         },
         {
           "kind": "interval",
-          "seconds": 709
+          "seconds": 909
         },
         {
           "kind": "cooldown",
-          "seconds": 311
+          "seconds": 355
         }
       ]
     },
     {
       "date": "2026-07-16",
       "day": "חמישי",
-      "type": "strength",
-      "key": "A"
-    },
-    {
-      "date": "2026-07-17",
-      "day": "שישי",
-      "type": "strength",
-      "key": "B"
+      "type": "run",
+      "subtype": "easy",
+      "name": "🏃 קל Z2 — 3.9 ק\"מ",
+      "desc": "בסיס לפי דופק Z2. בערב פול-באדי (רגליים קל).",
+      "est_km": 3.9,
+      "steps": [
+        {
+          "kind": "warmup",
+          "seconds": 532
+        },
+        {
+          "kind": "interval",
+          "seconds": 710
+        },
+        {
+          "kind": "cooldown",
+          "seconds": 355
+        }
+      ]
     },
     {
       "date": "2026-07-18",
       "day": "שבת",
       "type": "run",
       "subtype": "long",
-      "name": "🏃 ריצת נפח — 10.4 ק\"מ Z2",
-      "desc": "לפי דופק Z2 (עד 141), לא קצב.",
-      "est_km": 10.4,
+      "name": "🏃 ריצת נפח — 9.9 ק\"מ Z2",
+      "desc": "לפי דופק Z2, לא קצב. השינה חזרה — הלונג חוזר.",
+      "est_km": 9.9,
       "steps": [
         {
           "kind": "interval",
-          "seconds": 4253
+          "seconds": 4041
         }
       ]
     }
@@ -148,10 +118,10 @@
     "approval_required": true,
     "needs_review": false,
     "safety_adjustments": [
-      "נפח הופחת ב-14% ל-26.8 ק\"מ (מ-31.0) לעמידה במגבלת התקדמות."
+      "נפח הופחת ב-1% ל-27.4 ק\"מ (מ-27.8) לעמידה במגבלת התקדמות."
     ],
     "warnings": []
   },
   "approved": true,
-  "approved_at": "2026-07-13T10:47:28+00:00"
+  "approved_at": "2026-07-13 travel-week v2 — full authority delegated by Hagay"
 }

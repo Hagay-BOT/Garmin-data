@@ -1,0 +1,48 @@
+name: Adhoc Workout to Garmin
+
+# העלאת אימון חד-פעמי (משבצת-זמן) לשעון + רשימת-תרגילים לטלגרם.
+# כלי-טיול: כשהמבנה הרגיל לא רלוונטי (פול-באדי בחו"ל וכו').
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: "שם האימון בשעון"
+        required: true
+        default: "💪 פול-באדי (טיול)"
+      dates:
+        description: "תאריכים YYYY-MM-DD, מופרדים בפסיק"
+        required: true
+      minutes:
+        description: "משך בדקות"
+        required: false
+        default: "60"
+      telegram_file:
+        description: "קובץ רשימת-תרגילים לשליחה בטלגרם (רשות)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Upload + schedule + telegram
+        env:
+          GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ADHOC_NAME: ${{ github.event.inputs.name }}
+          ADHOC_DATES: ${{ github.event.inputs.dates }}
+          ADHOC_MINUTES: ${{ github.event.inputs.minutes }}
+          TELEGRAM_FILE: ${{ github.event.inputs.telegram_file }}
+        run: python adhoc_workout.py
