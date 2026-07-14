@@ -8,82 +8,42 @@ X-WR-TIMEZONE:Asia/Jerusalem
 REFRESH-INTERVAL;VALUE=DURATION:PT6H
 BEGIN:VEVENT
 UID:2026-07-12-run-easy@garmin-coach
-DTSTAMP:20260713T104730Z
+DTSTAMP:20260714T063149Z
 DTSTART:20260712T040000Z
 DTEND:20260712T044500Z
-SUMMARY:🏃 קל Z2 — 4.5 ק"מ
-DESCRIPTION:ריצת בסיס לפי דופק Z2 (6:45–7:00).
+SUMMARY:🏃 קל Z2 — 2.3 ק"מ
+DESCRIPTION:בוצע.
 END:VEVENT
 BEGIN:VEVENT
-UID:2026-07-12-strength-A@garmin-coach
-DTSTAMP:20260713T104730Z
-DTSTART:20260712T150000Z
-DTEND:20260712T160000Z
-SUMMARY:💪 כוח A — Pull/משיכה (גב/יד קדמית)
-DESCRIPTION:Pull: גב, יד קדמית.
-END:VEVENT
-BEGIN:VEVENT
-UID:2026-07-13-run-quality@garmin-coach
-DTSTAMP:20260713T104730Z
+UID:2026-07-13-run-easy@garmin-coach
+DTSTAMP:20260714T063149Z
 DTSTART:20260713T040000Z
 DTEND:20260713T044500Z
-SUMMARY:🏃 1× Threshold (4:50) + strides
-DESCRIPTION:איכות לפי המאקרו: 1× Threshold (4:50) + strides. + strides בסיום.\n\n🌦️ 🌤️ חוץ — אבל גבולי — מרגיש 30°, קרוב לסף. שתה הרבה, צא מוקדם, ושקול הליכון אם לא נעים.
+SUMMARY:🏃 קל Z2 — 6.9 ק"מ (בוצע, החליף סף)
+DESCRIPTION:סף בוטל (חסך-שינה); בוצע קל ומצוין.
 END:VEVENT
 BEGIN:VEVENT
-UID:2026-07-13-strength-B@garmin-coach
-DTSTAMP:20260713T104730Z
-DTSTART:20260713T150000Z
-DTEND:20260713T160000Z
-SUMMARY:💪 כוח B — Push/דחיפה (חזה/כתפיים/יד אחורית)
-DESCRIPTION:Push: חזה, כתפיים, יד אחורית.
-END:VEVENT
-BEGIN:VEVENT
-UID:2026-07-14-run-easy@garmin-coach
-DTSTAMP:20260713T104730Z
-DTSTART:20260714T040000Z
-DTEND:20260714T044500Z
-SUMMARY:🏃 קל Z2 — 3.9 ק"מ
-DESCRIPTION:ריצת בסיס לפי דופק Z2 (6:45–7:00).\n\n🌦️ 🏃 חוץ — תנאים נוחים: 25° (מרגיש 29°), גשם 0%, רוח 10 קמ"ש.
-END:VEVENT
-BEGIN:VEVENT
-UID:2026-07-15-strength-C@garmin-coach
-DTSTAMP:20260713T104730Z
-DTSTART:20260715T150000Z
-DTEND:20260715T160000Z
-SUMMARY:🦵 כוח C — Legs (רגליים)
-DESCRIPTION:רגליים: סקוואט, hip thrust, calf raises, חיזוק ברך/קרסול.
+UID:2026-07-15-run-easy@garmin-coach
+DTSTAMP:20260714T063149Z
+DTSTART:20260715T040000Z
+DTEND:20260715T044500Z
+SUMMARY:🏃 קל Z2 — 4.4 ק"מ
+DESCRIPTION:בסיס לפי דופק Z2 (עד 141).\n\n🌦️ 🏃 חוץ — תנאים נוחים: 14° (מרגיש 16°), גשם 0%, רוח 0 קמ"ש.
 END:VEVENT
 BEGIN:VEVENT
 UID:2026-07-16-run-easy@garmin-coach
-DTSTAMP:20260713T104730Z
+DTSTAMP:20260714T063149Z
 DTSTART:20260716T040000Z
 DTEND:20260716T044500Z
-SUMMARY:🚶 התאוששות Z1 — 3.5 ק"מ (אחרי רגליים)
-DESCRIPTION:קל מאוד/הליכה-ריצה. אחרי יום רגליים.\n\n🌦️ 🏃 חוץ — תנאים נוחים: 26° (מרגיש 30°), גשם 0%, רוח 9 קמ"ש.
-END:VEVENT
-BEGIN:VEVENT
-UID:2026-07-16-strength-A@garmin-coach
-DTSTAMP:20260713T104730Z
-DTSTART:20260716T150000Z
-DTEND:20260716T160000Z
-SUMMARY:💪 כוח A — Pull/משיכה (גב/יד קדמית)
-DESCRIPTION:Pull: גב, יד קדמית.
-END:VEVENT
-BEGIN:VEVENT
-UID:2026-07-17-strength-B@garmin-coach
-DTSTAMP:20260713T104730Z
-DTSTART:20260717T150000Z
-DTEND:20260717T160000Z
-SUMMARY:💪 כוח B — Push/דחיפה (חזה/כתפיים/יד אחורית)
-DESCRIPTION:Push: חזה, כתפיים, יד אחורית.
+SUMMARY:🏃 קל Z2 — 3.9 ק"מ
+DESCRIPTION:בסיס לפי דופק Z2. בערב פול-באדי (רגליים קל).\n\n🌦️ 🏃 חוץ — תנאים נוחים: 15° (מרגיש 16°), גשם 0%, רוח 1 קמ"ש.
 END:VEVENT
 BEGIN:VEVENT
 UID:2026-07-18-run-long@garmin-coach
-DTSTAMP:20260713T104730Z
+DTSTAMP:20260714T063149Z
 DTSTART:20260718T050000Z
 DTEND:20260718T061500Z
-SUMMARY:🏃 ריצת נפח — 10.4 ק"מ Z2
-DESCRIPTION:לפי דופק Z2 (עד 141), לא קצב.\n\n🌦️ התחזית תתעדכן ~3 ימים לפני הריצה.
+SUMMARY:🏃 ריצת נפח — 9.9 ק"מ Z2
+DESCRIPTION:לפי דופק Z2, לא קצב. השינה חזרה — הלונג חוזר.\n\n🌦️ התחזית תתעדכן ~3 ימים לפני הריצה.
 END:VEVENT
 END:VCALENDAR
