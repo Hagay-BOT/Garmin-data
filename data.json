@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-15T05:01:09.901853+00:00",
+  "last_updated": "2026-07-15T05:31:06.290983+00:00",
   "activities": [
     {
       "activity_id": 13381622386,
@@ -56722,6 +56722,58 @@
         }
       ],
       "splits_100m": []
+    },
+    {
+      "activity_id": 23602405346,
+      "date": "2026-07-15",
+      "start_time": "2026-07-15 06:50:52",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "rpe": null,
+      "feel": null,
+      "distance_km": null,
+      "duration_sec": 4304,
+      "pace_sec_per_km": null,
+      "best_pace_sec_per_km": null,
+      "avg_hr": 113.0,
+      "max_hr": 156.0,
+      "recovery_hr": null,
+      "cadence_spm": null,
+      "max_cadence_spm": null,
+      "gct_ms": null,
+      "stride_length_m": null,
+      "vertical_oscillation_cm": null,
+      "vertical_ratio_pct": null,
+      "aerobic_effect": 1.899999976158142,
+      "anaerobic_effect": 1.399999976158142,
+      "training_effect_label": "ANAEROBIC_CAPACITY",
+      "training_stress_score": null,
+      "exercise_load": 33.50209045410156,
+      "vo2max": null,
+      "stamina_start_pct": null,
+      "stamina_end_pct": null,
+      "active_calories": null,
+      "total_calories": 440.0,
+      "sweat_loss_ml": 716,
+      "body_battery_impact": -11,
+      "avg_respiration": null,
+      "max_respiration": null,
+      "moderate_intensity_min": 48,
+      "vigorous_intensity_min": 7,
+      "total_ascent_m": null,
+      "total_descent_m": null,
+      "temperature": null,
+      "gps": [],
+      "hr_zones_sec": [
+        1899,
+        1047,
+        360,
+        0,
+        0
+      ],
+      "hr_drift_bpm": null,
+      "laps": [],
+      "splits_100m": []
     }
   ],
   "daily": {
@@ -59345,8 +59397,8 @@
       "sleep_score": 87,
       "sleep_end_time": "05:54",
       "body_battery_morning": 96,
-      "calories_resting": 538.0,
-      "calories_active": 0.0
+      "calories_resting": 729.0,
+      "calories_active": 368.0
     }
   },
   "shoes": [
