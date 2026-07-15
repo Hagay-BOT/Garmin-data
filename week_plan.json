@@ -56,21 +56,13 @@
       "day": "רביעי",
       "type": "run",
       "subtype": "easy",
-      "name": "🏃 קל Z2 — 4.4 ק\"מ",
-      "desc": "בסיס לפי דופק Z2 (עד 141).",
-      "est_km": 4.4,
+      "name": "🚶 התאוששות Z1 — 3.5 ק\"מ (אחרי רגליים כבד)",
+      "desc": "קל מאוד/הליכה-ריצה, דופק נמוך. אחרי פול-באדי עם רגליים כבדות.",
+      "est_km": 3.5,
       "steps": [
         {
-          "kind": "warmup",
-          "seconds": 532
-        },
-        {
           "kind": "interval",
-          "seconds": 909
-        },
-        {
-          "kind": "cooldown",
-          "seconds": 355
+          "seconds": 1505
         }
       ]
     },
