@@ -8,7 +8,7 @@ X-WR-TIMEZONE:Asia/Jerusalem
 REFRESH-INTERVAL;VALUE=DURATION:PT6H
 BEGIN:VEVENT
 UID:2026-07-12-run-easy@garmin-coach
-DTSTAMP:20260715T060009Z
+DTSTAMP:20260715T180159Z
 DTSTART:20260712T040000Z
 DTEND:20260712T044500Z
 SUMMARY:🏃 קל Z2 — 2.8 ק"מ (בוצע)
@@ -16,7 +16,7 @@ DESCRIPTION:בוצע.
 END:VEVENT
 BEGIN:VEVENT
 UID:2026-07-13-run-easy@garmin-coach
-DTSTAMP:20260715T060009Z
+DTSTAMP:20260715T180159Z
 DTSTART:20260713T040000Z
 DTEND:20260713T044500Z
 SUMMARY:🏃 קל Z2 — 7 ק"מ (בוצע)
@@ -24,18 +24,18 @@ DESCRIPTION:בוצע — מצוין, החליף סף.
 END:VEVENT
 BEGIN:VEVENT
 UID:2026-07-16-run-easy@garmin-coach
-DTSTAMP:20260715T060009Z
+DTSTAMP:20260715T180159Z
 DTSTART:20260716T040000Z
 DTEND:20260716T044500Z
 SUMMARY:🚶 התאוששות Z1 — 3.5 ק"מ (אחרי רגליים)
-DESCRIPTION:קל מאוד/הליכה-ריצה. אחרי פול-באדי כבד-רגליים של 15.7.\n\n🌦️ 🏃 חוץ — תנאים נוחים: 16° (מרגיש 18°), גשם 0%, רוח 1 קמ"ש.
+DESCRIPTION:קל מאוד/הליכה-ריצה. אחרי פול-באדי כבד-רגליים של 15.7.\n\n🌦️ 🏃 חוץ — תנאים נוחים: 17° (מרגיש 18°), גשם 0%, רוח 2 קמ"ש.
 END:VEVENT
 BEGIN:VEVENT
 UID:2026-07-18-run-long@garmin-coach
-DTSTAMP:20260715T060009Z
+DTSTAMP:20260715T180159Z
 DTSTART:20260718T050000Z
 DTEND:20260718T061500Z
 SUMMARY:🏃 ריצת נפח — 10 ק"מ Z2
-DESCRIPTION:לפי דופק Z2 (עד 141), לא קצב.\n\n🌦️ 🏃 חוץ — תנאים נוחים: 18° (מרגיש 20°), גשם 0%, רוח 3 קמ"ש.
+DESCRIPTION:לפי דופק Z2 (עד 141), לא קצב.\n\n🌦️ 🏃 חוץ — תנאים נוחים: 18° (מרגיש 21°), גשם 0%, רוח 2 קמ"ש.
 END:VEVENT
 END:VCALENDAR
