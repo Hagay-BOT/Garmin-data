@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-17T12:30:52.930100+00:00",
+  "last_updated": "2026-07-17T13:00:58.342856+00:00",
   "activities": [
     {
       "activity_id": 13381622386,
@@ -59159,8 +59159,8 @@
       "sleep_score": 77,
       "sleep_end_time": "06:06",
       "body_battery_morning": 88,
-      "calories_resting": 1271.0,
-      "calories_active": 256.0
+      "calories_resting": 1374.0,
+      "calories_active": 274.0
     }
   },
   "shoes": [
