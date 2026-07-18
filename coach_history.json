@@ -290,6 +290,84 @@
         "A",
         "B"
       ]
+    },
+    {
+      "week_of": "2026-07-12",
+      "generated_at": "2026-07-18 18:29",
+      "headline": "📊 איזון: דשדוש ב-Z3 (22.6%) — לחדד את הקיטוב: קל יותר קל, קשה יותר קשה",
+      "threshold_snapshot": {
+        "current_vdot": 33.7,
+        "required_vdot": 38.3,
+        "vdot_gap": 4.6,
+        "threshold_pace": null
+      },
+      "macro": {
+        "week_num": 5,
+        "phase": "Base",
+        "deload": false,
+        "gate": false
+      },
+      "metrics": {
+        "ctl": 33.6,
+        "atl": 29.3,
+        "tsb": 4.2,
+        "acwr": 0.87,
+        "ramp_rate_4w": -0.7
+      },
+      "fitness_4week": {
+        "available": true,
+        "window_days": 28,
+        "runs": 16,
+        "weekly_km_avg": 23.7,
+        "total_km": 94.8,
+        "vdot": 33.7,
+        "vdot_basis": "6.3ק\"מ @ 5:38/ק\"מ (2026-07-06)",
+        "threshold_pace": null,
+        "threshold_runs": 0,
+        "ef_z2_avg": 1.0557,
+        "z2_runs": 11
+      },
+      "zones_28d": {
+        "easy_pct": 70.4,
+        "hard_pct": 7.0
+      },
+      "week_actual": {
+        "run_count": 3,
+        "total_km": 19.8,
+        "total_load": 142.1
+      },
+      "red_flags": [
+        {
+          "flag": "קפיצת נפח",
+          "severity": "🟡",
+          "detail": "נפח השבוע 20 ק\"מ מול 12 בשבוע שעבר (>30%)",
+          "action": "עלייה חדה מדי בנפח. רכך את השבוע הבא."
+        }
+      ],
+      "recommended_plan": {
+        "focus": "התחלת Build — race-pace ראשון בלונג",
+        "key_workout": "1× Threshold + 2 ק\"מ @5:20 בלונג",
+        "run_count": 5,
+        "total_km_approx": 33.0
+      },
+      "compliance": {
+        "prior_week_of": "2026-07-05",
+        "plan_focus": "שיא Base — long מקסימלי",
+        "plan_key_workout": "1× Threshold (4:50) + strides",
+        "planned_runs": 5,
+        "actual_runs": 3,
+        "planned_km_approx": 31.0,
+        "actual_km": 19.8,
+        "km_compliance_pct": 64,
+        "compliance_level": "נמוך"
+      },
+      "strength_sequence": [
+        "A",
+        "B",
+        "C",
+        "A",
+        "B"
+      ]
     }
   ]
 }
