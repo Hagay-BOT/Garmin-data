@@ -6,64 +6,6 @@
   "notes": "נבנה דטרמיניסטית (plan_generator). ",
   "sessions": [
     {
-      "date": "2026-07-19",
-      "day": "ראשון",
-      "type": "run",
-      "subtype": "easy",
-      "name": "🏃 קל Z2 — 4.5 ק\"מ",
-      "desc": "ריצת בסיס לפי דופק Z2 (6:45–7:00).",
-      "est_km": 4.5,
-      "steps": [
-        {
-          "kind": "warmup",
-          "seconds": 447
-        },
-        {
-          "kind": "interval",
-          "seconds": 1121
-        },
-        {
-          "kind": "cooldown",
-          "seconds": 298
-        }
-      ]
-    },
-    {
-      "date": "2026-07-19",
-      "day": "ראשון",
-      "type": "strength",
-      "key": "A"
-    },
-    {
-      "date": "2026-07-20",
-      "day": "שני",
-      "type": "run",
-      "subtype": "quality",
-      "name": "🏃 1× Threshold + 5 ק\"מ @5:20 בלונג",
-      "desc": "איכות לפי המאקרו: 1× Threshold + 5 ק\"מ @5:20 בלונג. + strides בסיום.",
-      "est_km": 5.0,
-      "steps": [
-        {
-          "kind": "warmup",
-          "seconds": 447
-        },
-        {
-          "kind": "interval",
-          "seconds": 695
-        },
-        {
-          "kind": "cooldown",
-          "seconds": 298
-        }
-      ]
-    },
-    {
-      "date": "2026-07-20",
-      "day": "שני",
-      "type": "strength",
-      "key": "B"
-    },
-    {
       "date": "2026-07-21",
       "day": "שלישי",
       "type": "run",
@@ -74,15 +16,15 @@
       "steps": [
         {
           "kind": "warmup",
-          "seconds": 447
+          "seconds": 540
         },
         {
           "kind": "interval",
-          "seconds": 1121
+          "seconds": 855
         },
         {
           "kind": "cooldown",
-          "seconds": 298
+          "seconds": 360
         }
       ]
     },
@@ -103,15 +45,15 @@
       "steps": [
         {
           "kind": "warmup",
-          "seconds": 447
+          "seconds": 540
         },
         {
           "kind": "interval",
-          "seconds": 678
+          "seconds": 387
         },
         {
           "kind": "cooldown",
-          "seconds": 298
+          "seconds": 360
         }
       ]
     },
@@ -138,7 +80,7 @@
       "steps": [
         {
           "kind": "interval",
-          "seconds": 4070
+          "seconds": 3861
         }
       ]
     }
@@ -147,9 +89,9 @@
     "generated_by": "LLM",
     "approval_required": true,
     "needs_review": false,
-    "safety_adjustments": [
-      "נפח הופחת ב-17% ל-27.3 ק\"מ (מ-33.0) לעמידה במגבלת התקדמות."
-    ],
-    "warnings": []
+    "safety_adjustments": [],
+    "warnings": [
+      "אין נתון נפח לשבוע הקודם — לא ניתן לאמת התקדמות נפח."
+    ]
   }
 }
