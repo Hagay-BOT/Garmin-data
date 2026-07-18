@@ -3,7 +3,7 @@
   "macro_week": 6,
   "phase": "Build",
   "goal_race": "15K @ 5:20",
-  "notes": "נבנה דטרמיניסטית (plan_generator). ",
+  "notes": "נוצר אוטומטית מהסקירה השבועית.",
   "sessions": [
     {
       "date": "2026-07-21",
@@ -74,13 +74,13 @@
       "day": "שבת",
       "type": "run",
       "subtype": "long",
-      "name": "🏃 ריצת נפח — 9.9 ק\"מ Z2",
+      "name": "🏃 ריצת נפח — 11 ק\"מ Z2",
       "desc": "לפי דופק Z2 (עד 141), לא קצב.",
-      "est_km": 9.9,
+      "est_km": 11.0,
       "steps": [
         {
           "kind": "interval",
-          "seconds": 3861
+          "seconds": 4290
         }
       ]
     }
