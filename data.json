@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-21T10:30:53.411176+00:00",
+  "last_updated": "2026-07-21T11:00:52.530889+00:00",
   "activities": [
     {
       "activity_id": 13381622386,
@@ -56917,6 +56917,107 @@
           "pace_sec_per_km": 522,
           "avg_hr": 139.0,
           "cadence_spm": 174
+        }
+      ],
+      "splits_100m": []
+    },
+    {
+      "activity_id": 23675499192,
+      "date": "2026-07-21",
+      "start_time": "2026-07-21 12:53:08",
+      "activity_type": "treadmill_running",
+      "category": "base_run",
+      "rpe": null,
+      "feel": null,
+      "distance_km": 4.51,
+      "duration_sec": 1866,
+      "pace_sec_per_km": 414,
+      "best_pace_sec_per_km": 199,
+      "avg_hr": 138.0,
+      "max_hr": 149.0,
+      "recovery_hr": 29,
+      "cadence_spm": 175,
+      "max_cadence_spm": 184,
+      "gct_ms": 250,
+      "stride_length_m": 1.05,
+      "vertical_oscillation_cm": 8.490000152587891,
+      "vertical_ratio_pct": 8.050000190734863,
+      "aerobic_effect": 2.299999952316284,
+      "anaerobic_effect": 0.0,
+      "training_effect_label": "RECOVERY",
+      "training_stress_score": null,
+      "exercise_load": 34.30485534667969,
+      "vo2max": null,
+      "stamina_start_pct": 100,
+      "stamina_end_pct": 93,
+      "active_calories": null,
+      "total_calories": 335.0,
+      "sweat_loss_ml": 518,
+      "body_battery_impact": -8,
+      "avg_respiration": 31.809999465942383,
+      "max_respiration": 40.29999923706055,
+      "moderate_intensity_min": null,
+      "vigorous_intensity_min": null,
+      "total_ascent_m": null,
+      "total_descent_m": null,
+      "temperature": null,
+      "gps": [],
+      "hr_zones_sec": [
+        45,
+        1171,
+        634,
+        0,
+        0
+      ],
+      "hr_drift_bpm": null,
+      "laps": [
+        {
+          "lap": 1,
+          "distance_km": 1.0,
+          "duration_sec": 345,
+          "pace_sec_per_km": 345,
+          "avg_hr": 132.0,
+          "cadence_spm": 168
+        },
+        {
+          "lap": 2,
+          "distance_km": 1.0,
+          "duration_sec": 321,
+          "pace_sec_per_km": 322,
+          "avg_hr": 141.0,
+          "cadence_spm": 177
+        },
+        {
+          "lap": 3,
+          "distance_km": 1.0,
+          "duration_sec": 322,
+          "pace_sec_per_km": 322,
+          "avg_hr": 134.0,
+          "cadence_spm": 177
+        },
+        {
+          "lap": 4,
+          "distance_km": 1.0,
+          "duration_sec": 322,
+          "pace_sec_per_km": 323,
+          "avg_hr": 139.0,
+          "cadence_spm": 176
+        },
+        {
+          "lap": 5,
+          "distance_km": 1.0,
+          "duration_sec": 319,
+          "pace_sec_per_km": 320,
+          "avg_hr": 142.0,
+          "cadence_spm": 177
+        },
+        {
+          "lap": 6,
+          "distance_km": 0.75,
+          "duration_sec": 235,
+          "pace_sec_per_km": 315,
+          "avg_hr": 143.0,
+          "cadence_spm": 177
         }
       ],
       "splits_100m": []
