@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-22T00:30:52.202014+00:00",
+  "last_updated": "2026-07-22T01:00:56.823244+00:00",
   "activities": [
     {
       "activity_id": 13381622386,
@@ -59736,15 +59736,15 @@
       "sleep_score": 97,
       "sleep_end_time": "09:52",
       "body_battery_morning": 100,
-      "calories_resting": 1748.0,
-      "calories_active": 571.0
+      "calories_resting": 2119.0,
+      "calories_active": 595.0
     },
     "2026-07-22": {
       "sleep_score": null,
       "sleep_end_time": null,
-      "body_battery_morning": null,
-      "calories_resting": null,
-      "calories_active": null
+      "body_battery_morning": 54,
+      "calories_resting": 345.0,
+      "calories_active": 0.0
     }
   },
   "shoes": [
