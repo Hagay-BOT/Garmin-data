@@ -1506,12 +1506,23 @@ def _today_run_weather() -> dict | None:
 
 
 # מודל לכל לולאה — לפי איזון עלות/איכות שנבחר:
-#   אחרי אימון (ניתוח) → Sonnet · שבועי (תכנון) → Opus
+#   אחרי אימון (ניתוח, 3×/יום) → Sonnet · שבועי (תכנון+נרטיב, 1×/שבוע) → Fable 5.
+#   שבועי הועלה ל-Fable (המדרגה מעל Opus) 15.7: המשימה הכי מורכבת ורצה נדיר,
+#   ואיכות-הניסוח שם קריטית. פוסט-אימון נשאר Sonnet (יומי — לא מצדיק Fable).
 MODEL_POSTWORKOUT = "claude-sonnet-4-6"
-MODEL_WEEKLY = "claude-opus-4-8"
+MODEL_WEEKLY = "claude-fable-5"
+
+# רמת המאמץ (effort) לכל לולאה — שולט בעומק החשיבה ובעלות.
+#   low · medium · high · xhigh · max  (Fable/Opus 4.7+ תומכים ב-xhigh; Fable גם ב-max)
+# שבועי: xhigh — עומק גבוה למשימה הכי מורכבת, שרצה פעם בשבוע (עלות זניחה).
+# פוסט-אימון: medium — ניתוח יומי, איזון עלות/איכות.
+WEEKLY_EFFORT = "xhigh"
+POSTWORKOUT_EFFORT = "medium"
 
 # Haiku 4.5 לא תומך ב-effort / adaptive thinking (יחזיר 400). Sonnet/Opus כן.
-_ADAPTIVE_MODELS = {"claude-sonnet-4-6", "claude-opus-4-8"}
+# מודלים שתומכים ב-effort + adaptive thinking (Haiku לא — יחזיר 400).
+# Fable 5 חייב להיות כאן: בלעדיו השבועי היה רץ ללא thinking ובלי effort.
+_ADAPTIVE_MODELS = {"claude-sonnet-4-6", "claude-opus-4-8", "claude-fable-5"}
 
 
 def _stream_report(client, system_prompt: str, user_prompt: str,
@@ -1751,7 +1762,8 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
     print("קורא ל-Claude Opus (weekly, streaming)...\n")
     # 12000: דוח + WEEKLY_REPORT_JSON בלבד (מאז M3.3 ה-LLM לא פולט תוכנית — היא
     # נבנית דטרמיניסטית). עדיין מרווח גדול מעל הנצפה כדי למנוע truncation.
-    full_response = _stream_report(client, system_prompt, user_prompt, max_tokens=12000)
+    full_response = _stream_report(client, system_prompt, user_prompt, max_tokens=12000,
+                                   effort=WEEKLY_EFFORT)
 
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
     if not dry:  # ריצת-בדיקה לא דורסת את הדוח האמיתי האחרון
@@ -2028,7 +2040,7 @@ def run_revise(reply_text: str, dry: bool = False) -> tuple[bool, list]:
     client = anthropic.Anthropic()
     print(f"🔧 מעדכן תוכנית לפי: {reply_text!r}")
     full = _stream_report(client, REVISE_SYSTEM, user_prompt,
-                          max_tokens=8000, effort="medium", model=MODEL_POSTWORKOUT)
+                          max_tokens=8000, effort=POSTWORKOUT_EFFORT, model=MODEL_POSTWORKOUT)
     raw = extract_week_plan(full)
     if not raw or not raw.get("sessions"):
         print("⚠️  פרסור התוכנית המעודכנת נכשל — לא שונה דבר.")
@@ -2064,7 +2076,7 @@ def run_postworkout(client, knowledge_base: str, metrics: dict, data: dict) -> N
     # + בלוק POSTWORKOUT_JSON בסוף. ב-8192 (22.06) הפלט נחתך באמצע → אין JSON →
     # אין טלגרם. תקרה גבוהה זולה (ריצה אחת/יום) ומונעת truncation לתמיד.
     full = _stream_report(client, system_prompt, user_prompt, max_tokens=16000,
-                          effort="medium", model=MODEL_POSTWORKOUT)
+                          effort=POSTWORKOUT_EFFORT, model=MODEL_POSTWORKOUT)
     out = BASE_DIR / "postworkout_report.md"
     out.write_text(f"# ניתוח אחרי אימון — {datetime.now():%Y-%m-%d %H:%M}\n\n{full}\n", encoding="utf-8")
     print(f"\n\nנשמר: {out}")
