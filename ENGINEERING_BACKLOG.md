@@ -46,6 +46,14 @@ Grouped by milestone. Discovered-during-work items get appended here.
 
 ## M7 — Workflow consolidation
 - [TODO] M7.1 13 → ~5 workflows; remove near-duplicates; re-evaluate cron-job.org need.
+- [MAPPED 2026-07-15, do NOT remove yet — Hagay: map only] Redundancy map for the merge:
+  * **Telegram pollers (4)**: coach-postworkout · coach-evening-reply · coach-weekly-revision ·
+    ask-availability — all poll the same chat at different times. `telegram_intake` classifier
+    already exists → unify into ONE state-routed poller.
+  * **Dead morning cron**: coach-postworkout still carries `0,30 4,5,6` (leftover from the
+    deleted morning loop) — harmless extra runs, drop when merging.
+  * **Garmin push paths (4)**: push-week · strength-schedule · test-workout · adhoc-workout —
+    strength double-system (generic vs detailed) lives here; converge to one push path.
 
 ## M8 — Structural refactor
 - [TODO] M8.1 Split `coach.py` into packages.
