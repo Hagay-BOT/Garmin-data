@@ -122,7 +122,8 @@ def format_macro_for_prompt(macro: dict) -> str:
     if macro.get("status") == "post":
         return f"התוכנית הסתיימה. תחרות בעוד {macro['days_to_race']} ימים."
     race = macro["race"]
-    gate = " 🔬 **שבוע גייט — הערכת מאקרו מחדש**" if macro["gate"] else ""
+    gate = (" 🔬 **שבוע גייט — מבחן 5K Time-Trial לכיול VDOT מחדש** "
+            "(האיכות השבוע = 5K כמעט-מקסימלי; ממנו נעדכן קצבי-אימון)" if macro["gate"] else "")
     deload = " 🔻 **DELOAD**" if macro["deload"] else ""
     return (
         f"**מיקום במאקרו:** שבוע {macro['week_num']}/{macro['total_weeks']} · "

@@ -106,9 +106,15 @@ def generate(week_start: datetime.date, macro: dict,
         q_wd = _q_pref
     else:
         q_wd = free(0, 6, 1)
-    q_name = ("🏃 " + str(macro.get("quality") or "טמפו")).strip()
-    add_run(q_wd, "quality", q_name, q_km, athlete.THRESHOLD_PACE,
-            f"איכות לפי המאקרו: {macro.get('quality', 'טמפו')}. + strides בסיום.")
+    # T10: שבוע-שער → האיכות היא מבחן 5K Time-Trial לכיול VDOT (קונקרטי, בר-ביצוע).
+    if macro.get("gate"):
+        add_run(q_wd, "quality", "🏁 מבחן 5K Time-Trial (כיול VDOT)", 7.0, athlete.THRESHOLD_PACE,
+                "חימום 1.5 ק\"מ קל → 5 ק\"מ במאמץ כמעט-מקסימלי אחיד (מהיר-בר-קיימא, "
+                "לא ספרינט-פתיחה) → שחרור 0.5 ק\"מ. מדוד זמן 5K — ממנו נעדכן קצבי-אימון.")
+    else:
+        q_name = ("🏃 " + str(macro.get("quality") or "טמפו")).strip()
+        add_run(q_wd, "quality", q_name, q_km, athlete.THRESHOLD_PACE,
+                f"איכות לפי המאקרו: {macro.get('quality', 'טמפו')}. + strides בסיום.")
 
     # 3. רגליים (C) — אמצע-שבוע, לא צמוד לאיכות ולא יום-לפני-הלונג.
     legs_candidates = [w for w in (2, 1, 3) if w not in busy

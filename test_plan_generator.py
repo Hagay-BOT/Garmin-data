@@ -99,10 +99,24 @@ def test_preference_moves_long():
     assert pg.parse_availability("היה שבוע טוב")["prefer"] == {}
 
 
+def test_gate_week_builds_5k_tt():
+    # T10: שבוע-שער → האיכות היא מבחן 5K TT קונקרטי
+    m = dict(MACRO, gate=True, week_num=8)
+    p = pg.generate(SUNDAY, m, ["A", "B"])
+    q = [s for s in _by(p, "run") if s["subtype"] == "quality"][0]
+    assert "5K Time-Trial" in q["name"], q
+    assert "5 ק\"מ במאמץ" in q["desc"], q["desc"]
+    # שבוע רגיל → לא TT
+    p2 = pg.generate(SUNDAY, dict(MACRO, gate=False), ["A", "B"])
+    q2 = [s for s in _by(p2, "run") if s["subtype"] == "quality"][0]
+    assert "Time-Trial" not in q2["name"], q2
+
+
 def main():
     for t in [test_basic_structure, test_busy_saturday_moves_long,
               test_availability_parsing, test_deload_and_rotation_continuity,
-              test_easy_run_cap_and_shortfall, test_preference_moves_long]:
+              test_easy_run_cap_and_shortfall, test_preference_moves_long,
+              test_gate_week_builds_5k_tt]:
         t()
         print(f"  ✓ {t.__name__}")
     print("\nOK — plan generator rules verified.")
