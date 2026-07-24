@@ -2,6 +2,22 @@
 
 Reverse-chronological. One entry per meaningful change during the engineering program.
 
+## 2026-07-15
+- **Weekly model → Fable 5 @ effort=xhigh** (Hagay). Most complex loop, runs 1×/week (~$35/yr),
+  quality-of-reasoning critical. **CRITICAL FIX found in the same change:** `_ADAPTIVE_MODELS`
+  gated effort+adaptive-thinking to Sonnet/Opus only — switching to Fable would have run it
+  with NO effort/thinking. Added claude-fable-5. Effort now lives in tunable constants
+  WEEKLY_EFFORT / POSTWORKOUT_EFFORT.
+- **Practicality law (weekly prompt)** v1+v2: every workout instruction must carry
+  structure+distance/duration+pace; recommendations to ADD an element must carry
+  anchor(specific plan workout+why) · placement(where in the run) · execution(how to run it).
+  Kills amorphous "do a threshold set". Deterministic plan stays the source of truth.
+- **M7 redundancy map** recorded (no removals per Hagay): 4 telegram pollers, dead morning
+  cron, 4 garmin push paths.
+- **Travel-week live coaching** (12-18.7): repeated plan rebuilds via chat as reality shifted
+  (rest day, sleep, gym access, heavy legs) — each rebuilt, safety-clamped, resynced to watch
+  and audit-verified. Full-body adhoc tool (adhoc_workout.py + workflow) built for gym days.
+
 ## 2026-07-13
 - **Calibrate (first real week):** two production bugs found via Hagay's 12.07 run and fixed
   at root: (1) Garmin RPE boundary — raw 10 (=very easy, scale is ×10) passed the `>10`

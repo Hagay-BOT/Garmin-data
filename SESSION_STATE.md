@@ -78,6 +78,16 @@ to watch (10/10, 0 failures) → audit confirms all 5 runs matched with correct 
 New finding logged in backlog: strength double-system (generic vs detailed push paths) —
 unify later; days align, no user harm.
 Remaining approved build: **#2 (M3.2 reduce daily analysis)**.
+
+## Config as of 2026-07-15
+- **Weekly**: Fable 5 · effort=xhigh (WEEKLY_EFFORT). **Post-workout/revise**: Sonnet 4.6 ·
+  medium. Fable added to _ADAPTIVE_MODELS (else no effort/thinking). Tune via the two
+  EFFORT constants at top of coach.py.
+- **Practicality law** active in prompts/weekly.md — instructions must be executable
+  (structure+km/time+pace); ADD-recommendations need anchor·placement·execution.
+- **M7 map** recorded in backlog (do not remove workflows yet — Hagay: map only).
+- First real weekly run on the new stack (Fable + generator + practicality law): **Sat 20:30**.
+  Watch it; /calibrate after against the actual report.
 Note: prompts/revise.md stores athlete values as literals (documented in coach.py).
 [PRODUCT-HOLD items M3.2/M3.3/M4.1/M9.7 still await Hagay's explicit OK.]
 Pending side-note: fetch_garmin zone thresholds use %maxHR semantics — verify before wiring
