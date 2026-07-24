@@ -77,7 +77,20 @@ instead of −49%; Sunday-as-executed preserved; long back to 10.4 real) → app
 to watch (10/10, 0 failures) → audit confirms all 5 runs matched with correct kms.
 New finding logged in backlog: strength double-system (generic vs detailed push paths) —
 unify later; days align, no user harm.
-Remaining approved build: **#2 (M3.2 reduce daily analysis)**.
+Remaining approved build: **#2 (M3.2 reduce daily analysis)** — T5 readiness gate is its core, built.
+
+## OPUS_TASKS progress (2026-07-24)
+- **T1 ✅** easy-run cap 8km + volume-shortfall reporting. **T2 ✅** preference parsing (מעדיף
+  לונג בשישי moves long). **T3 ✅** robust _normalize_feel. **T4 ✅** strength double-push fixed
+  (unified name for upload/dedup) + strength-schedule deprecated. **T6 ✅** persistent body-state
+  flags (body_state.py, athlete_state.json) → prompt + safety factors.
+- **T5 🟡 CODE DONE, NOT LIVE** — readiness_gate.py built+tested but NOT wired to cron.
+  Needs (a) Hagay's approval of the Telegram wording, (b) confirm thresholds
+  (sleep_score<50, body_battery<30 in athlete.py). To go live: wire `python readiness_gate.py`
+  into coach-postworkout.yml (hourly watcher) as an extra step. Message wording is in
+  readiness_gate.py main().
+- Remaining OPUS_TASKS: T7 (dashboard planned↔actual), T8 (KB split), T9 (M7 workflow merge —
+  after T4/T5), T10 (5K-TT gate check).
 
 ## Config as of 2026-07-15
 - **Weekly**: Fable 5 · effort=xhigh (WEEKLY_EFFORT). **Post-workout/revise**: Sonnet 4.6 ·
