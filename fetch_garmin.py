@@ -45,6 +45,22 @@ STRENGTH_TYPES = {"strength_training", "weightlifting", "fitness_equipment", "gy
 # Activity types treated as a run (treadmill + trail included)
 RUN_TYPES = {"running", "treadmill_running", "trail_running"}
 
+
+def _normalize_feel(raw):
+    """גרמין feel → סקאלת 1..5 (1=גרוע, 5=מצוין). עמיד לשלוש צורות-קלט:
+    0/25/50/75/100 (הצורה הרגילה) · כבר 1..5 · כל ערך אחר ב-0..100 (המרה יחסית).
+    None/לא-מספרי → None (לא דורג)."""
+    if not isinstance(raw, (int, float)):
+        return None
+    exact = {0: 1, 25: 2, 50: 3, 75: 4, 100: 5}
+    if raw in exact:
+        return exact[raw]
+    if 1 <= raw <= 5:
+        return int(round(raw))
+    if 0 <= raw <= 100:
+        return max(1, min(5, round(raw / 25) + 1))
+    return None
+
 def classify_quality_subtype(anaerobic_eff, max_hr, avg_hr, ascent_m, dist_km, hr_zones=None):
     """
     תת-קטגוריה של ריצת איכות. **מבחין בעיקר לפי זמן ב-Z5** (עבודת VO2max אמיתית):
@@ -369,8 +385,10 @@ for activity in activities:
         "rpe": (round(perceived_exertion / 10, 1)
                 if isinstance(perceived_exertion, (int, float)) and perceived_exertion >= 10
                 else perceived_exertion),
-        "feel": ({0: 1, 25: 2, 50: 3, 75: 4, 100: 5}.get(workout_feel, workout_feel)
-                 if isinstance(workout_feel, (int, float)) else workout_feel),
+        # T3: מיפוי feel עמיד. גרמין מחזיר 0/25/50/75/100 → 1..5. ערך שכבר 1..5
+        # מוחזר כמו-שהוא; כל ערך אחר בטווח 0..100 מומר יחסית (במקום להיזרק גולמי
+        # ולהציג "feel 50"). None נשאר None.
+        "feel": _normalize_feel(workout_feel),
         "distance_km": distance_km,
         "duration_sec": int(activity.get("duration", 0)),
         "pace_sec_per_km": pace_sec_per_km,
