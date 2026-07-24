@@ -1237,7 +1237,7 @@ function buildZoneChart(runs, globalMaxHR){
       zones:[0,0,0,0,0]
     });
   }
-  const maxHR=globalMaxHR||180;
+  const maxHR=globalMaxHR||201;  // fallback = athlete.MAX_HR_FALLBACK (היה 180 — drift)
   runs.forEach(r=>{
     if(!r.date) return;
     const w=weeks.find(w=>r.date>=w.start&&r.date<=w.end);
@@ -1492,7 +1492,7 @@ fetch('data.json')
     const isOld=!data.activities&&Array.isArray(data.runs);
     const rawActs=data.activities||data.runs||[];
     const acts=rawActs.map(a=>isOld&&!a.activity_type?{...a,activity_type:'running'}:a);
-    const globalMaxHR=data.global_max_hr||180;
+    const globalMaxHR=data.global_max_hr||201;  // fallback = athlete.MAX_HR_FALLBACK
     if(data.last_updated){
       const d=new Date(data.last_updated);
       document.getElementById('nav-upd').textContent=

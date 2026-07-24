@@ -1739,6 +1739,12 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
         print(f"🗓️ אילוצי זמינות: {availability['raw'][:80]!r} → ימים עמוסים {availability['busy_days']}")
     last_seq = (history[-1].get("strength_sequence") if history else None) or []
     raw_week = pg.generate(next_sunday, next_macro, last_seq, availability)
+    # באג שנמצא בסקירה 15.7: אילוצי-זמינות הם חד-פעמיים. בלי מחיקה אחרי צריכה,
+    # כשל בשאלת-שבת (רשת/cron) היה גורם לאילוצים של שבוע שעבר לחול על שבוע חדש.
+    if availability.get("raw") and not dry:
+        _st_clear = _store.load_weekly_state()
+        _st_clear["availability_raw"] = ""
+        _store.save_weekly_state(_st_clear)
 
     _plan_runs = [s for s in raw_week["sessions"] if s["type"] == "run"]
     plan_md = "\n".join(
