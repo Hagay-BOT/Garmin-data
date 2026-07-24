@@ -89,8 +89,14 @@ Remaining approved build: **#2 (M3.2 reduce daily analysis)** — T5 readiness g
   (sleep_score<50, body_battery<30 in athlete.py). To go live: wire `python readiness_gate.py`
   into coach-postworkout.yml (hourly watcher) as an extra step. Message wording is in
   readiness_gate.py main().
-- Remaining OPUS_TASKS: T7 (dashboard planned↔actual), T8 (KB split), T9 (M7 workflow merge —
-  after T4/T5), T10 (5K-TT gate check).
+- **T7 ✅** dashboard planned→actual + journal card (verified live; sw cache v5).
+  **T8 ✅** KB split (postworkout −45% tokens). **T10 ✅** gate weeks build a concrete 5K TT.
+- **T9 ⏸️ DEFERRED** to a dedicated session: the "dead morning cron" is no longer dead (T5's
+  readiness gate uses the 6-10 window); only the 4-poller merge remains, which is a live
+  behavior change needing full-day monitoring — do NOT batch it.
+**ALL of T1-T8+T10 shipped & CI-green. Only T9 (workflow merge) remains, intentionally deferred.**
+Next real-world checkpoints: Sat 20:30 first Fable/xhigh weekly with practicality law;
+week-8 gate → first auto 5K TT; watch readiness gate fire on a low-sleep quality morning.
 
 ## Config as of 2026-07-15
 - **Weekly**: Fable 5 · effort=xhigh (WEEKLY_EFFORT). **Post-workout/revise**: Sonnet 4.6 ·
