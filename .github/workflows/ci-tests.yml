@@ -38,6 +38,7 @@ jobs:
         run: |
           python test_telegram_intake.py
           python test_plan_generator.py
+          python test_readiness_gate.py
           python test_coach.py
           python test_safety.py
           python test_approval_gates.py
