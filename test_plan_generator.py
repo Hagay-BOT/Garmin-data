@@ -73,9 +73,36 @@ def test_deload_and_rotation_continuity():
     assert total <= 26, f"deload חייב נפח נמוך ({total})"
 
 
+def test_easy_run_cap_and_shortfall():
+    # T1: הרבה ימים עמוסים → נפח בפועל < יעד → דיווח ב-notes, לא אובדן שקט
+    av = pg.parse_availability("שני עמוס, שלישי עמוס, רביעי עמוס, חמישי עמוס")
+    m = dict(MACRO, target_km=35, long_run_km=12)
+    p = pg.generate(SUNDAY, m, ["A", "B"], av)
+    assert "נפח בפועל" in p["notes"], f"חייב דיווח אובדן-נפח: {p['notes']}"
+    # T1: אף ריצה-קלה לא חורגת מ-8 ק"מ
+    for r in _by(p, "run"):
+        if r["subtype"] == "easy":
+            assert r["est_km"] <= 8.0, f"ריצה קלה מעל התקרה: {r['est_km']}"
+
+
+def test_preference_moves_long():
+    # T2: "מעדיף לונג בשישי" → הלונג עובר לשישי (weekday 4)
+    av = pg.parse_availability("מעדיף לונג בשישי")
+    assert av["prefer"].get("long") == 4, av
+    p = pg.generate(SUNDAY, MACRO, ["A", "B"], av)
+    longs = [r for r in _by(p, "run") if r["subtype"] == "long"]
+    assert longs and _wd(longs[0]["date"]) == 4, "לונג חייב לעבור לשישי"
+    # העדפה ליום עמוס לא חלה (עומס גובר)
+    av2 = pg.parse_availability("שישי אני עמוס, מעדיף לונג בשישי")
+    assert "long" not in av2["prefer"], av2
+    # טקסט בלי העדפה מפורשת — כלום
+    assert pg.parse_availability("היה שבוע טוב")["prefer"] == {}
+
+
 def main():
     for t in [test_basic_structure, test_busy_saturday_moves_long,
-              test_availability_parsing, test_deload_and_rotation_continuity]:
+              test_availability_parsing, test_deload_and_rotation_continuity,
+              test_easy_run_cap_and_shortfall, test_preference_moves_long]:
         t()
         print(f"  ✓ {t.__name__}")
     print("\nOK — plan generator rules verified.")

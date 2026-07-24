@@ -24,20 +24,33 @@ WEEKDAYS_HE = {"ראשון": 6, "שני": 0, "שלישי": 1, "רביעי": 2,
                "חמישי": 3, "שישי": 4, "שבת": 5}  # python weekday()
 
 _BUSY_WORDS = r"(עמוס|נסיעה|לא (אוכל|יכול|אהיה|נמצא)|אין לי|מילואים|חופש בלי|טס|עסוק)"
+_PREFER_WORDS = r"(מעדיף|עדיף|רוצה|בא לי|נוח לי)"
+# סוג-אימון שניתן להעדיף יום עבורו → מפתח פנימי
+_PREFER_KINDS = {"לונג": "long", "ארוכה": "long", "נפח": "long",
+                 "איכות": "quality", "סף": "quality", "טמפו": "quality",
+                 "אינטרוול": "quality"}
 
 
 def parse_availability(text: str) -> dict:
-    """טקסט-חופשי ("שלישי אני בנסיעה, חמישי עמוס") → {'busy_days': [weekday,...], 'raw': text}.
-    דטרמיניסטי ושמרני: יום מזוהה כעמוס רק אם מופיע במשפט עם מילת-עומס.
-    כל מה שלא זוהה — עדיין מגיע לנרטיב של ה-LLM דרך raw."""
-    busy = set()
+    """טקסט-חופשי → {'busy_days': [...], 'prefer': {'long': wd, 'quality': wd}, 'raw': text}.
+    דטרמיניסטי ושמרני: יום=עמוס רק במשפט עם מילת-עומס; העדפה=רק במשפט עם מילת-העדפה
+    + סוג-אימון + יום. כל מה שלא זוהה עדיין מגיע ל-LLM דרך raw."""
+    busy: set = set()
+    prefer: dict = {}
     if text:
         for sentence in re.split(r"[.,;\n]| ו(?=[א-ת])", text):
+            days = [wd for name, wd in WEEKDAYS_HE.items() if name in sentence]
             if re.search(_BUSY_WORDS, sentence):
-                for day_name, wd in WEEKDAYS_HE.items():
-                    if day_name in sentence:
-                        busy.add(wd)
-    return {"busy_days": sorted(busy), "raw": (text or "").strip()}
+                busy.update(days)
+            # העדפה: מילת-העדפה + סוג-אימון מוכר + יום יחיד ומפורש
+            if re.search(_PREFER_WORDS, sentence) and len(days) == 1:
+                for kw, kind in _PREFER_KINDS.items():
+                    if kw in sentence:
+                        prefer.setdefault(kind, days[0])
+                        break
+    # יום שגם עמוס וגם מועדף — העומס גובר (בטיחות לפני העדפה)
+    prefer = {k: v for k, v in prefer.items() if v not in busy}
+    return {"busy_days": sorted(busy), "prefer": prefer, "raw": (text or "").strip()}
 
 
 def _dates_for_week(week_start: datetime.date) -> dict:
@@ -56,6 +69,7 @@ def generate(week_start: datetime.date, macro: dict,
     """בונה WEEK_PLAN דטרמיניסטי. week_start חייב להיות יום ראשון."""
     assert week_start.weekday() == 6, "week_start חייב להיות ראשון (עוגן-השבוע)"
     busy = set((availability or {}).get("busy_days", []))
+    prefer = (availability or {}).get("prefer", {})
     dates = _dates_for_week(week_start)
     target_km = float(macro.get("target_km") or 25)
     long_km = min(float(macro.get("long_run_km") or 9), athlete.LONG_RUN_CAP_KM)
@@ -76,15 +90,22 @@ def generate(week_start: datetime.date, macro: dict,
         used_run_days.add(wd)
         return True
 
-    # 1. לונג — שבת (עוגן הנפח); שבת עמוסה → שישי; גם שישי → חמישי.
-    long_wd = free(5, 4, 3)
+    # 1. לונג — ברירת-מחדל שבת (עוגן הנפח); שבת עמוסה → שישי → חמישי.
+    #    T2: העדפת-לונג ("מעדיף לונג בשישי") גוברת אם היום פנוי.
+    long_wd = free(prefer["long"], 5, 4, 3) if "long" in prefer else free(5, 4, 3)
     add_run(long_wd, "long", f"🏃 ריצת נפח — {long_km:g} ק\"מ Z2",
             long_km, "6:50", "לפי דופק Z2 (עד 141), לא קצב.")
 
-    # 2. איכות — שני (≥48ש' לפני שבת); עמוס → ראשון/שלישי. deload → איכות קלה.
+    # 2. איכות — שני (≥48ש' מהלונג); עמוס → ראשון/שלישי. deload → איכות קלה.
+    #    T2: העדפת-איכות גוברת אם פנויה ורחוקה ≥48ש' מהלונג.
     is_intervals = "אינטרוול" in str(macro.get("quality", "")) or "VO2" in str(macro.get("quality", ""))
     q_km = 5.0 if deload else 6.0
-    q_wd = free(0, 6, 1)
+    _q_pref = prefer.get("quality")
+    if _q_pref is not None and _q_pref not in busy and _q_pref != long_wd \
+            and (long_wd is None or abs((long_wd - _q_pref)) % 7 >= 2):
+        q_wd = _q_pref
+    else:
+        q_wd = free(0, 6, 1)
     q_name = ("🏃 " + str(macro.get("quality") or "טמפו")).strip()
     add_run(q_wd, "quality", q_name, q_km, athlete.THRESHOLD_PACE,
             f"איכות לפי המאקרו: {macro.get('quality', 'טמפו')}. + strides בסיום.")
@@ -108,16 +129,26 @@ def generate(week_start: datetime.date, macro: dict,
     no_run_day = (q_wd + 1) % 7 if (is_intervals and q_wd is not None) else None
 
     # 6. נפח קל — הק"מ שנותר מתפזר על ימים פנויים (לא נחתך!).
+    #    T1: כל ריצה-קלה חסומה ב-EASY_RUN_CAP_KM (לא "מתנפחת" ל-9+ כשיש רק יום פנוי אחד).
+    gen_notes: list[str] = []
     rec_km = sum(s["est_km"] for s in sessions
                  if s.get("type") == "run" and "התאוששות" in s.get("name", ""))
     remaining = max(0.0, target_km - long_km - q_km - rec_km)
     easy_days = [w for w in (6, 1, 3, 4) if w not in busy and w not in used_run_days
                  and w != no_run_day and w != legs_wd][:2]
-    for i, wd in enumerate(easy_days):
-        km = round(remaining / len(easy_days), 1) if easy_days else 0
-        if km >= 3:
-            add_run(wd, "easy", f"🏃 קל Z2 — {km:g} ק\"מ", km, "6:50",
-                    f"ריצת בסיס לפי דופק Z2 ({athlete.EASY_PACE_RANGE}).")
+    if easy_days:
+        per = round(remaining / len(easy_days), 1)
+        for wd in easy_days:
+            km = min(per, athlete.EASY_RUN_CAP_KM)
+            if km >= 3:
+                add_run(wd, "easy", f"🏃 קל Z2 — {km:g} ק\"מ", km, "6:50",
+                        f"ריצת בסיס לפי דופק Z2 ({athlete.EASY_PACE_RANGE}).")
+
+    # T1: אם ימים עמוסים חסמו נפח — דיווח מפורש (מגיע לטלגרם דרך הדוח), לא אובדן שקט.
+    placed_km = round(sum(s["est_km"] for s in sessions if s["type"] == "run"), 1)
+    if target_km > 0 and placed_km < target_km * 0.9:
+        gen_notes.append(f"⚠️ נפח בפועל {placed_km:g} מתוך יעד {target_km:g} ק\"מ — "
+                         f"ימים פנויים לא הספיקו (אילוצי-זמינות). לא נחתך במכוון.")
 
     # 7. כוח עליון A/B ×2 — רוטציה ממשיכה מהשבוע שעבר, לא באותו יום כמו C.
     last_upper = next((k for k in reversed(last_strength_seq or []) if k in ("A", "B")), "B")
@@ -134,6 +165,7 @@ def generate(week_start: datetime.date, macro: dict,
         "macro_week": macro.get("week_num"),
         "phase": macro.get("phase", ""),
         "notes": ("נבנה דטרמיניסטית (plan_generator). "
-                  + (f"אילוצים: {(availability or {}).get('raw')}" if (availability or {}).get("raw") else "")),
+                  + (f"אילוצים: {(availability or {}).get('raw')} " if (availability or {}).get("raw") else "")
+                  + " ".join(gen_notes)),
         "sessions": sessions,
     }
