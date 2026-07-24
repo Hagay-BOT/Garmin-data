@@ -56,6 +56,10 @@ def main() -> None:
         d["notes"].append({"date": day, "text": text})
         added += 1
         print(f"📝 נרשמה הערה ({day}): {text[:60]}")
+        # T6: דגלי-גוף מתמשכים — אורתוגונלי לרישום ההערה (הערה יכולה גם לפתוח דגל).
+        import body_state
+        for chg in body_state.apply(text, today=day):
+            print(f"   {chg}")
 
     d["last_ts"] = newmax
     journal._save(d)

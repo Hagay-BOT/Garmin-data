@@ -1017,8 +1017,11 @@ def save_week_plan(raw: dict, prev_week_km: float = 0.0,
     if not full.get("sessions"):
         return False, ["לא נמצאו אימונים בתוכנית."], False
 
+    # T6: דגלי-גוף פעילים (פציעה/מחלה) נכנסים כ-factors לשכבת-הבטיחות → deload עמוק אם צריך.
+    import body_state as _bs
     plan, adjustments, warnings, needs_review = safety.clamp_and_validate_week_plan(
-        full, prev_week_km, macro, acwr, chronic_week_km=chronic_week_km)
+        full, prev_week_km, macro, acwr, chronic_week_km=chronic_week_km,
+        factors=_bs.safety_factors())
     if plan is None:
         # דחייה מבנית — לא כותבים שום דבר.
         return False, warnings, True
@@ -1754,9 +1757,12 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
 
     system_prompt = SYSTEM_PROMPT_TEMPLATE.format(knowledge_base=knowledge_base,
                                                   **ATHLETE_PROMPT_VARS)
+    import body_state as _bs
+    _body_line = _bs.prompt_line()
     user_prompt = (_format_weekly_analysis_section(analysis)
                    + _format_weekly_quality_segments(metrics)
                    + build_user_prompt(metrics, history, compliance)
+                   + (f"\n\n{_body_line}" if _body_line else "")
                    + "\n\n### התוכנית לשבוע הבא — נבנתה דטרמיניסטית (נתונה. אל תבנה/תשנה תוכנית!)\n"
                    + plan_md
                    + (f"\n\nאילוצי הזמינות שהמתאמן מסר: {availability['raw']}"

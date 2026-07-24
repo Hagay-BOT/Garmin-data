@@ -127,3 +127,15 @@ def load_history() -> list:
 
 def load_data() -> dict:
     return _read("data.json", {"activities": [], "daily": {}})
+
+
+# ── athlete_state.json — דגלי-גוף מתמשכים (T6): ברך/קרסול/מחלה ───────────────
+
+def load_athlete_state() -> dict:
+    d = _read("athlete_state.json", {})
+    d.setdefault("flags", {})   # {"knee": {"since": "YYYY-MM-DD", "note": "..."}}
+    return d
+
+
+def save_athlete_state(d: dict) -> None:
+    _write("athlete_state.json", d)
