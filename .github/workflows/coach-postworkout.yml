@@ -50,6 +50,19 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
+      - name: Readiness gate (morning only — quality/long day + low readiness → suggest swap)
+        if: ${{ github.event_name == 'schedule' }}
+        run: |
+          HOUR=$(TZ=Asia/Jerusalem date +%H)
+          if [ "$HOUR" -ge 6 ] && [ "$HOUR" -le 10 ]; then
+            python readiness_gate.py
+          else
+            echo "Not the morning window (now $HOUR) — skipping readiness gate"
+          fi
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
       - name: End-of-day cancellation check (23:00 IL only, no run today)
         if: ${{ github.event_name == 'schedule' }}
         run: |
@@ -66,4 +79,4 @@ jobs:
       - name: Commit reports + state
         run: |
           bash scripts/git_sync.sh "coach: workout watcher $(TZ=Asia/Jerusalem date '+%Y-%m-%d %H:%M')" \
-            data.json postworkout_report.md analyzed_runs.json evening_state.json run_cancellations.json journal.json
+            data.json postworkout_report.md analyzed_runs.json evening_state.json run_cancellations.json journal.json weekly_state.json athlete_state.json
