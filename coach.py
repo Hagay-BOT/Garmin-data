@@ -1067,12 +1067,24 @@ KB_PRIORITY = {
 }
 
 
-def load_knowledge_base() -> str:
-    """קורא את כל קובצי ה-.md לפי עדיפות (אישי → תוכנית → ראיות אקדמיות → השאר).
-    כל קובץ מחקר שמוסיפים נכנס אוטומטית."""
+# T8: KB core לכל הלולאות; מיקוד ל-postworkout (ניתוח-ריצה בלבד — לא צריך מחקר
+# תחרויות/פסיכולוגיה/תזונה שקורה רק בשבועי). weekly = הכל (תכנון עמוק).
+KB_CORE = {"user_profile.md", "macro_plan.md", "feedback_framework.md",
+           "running_metrics_families.md"}
+KB_POSTWORKOUT_EXTRA = {"running_technique.md", "running_economy.md",
+                        "strength_for_running.md", "injury_prevention.md",
+                        "polarized_training.md"}
+
+
+def load_knowledge_base(mode: str = "weekly") -> str:
+    """מחזיר את בסיס-הידע. mode='weekly' → כל הקבצים (תכנון עמוק). mode='postworkout'
+    → core + קבצי ניתוח-ריצה בלבד (חוסך ~חצי מהטוקנים, מחדד את המיקוד)."""
     if not KB_DIR.exists():
         return ""
     md_files = sorted(KB_DIR.glob("*.md"))
+    if mode == "postworkout":
+        allow = KB_CORE | KB_POSTWORKOUT_EXTRA
+        md_files = [p for p in md_files if p.name in allow]
     md_files.sort(key=lambda p: (KB_PRIORITY.get(p.name, 99), p.name))
     parts = []
     for path in md_files:
@@ -1583,7 +1595,7 @@ def main():
         print(f"🚩 {len(metrics['red_flags'])} דגלים אדומים")
 
     print("טוען בסיס ידע...")
-    knowledge_base = load_knowledge_base()
+    knowledge_base = load_knowledge_base(mode=mode)  # T8: postworkout מקבל KB ממוקד
     client = anthropic.Anthropic()
 
     if mode == "postworkout":
