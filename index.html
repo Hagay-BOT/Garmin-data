@@ -532,12 +532,23 @@
     @keyframes wpPop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.18)}100%{transform:scale(1)}}
     .wp-rest{opacity:.5}
     .wp-none{font-size:.7rem;color:var(--t3);text-align:center;padding:1rem}
+    .jn-list{display:flex;flex-direction:column;gap:.5rem}
+    .jn-row{display:flex;gap:.6rem;align-items:flex-start;font-size:.74rem;line-height:1.4}
+    .jn-date{color:var(--t3);flex:0 0 auto;font-variant-numeric:tabular-nums;padding-top:.05rem}
+    .jn-text{color:var(--t2);white-space:pre-wrap;word-break:break-word}
+    .jn-flag{color:#f59e0b;margin-inline-end:.2rem}
   </style>
   <div class="card wp-card" id="wp-card">
     <div class="sec-title wp-head">אימוני השבוע
       <span class="wp-prog" id="wp-prog"></span>
     </div>
     <div class="wp-list" id="wp-list"><div class="wp-none">טוען תוכנית…</div></div>
+  </div>
+
+  <!-- Journal notes (T7) -->
+  <div class="card jn-card" id="jn-card" style="display:none">
+    <div class="sec-title">הערות אחרונות</div>
+    <div class="jn-list" id="jn-list"></div>
   </div>
 
   <!-- Week Compare -->
@@ -821,7 +832,20 @@ function buildWeekPlan(acts){
       const isManualOnly=!autoDone(s) && manual.has(_wpKey(s));
       if(isDone) done++;
       let name, sub, acc;
-      if(s.type==='run'){ name=s.name; sub=(s.est_km?s.est_km+' ק"מ · ':'')+'ריצה'; acc='#22d3ee'; }
+      if(s.type==='run'){
+        name=s.name;
+        sub=(s.est_km?s.est_km+' ק"מ · ':'')+'ריצה';
+        // T7: לריצה שבוצעה — הצג מרחק בפועל מול המתוכנן (מתוכנן→בוצע)
+        if(isDone){
+          const day=byDate[s.date]||[];
+          const run=day.find(a=>RUN_TYPES.has(a.activity_type));
+          if(run && run.distance_km){
+            const act=(+run.distance_km).toFixed(1).replace(/\.0$/,'');
+            sub=`מתוכנן ${s.est_km||'?'} → בוצע ${act} ק"מ`;
+          }
+        }
+        acc='#22d3ee';
+      }
       else{ name=WP_STR[s.key]||('כוח '+s.key); sub='אימון כוח'; acc='#a78bfa'; }
       return `<div class="wp-row ${isDone?'done':''} ${isToday?'today':''}" style="--acc:${acc};cursor:pointer" onclick="toggleSession(${i})">
         <div class="wp-day"><div class="dn">${dn}</div><div class="dd">${dd}</div></div>
@@ -834,6 +858,25 @@ function buildWeekPlan(acts){
     if(progEl) progEl.innerHTML=`<b>${done}</b>/${plan.sessions.length} הושלמו`;
   }).catch(()=>{ list.innerHTML='<div class="wp-none">לא ניתן לטעון את התוכנית.</div>'; });
 }
+
+// ── Journal notes (T7) — הערות המתאמן, 6 אחרונות ────────────────────────────
+function renderJournal(){
+  fetch('journal.json').then(r=>r.ok?r.json():null).then(j=>{
+    const notes=(j&&j.notes)||[];
+    const card=document.getElementById('jn-card'), list=document.getElementById('jn-list');
+    if(!card||!list||!notes.length) return;
+    const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const rows=notes.slice(-6).reverse().map(n=>{
+      const t=esc(n.text||'');
+      const flag=/כאב|פצוע|פציעה|חולה|מחלה|תפוס/.test(t)?'<span class="jn-flag">⚠</span>':'';
+      const d=(n.date||'').slice(5).replace('-','/');
+      return `<div class="jn-row"><div class="jn-date">${d}</div><div class="jn-text">${flag}${t}</div></div>`;
+    }).join('');
+    list.innerHTML=rows;
+    card.style.display='';
+  }).catch(()=>{});
+}
+renderJournal();
 
 // ── Workout detail (click a plan row → inline accordion below it) ───────────
 let STRENGTH_DB=null;
