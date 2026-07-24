@@ -1,5 +1,8 @@
-name: Schedule Strength Workouts
+name: Schedule Strength Workouts (⚠️ deprecated — use Approve Week)
 
+# T4/M7: מיותר לזרימה הרגילה — approve-week (confirm_week→push_week) כבר דוחף את
+# כל אימוני-הכוח של התוכנית עם השם המפורט. הכלי הזה נשאר ידני-בלבד לשעת-חירום
+# (re-push נקודתי). אל תריץ יחד עם approve-week — יוצר כפילות. יימחק ב-M7.
 on:
   workflow_dispatch:
     inputs:

@@ -146,6 +146,13 @@ def build_run(session: dict) -> RunningWorkout:
     )
 
 
+def strength_name(key: str) -> str:
+    """T4: השם הקנוני של אימון-כוח — **בדיוק** מה ש-build_strength מעלה לשעון.
+    חובה שהתיעוד/דדופ ישתמשו בזה ולא בשם אחר, אחרת דדופ מול לוח-גרמין נכשל
+    (העלינו 'משיכה — גב' אבל בדקנו מול 'כוח A — Pull' → כפילות)."""
+    return build_strength(key).get("workoutName", STRENGTH_DEFS[key]["name"])
+
+
 def build_strength(key: str) -> dict:
     """אימון כוח ברמת-תרגיל (סטים · חזרות · מנוחה) מ-strength_workouts.json —
     אותו builder שנבדק ועבד בשעון. נופל חזרה למשבצת-זמן אם ה-DB חסר/שבור,
@@ -220,7 +227,7 @@ def main():
         truth = garmin_client.scheduled_workouts(client, _start, _end)
         local = {(c["date"], c["name"]) for c in store.load_created()}
         planned = {(s["date"], s["name"] if s["type"] == "run"
-                    else STRENGTH_DEFS[s["key"]]["name"]) for s in sessions}
+                    else strength_name(s["key"])) for s in sessions}
         print(f"=== AUDIT {_start}..{_end} · גרמין={len(truth)} · קובץ={len(local)} · תוכנית={len(planned)} ===")
         for t in truth:
             key = (t["date"], t["name"])
@@ -283,7 +290,7 @@ def main():
         created = list(already.values()) if not force else []
         failures = []
         for s in sessions:
-            name = s["name"] if s["type"] == "run" else STRENGTH_DEFS[s["key"]]["name"]
+            name = s["name"] if s["type"] == "run" else strength_name(s["key"])
             if not force and (s["date"], name) in already:
                 print(f"⏭️  {s['date']} · {name} · כבר קיים — דילוג")
                 continue
