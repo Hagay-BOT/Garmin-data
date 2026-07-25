@@ -368,6 +368,77 @@
         "A",
         "B"
       ]
+    },
+    {
+      "week_of": "2026-07-19",
+      "generated_at": "2026-07-25 18:29",
+      "headline": "🎯 מיקוד סף: פער VDOT 4.6 (נוכחי 33.7 → נדרש 38.3) — הסף הוא המנוע",
+      "threshold_snapshot": {
+        "current_vdot": 33.7,
+        "required_vdot": 38.3,
+        "vdot_gap": 4.6,
+        "threshold_pace": null
+      },
+      "macro": {
+        "week_num": 6,
+        "phase": "Build",
+        "deload": false,
+        "gate": false
+      },
+      "metrics": {
+        "ctl": 29.7,
+        "atl": 14.9,
+        "tsb": 14.8,
+        "acwr": 0.5,
+        "ramp_rate_4w": -4.5
+      },
+      "fitness_4week": {
+        "available": true,
+        "window_days": 28,
+        "runs": 12,
+        "weekly_km_avg": 18.3,
+        "total_km": 73.4,
+        "vdot": 33.7,
+        "vdot_basis": "6.3ק\"מ @ 5:38/ק\"מ (2026-07-06)",
+        "threshold_pace": null,
+        "threshold_runs": 0,
+        "ef_z2_avg": 1.0612,
+        "z2_runs": 9
+      },
+      "zones_28d": {
+        "easy_pct": 63.8,
+        "hard_pct": 6.6
+      },
+      "week_actual": {
+        "run_count": 2,
+        "total_km": 14.5,
+        "total_load": 97.4
+      },
+      "red_flags": [],
+      "recommended_plan": {
+        "focus": "הגדלת race-pace בלונג",
+        "key_workout": "1× Threshold + 3 ק\"מ @5:20",
+        "run_count": 5,
+        "total_km_approx": 35.0
+      },
+      "compliance": {
+        "prior_week_of": "2026-07-12",
+        "plan_focus": "התחלת Build — race-pace ראשון בלונג",
+        "plan_key_workout": "1× Threshold + 2 ק\"מ @5:20 בלונג",
+        "planned_runs": 5,
+        "actual_runs": 2,
+        "planned_km_approx": 33.0,
+        "actual_km": 14.5,
+        "km_compliance_pct": 44,
+        "compliance_level": "נמוך"
+      },
+      "strength_sequence": [
+        "A",
+        "B",
+        "C",
+        "A",
+        "B"
+      ]
     }
   ]
 }

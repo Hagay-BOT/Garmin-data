@@ -1,86 +1,144 @@
 {
-  "week_of": "2026-07-19",
-  "macro_week": 6,
+  "week_of": "2026-07-26",
+  "macro_week": 7,
   "phase": "Build",
   "goal_race": "15K @ 5:20",
-  "notes": "נוצר אוטומטית מהסקירה השבועית.",
+  "notes": "נבנה דטרמיניסטית (plan_generator). ",
   "sessions": [
     {
-      "date": "2026-07-21",
-      "day": "שלישי",
+      "date": "2026-07-26",
+      "day": "ראשון",
       "type": "run",
       "subtype": "easy",
-      "name": "🏃 קל Z2 — 4.5 ק\"מ",
+      "name": "🏃 קל Z2 — 4 ק\"מ",
       "desc": "ריצת בסיס לפי דופק Z2 (6:45–7:00).",
-      "est_km": 4.5,
+      "est_km": 4.0,
       "steps": [
         {
           "kind": "warmup",
-          "seconds": 540
+          "seconds": 329
         },
         {
           "kind": "interval",
-          "seconds": 855
+          "seconds": 1074
         },
         {
           "kind": "cooldown",
-          "seconds": 360
+          "seconds": 219
         }
       ]
     },
     {
-      "date": "2026-07-22",
+      "date": "2026-07-26",
+      "day": "ראשון",
+      "type": "strength",
+      "key": "A"
+    },
+    {
+      "date": "2026-07-27",
+      "day": "שני",
+      "type": "run",
+      "subtype": "quality",
+      "name": "🏃 1× Threshold + 3.7 ק\"מ @5:20",
+      "desc": "איכות לפי המאקרו: 1× Threshold + 3.7 ק\"מ @5:20. + strides בסיום.",
+      "est_km": 3.7,
+      "steps": [
+        {
+          "kind": "warmup",
+          "seconds": 329
+        },
+        {
+          "kind": "interval",
+          "seconds": 511
+        },
+        {
+          "kind": "cooldown",
+          "seconds": 219
+        }
+      ]
+    },
+    {
+      "date": "2026-07-27",
+      "day": "שני",
+      "type": "strength",
+      "key": "B"
+    },
+    {
+      "date": "2026-07-28",
+      "day": "שלישי",
+      "type": "run",
+      "subtype": "easy",
+      "name": "🏃 קל Z2 — 4 ק\"מ",
+      "desc": "ריצת בסיס לפי דופק Z2 (6:45–7:00).",
+      "est_km": 4.0,
+      "steps": [
+        {
+          "kind": "warmup",
+          "seconds": 329
+        },
+        {
+          "kind": "interval",
+          "seconds": 1074
+        },
+        {
+          "kind": "cooldown",
+          "seconds": 219
+        }
+      ]
+    },
+    {
+      "date": "2026-07-29",
       "day": "רביעי",
       "type": "strength",
       "key": "C"
     },
     {
-      "date": "2026-07-23",
+      "date": "2026-07-30",
       "day": "חמישי",
       "type": "run",
       "subtype": "easy",
-      "name": "🚶 התאוששות Z1 — 3.3 ק\"מ (אחרי רגליים)",
+      "name": "🚶 התאוששות Z1 — 2.4 ק\"מ (אחרי רגליים)",
       "desc": "קל מאוד/הליכה-ריצה. אחרי יום רגליים.",
-      "est_km": 3.3,
+      "est_km": 2.4,
       "steps": [
         {
           "kind": "warmup",
-          "seconds": 540
+          "seconds": 329
         },
         {
           "kind": "interval",
-          "seconds": 387
+          "seconds": 499
         },
         {
           "kind": "cooldown",
-          "seconds": 360
+          "seconds": 219
         }
       ]
     },
     {
-      "date": "2026-07-23",
+      "date": "2026-07-30",
       "day": "חמישי",
       "type": "strength",
       "key": "A"
     },
     {
-      "date": "2026-07-24",
+      "date": "2026-07-31",
       "day": "שישי",
       "type": "strength",
       "key": "B"
     },
     {
-      "date": "2026-07-25",
+      "date": "2026-08-01",
       "day": "שבת",
       "type": "run",
       "subtype": "long",
-      "name": "🏃 ריצת נפח — 11 ק\"מ Z2",
+      "name": "🏃 ריצת נפח — 7.3 ק\"מ Z2",
       "desc": "לפי דופק Z2 (עד 141), לא קצב.",
-      "est_km": 11.0,
+      "est_km": 7.3,
       "steps": [
         {
           "kind": "interval",
-          "seconds": 4290
+          "seconds": 2994
         }
       ]
     }
@@ -89,9 +147,9 @@
     "generated_by": "LLM",
     "approval_required": true,
     "needs_review": false,
-    "safety_adjustments": [],
-    "warnings": [
-      "אין נתון נפח לשבוע הקודם — לא ניתן לאמת התקדמות נפח."
-    ]
+    "safety_adjustments": [
+      "נפח הופחת ב-39% ל-21.3 ק\"מ (מ-35.0) לעמידה במגבלת התקדמות."
+    ],
+    "warnings": []
   }
 }
