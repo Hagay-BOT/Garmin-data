@@ -532,7 +532,12 @@
     @keyframes wpPop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.18)}100%{transform:scale(1)}}
     .wp-rest{opacity:.5}
     .wp-none{font-size:.7rem;color:var(--t3);text-align:center;padding:1rem}
-    .jn-list{display:flex;flex-direction:column;gap:.5rem}
+    .jn-head{cursor:pointer;user-select:none;display:flex;align-items:center;gap:.1rem}
+    .jn-head:hover .month-arrow{opacity:.8}
+    .jn-count{font-size:.63rem;color:var(--t3);font-weight:400;margin-inline-start:.4rem}
+    .jn-list.jn-hidden{display:none}
+    .jn-list{display:flex;flex-direction:column;gap:.5rem;margin-top:.6rem;
+             animation:wpd-in .18s var(--ease)}
     .jn-row{display:flex;gap:.6rem;align-items:flex-start;font-size:.74rem;line-height:1.4}
     .jn-date{color:var(--t3);flex:0 0 auto;font-variant-numeric:tabular-nums;padding-top:.05rem}
     .jn-text{color:var(--t2);white-space:pre-wrap;word-break:break-word}
@@ -543,12 +548,6 @@
       <span class="wp-prog" id="wp-prog"></span>
     </div>
     <div class="wp-list" id="wp-list"><div class="wp-none">טוען תוכנית…</div></div>
-  </div>
-
-  <!-- Journal notes (T7) -->
-  <div class="card jn-card" id="jn-card" style="display:none">
-    <div class="sec-title">הערות אחרונות</div>
-    <div class="jn-list" id="jn-list"></div>
   </div>
 
   <!-- Week Compare -->
@@ -611,6 +610,15 @@
       <div class="zone-lbl"><div class="zone-dot" style="background:#f97316"></div>Z4 סף</div>
       <div class="zone-lbl"><div class="zone-dot" style="background:#f87171"></div>Z5 מקסימום</div>
     </div>
+  </div>
+
+  <!-- Journal notes (T7) — מתקפל, סגור כברירת מחדל -->
+  <div class="card jn-card" id="jn-card" style="display:none">
+    <div class="sec-title jn-head" onclick="jnToggle()">
+      <span class="month-arrow closed" id="jn-arrow">▼</span> הערות אחרונות
+      <span class="jn-count" id="jn-count"></span>
+    </div>
+    <div class="jn-list jn-hidden" id="jn-list"></div>
   </div>
 
   <!-- Activity Table -->
@@ -859,7 +867,14 @@ function buildWeekPlan(acts){
   }).catch(()=>{ list.innerHTML='<div class="wp-none">לא ניתן לטעון את התוכנית.</div>'; });
 }
 
-// ── Journal notes (T7) — הערות המתאמן, 6 אחרונות ────────────────────────────
+// ── Journal notes (T7) — הערות המתאמן, מתקפל (סגור כברירת מחדל, זוכר בחירה) ──
+function jnToggle(){
+  const list=document.getElementById('jn-list'), arr=document.getElementById('jn-arrow');
+  if(!list) return;
+  const nowHidden=list.classList.toggle('jn-hidden');
+  if(arr) arr.classList.toggle('closed', nowHidden);
+  try{ localStorage.setItem('jnOpen', nowHidden?'0':'1'); }catch(e){}
+}
 function renderJournal(){
   fetch('journal.json').then(r=>r.ok?r.json():null).then(j=>{
     const notes=(j&&j.notes)||[];
@@ -873,6 +888,14 @@ function renderJournal(){
       return `<div class="jn-row"><div class="jn-date">${d}</div><div class="jn-text">${flag}${t}</div></div>`;
     }).join('');
     list.innerHTML=rows;
+    const cnt=document.getElementById('jn-count');
+    if(cnt) cnt.textContent=`${Math.min(notes.length,6)} אחרונות`;
+    // ברירת מחדל: סגור. נפתח רק אם הגיא בחר לפתוח בעבר.
+    let open=false;
+    try{ open=localStorage.getItem('jnOpen')==='1'; }catch(e){}
+    list.classList.toggle('jn-hidden', !open);
+    const arr=document.getElementById('jn-arrow');
+    if(arr) arr.classList.toggle('closed', !open);
     card.style.display='';
   }).catch(()=>{});
 }

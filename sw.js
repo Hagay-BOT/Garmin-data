@@ -1,5 +1,5 @@
 // Service worker for the Garmin dashboard PWA
-const CACHE = 'garmin-dash-v5';  // bump on index.html changes → clean reinstall + evict stale (T7)
+const CACHE = 'garmin-dash-v6';  // bump on index.html changes → clean reinstall + evict stale (T7)
 const SHELL = [
   './',
   './index.html',
