@@ -76,6 +76,24 @@ def main() -> None:
     import telegram_intake
     kind = telegram_intake.classify(reply)
     if kind == "note":
+        # באג 26.07: הודעת-כאב בזמן שתוכנית ממתינה לאישור נבלעה בשקט — הגיא נשאר
+        # בלי מענה והתוכנית לא עלתה. הערה רגילה עדיין שקטה; הערת-גוף מקבלת מענה.
+        import body_state
+        pains = [p for a, p in body_state.detect(reply) if a == "open"]
+        body_state.apply(reply)
+        if pains and st.get("last_pain_ack") != reply[:80]:
+            labels = ", ".join(body_state._LABELS_HE.get(p, p) for p in pains)
+            tg.send_message(
+                f"🩹 קיבלתי — רשמתי דגל: <b>{_html.escape(labels)}</b>.\n\n"
+                f"התוכנית של השבוע <b>עדיין ממתינה לאישורך</b> ולא עלתה לשעון.\n"
+                f"איך להמשיך?\n"
+                f"• <b>'הקל'</b> — אבנה מחדש שבוע מוקל שמתחשב בכאב\n"
+                f"• <b>'אשר'</b> — להעלות כמו שהיא\n"
+                f"• או פשוט תכתוב מה לשנות ✏️")
+            st["last_pain_ack"] = reply[:80]
+            _save_state(st)
+            print(f"🩹 הערת-כאב ({labels}) — נשלח מענה, התוכנית ממתינה.")
+            return
         print(f"📝 סווג כהערת-יומן (לא עריכת-תוכנית) — מדלג. capture_notes ירשום אותה.")
         return
 
