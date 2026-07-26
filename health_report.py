@@ -5,7 +5,7 @@ Health report (M1.3) — dead-man's switch for a project that must run unattende
 Checks every subsystem's freshness/state deterministically (no LLM) and sends a
 weekly one-message summary to Telegram. Silent failures become visible:
   - data.json staleness (fetch pipeline dead? cron disabled? secrets expired?)
-  - postworkout: last analyzed run vs last run in data; open retry counters
+  - runs ingested in the last week (postworkout analysis was removed 26.07)
   - weekly plan: week_plan.json covers the current week? approved?
   - journal capture: last note timestamp
   - GitHub 60-day cron-disable risk: days since last commit
@@ -59,21 +59,13 @@ def build_report() -> tuple[str, bool]:
     item(age is not None and age <= 1.5,
          f"נתוני גרמין: עודכנו לפני {age} ימים" if age is not None else "נתוני גרמין: לא ניתן לקבוע")
 
-    # 2. Postworkout: any run in data newer than last analyzed?
+    # 2. ריצות אחרונות נקלטו? (ניתוח-אחרי-אימון בוטל 26.07 — בודקים קליטת נתונים בלבד)
     data = _load("data.json")
-    analyzed = set(str(x) for x in _load("analyzed_runs.json").get("analyzed", []))
-    pending = _load("analyzed_runs.json").get("pending", {})
     run_types = {"running", "treadmill_running", "trail_running"}
-    cutoff = (TODAY - datetime.timedelta(days=2)).isoformat()
-    recent_unanalyzed = [a for a in data.get("activities", [])
-                         if a.get("activity_type") in run_types
-                         and a.get("date", "") >= cutoff
-                         and str(a.get("activity_id")) not in analyzed]
-    item(not recent_unanalyzed,
-         "ניתוח אחרי-אימון: אין ריצות שלא נותחו" if not recent_unanalyzed
-         else f"ניתוח אחרי-אימון: {len(recent_unanalyzed)} ריצות אחרונות ללא ניתוח!")
-    if pending:
-        item(False, f"ניסיונות-ניתוח פתוחים: {pending}", warn_only=True)
+    cutoff = (TODAY - datetime.timedelta(days=7)).isoformat()
+    recent_runs = [a for a in data.get("activities", [])
+                   if a.get("activity_type") in run_types and a.get("date", "") >= cutoff]
+    item(True, f"ריצות שנקלטו בשבוע האחרון: {len(recent_runs)}")
 
     # 3. Weekly plan covers current week (Sunday anchor)?
     plan = _load("week_plan.json")

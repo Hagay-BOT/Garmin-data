@@ -66,21 +66,6 @@ def save_week_plan(plan: dict) -> None:
     _write("week_plan.json", plan)
 
 
-# ── analyzed_runs.json — dedup ניתוחי ריצה + מוני retry ──────────────────────
-
-def load_analyzed() -> dict:
-    d = _read("analyzed_runs.json", {})
-    return {"version": 1,
-            "analyzed": [str(x) for x in d.get("analyzed", [])],
-            "pending": {str(k): int(v) for k, v in (d.get("pending") or {}).items()}}
-
-
-def save_analyzed(analyzed: set | list, pending: dict) -> None:
-    _write("analyzed_runs.json",
-           {"version": 1, "analyzed": sorted(str(x) for x in analyzed)[-200:],
-            "pending": pending})
-
-
 # ── journal.json — הערות המתאמן ──────────────────────────────────────────────
 
 def load_journal() -> dict:

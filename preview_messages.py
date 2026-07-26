@@ -12,7 +12,6 @@ import datetime
 
 import telegram_notify
 import coach
-import store
 
 SENT = []
 
@@ -26,25 +25,6 @@ telegram_notify.send_message = _fake_send
 
 
 def main():
-    data = store.load_data()
-    runs = [a for a in data["activities"] if a.get("activity_type") in coach.RUN_TYPES]
-    last = runs[-1] if runs else {}
-    run_done = last.get("date") == datetime.date.today().isoformat()
-
-    pw = {
-        "category": {"base_run": "ריצה קלה", "quality_tempo": "טמפו",
-                     "quality_intervals": "אינטרוולים", "long_run": "ריצה ארוכה"}.get(
-                         last.get("category"), last.get("category", "ריצה")),
-        "planned": coach._todays_planned_run_md(),
-        "actual": (f"{last.get('distance_km','?')} ק\"מ · דופק {last.get('avg_hr','?')} · "
-                   f"קדנס {last.get('cadence_spm','?')} · GCT {last.get('gct_ms','?')}ms"),
-        "improve": ["<LLM: דגש 1 — מדד→פירוש→עוגן>", "<LLM: דגש 2>"],
-        "keep": "<LLM: דגש שימור>",
-        "red_flags": [],
-        "next": coach._next_sessions_md(run_done),
-    }
-    coach._send_postworkout_telegram(pw)
-
     wr = {
         "headline": "<LLM: כותרת השבוע>",
         "compass": "<LLM: מצפן מול היעד>",

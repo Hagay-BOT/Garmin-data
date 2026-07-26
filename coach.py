@@ -1068,24 +1068,11 @@ KB_PRIORITY = {
 }
 
 
-# T8: KB core לכל הלולאות; מיקוד ל-postworkout (ניתוח-ריצה בלבד — לא צריך מחקר
-# תחרויות/פסיכולוגיה/תזונה שקורה רק בשבועי). weekly = הכל (תכנון עמוק).
-KB_CORE = {"user_profile.md", "macro_plan.md", "feedback_framework.md",
-           "running_metrics_families.md"}
-KB_POSTWORKOUT_EXTRA = {"running_technique.md", "running_economy.md",
-                        "strength_for_running.md", "injury_prevention.md",
-                        "polarized_training.md"}
-
-
-def load_knowledge_base(mode: str = "weekly") -> str:
-    """מחזיר את בסיס-הידע. mode='weekly' → כל הקבצים (תכנון עמוק). mode='postworkout'
-    → core + קבצי ניתוח-ריצה בלבד (חוסך ~חצי מהטוקנים, מחדד את המיקוד)."""
+def load_knowledge_base() -> str:
+    """מחזיר את בסיס-הידע המלא (רק הלולאה השבועית צורכת אותו מאז ביטול ניתוח-האימון)."""
     if not KB_DIR.exists():
         return ""
     md_files = sorted(KB_DIR.glob("*.md"))
-    if mode == "postworkout":
-        allow = KB_CORE | KB_POSTWORKOUT_EXTRA
-        md_files = [p for p in md_files if p.name in allow]
     md_files.sort(key=lambda p: (KB_PRIORITY.get(p.name, 99), p.name))
     parts = []
     for path in md_files:
@@ -1269,72 +1256,6 @@ EF, VO2max, קדנס, VDOT — מה השתנה? לאן פנים? מה המשמע
 
 # ── Morning Readiness Loop ────────────────────────────────────────────────────
 
-POSTWORKOUT_SYSTEM = _load_prompt("postworkout.md")
-
-
-def _next_sessions_md(run_done_today: bool = False) -> str:
-    """מחזיר את האימונים המתוכננים להמשך היום + מחר מ-week_plan.json (לשדה next).
-    run_done_today=True → מדלג על ריצת היום (כבר בוצעה) כדי לא להמציא double session.
-    בשבת (סוף השבוע) → אין תוכנית לשבוע הבא עדיין (נבנית בערב), אז לא מדברים על ההמשך."""
-    if date.today().weekday() == 5:  # שבת = היום האחרון בשבוע, לפני בניית התוכנית החדשה
-        return ("היום שבת — הריצה המסכמת של השבוע. התוכנית לשבוע הבא עדיין לא קיימת "
-                "(נבנית הערב). שדה next = מילה טובה קצרה על סגירת השבוע, **בלי** המלצת אימון/תוכנית.")
-    wp = BASE_DIR / "week_plan.json"
-    if not wp.exists():
-        return "אין week_plan.json — הסק את אימון מחר מהפאזה במאקרו."
-    try:
-        plan = json.loads(wp.read_text(encoding="utf-8"))
-    except Exception:
-        return "week_plan.json לא קריא — הסק מהמאקרו."
-    today = date.today().isoformat()
-    tomorrow = (date.today() + timedelta(days=1)).isoformat()
-    sessions = plan.get("sessions", [])
-
-    def _fmt(s):
-        if s.get("type") == "run":
-            nm = (s.get("name") or f"ריצה {s.get('subtype','')}").strip()
-            prefix = "" if nm[:1] in "🏃🚶" else "🏃 "
-            return f"{prefix}{nm}"
-        return f"💪 כוח {s.get('key','')}"
-
-    # האימון/ים הבא/ים = היום מה שנשאר (כוח, או ריצה אם עוד לא בוצעה), אחרת
-    # היום הקרוב ביותר בעתיד עם אימונים. **כל הסוגים** (ריצה + כוח), לפי התוכנית בפועל —
-    # לא ניחוש מהמאקרו, ולא רק ריצות.
-    today_remaining = [s for s in sessions if s.get("date") == today
-                       and (s.get("type") == "strength"
-                            or (s.get("type") == "run" and not run_done_today))]
-    if today_remaining:
-        day, group = today, today_remaining
-    else:
-        future = sorted({s.get("date") for s in sessions if s.get("date", "") > today})
-        if not future:
-            return "אין אימון נוסף מתוכנן השבוע."
-        day = future[0]
-        group = [s for s in sessions if s.get("date") == day]
-
-    if day == today:
-        label = "היום (בהמשך)"
-    elif day == tomorrow:
-        label = "מחר"
-    else:
-        wd = ["שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת", "ראשון"][date.fromisoformat(day).weekday()]
-        label = f"{wd} ({day[5:]})"
-    return f"{label}: " + " + ".join(_fmt(s) for s in group)
-
-
-def _todays_planned_run_md() -> str:
-    """שם האימון המתוכנן של היום מ-week_plan.json — לעיגון שדה planned (לא ניחוש מהמאקרו)."""
-    wp = BASE_DIR / "week_plan.json"
-    try:
-        plan = json.loads(wp.read_text(encoding="utf-8"))
-    except Exception:
-        return "—"
-    today = date.today().isoformat()
-    runs = [s for s in plan.get("sessions", []) if s.get("date") == today and s.get("type") == "run"]
-    if not runs:
-        return "אין ריצה מתוכננת היום בתוכנית."
-    return " · ".join((s.get("name") or s.get("subtype", "ריצה")) +
-                      (f" — {s['desc']}" if s.get("desc") else "") for s in runs)
 
 
 def _format_workout_segments(workout: dict) -> str:
@@ -1363,80 +1284,6 @@ def _format_workout_segments(workout: dict) -> str:
             f"דופק {l.get('avg_hr','?')} · {tag}"
         )
     return "### פירוק לפי הקפות (חימום / סט / שחרור)\n" + "\n".join(rows)
-
-
-def build_postworkout_prompt(metrics: dict, workout: dict | None) -> str:
-    macro_md = format_macro_for_prompt(metrics.get("macro", {}))
-    red_flags = metrics.get("red_flags", [])
-    flags_md = "\n".join(
-        f"- {rf['severity']} {rf['flag']}: {rf['detail']} → {rf['action']}"
-        for rf in red_flags) or "אין דגלים אדומים. ✓"
-
-    if not workout:
-        workout_md = "לא נמצא אימון להיום בנתונים."
-    else:
-        p = workout.get("pace_sec_per_km")
-        pace_str = f"{p//60}:{p%60:02d}/ק\"מ" if p else "לא זמין"
-        zones = workout.get("hr_zones_sec") or [0, 0, 0, 0, 0]
-        workout_md = (
-            f"- תאריך: {workout['date']}\n"
-            f"- סוג: {workout.get('activity_type')} | קטגוריה: {workout.get('category','?')}\n"
-            f"- מרחק: {workout.get('distance_km')} ק\"מ | קצב ממוצע: {pace_str}\n"
-            f"- דופק ממוצע: {workout.get('avg_hr')} | מקס: {workout.get('max_hr')}\n"
-            f"- משך: {round((workout.get('duration_sec') or 0)/60)} דק'\n"
-            f"- קדנס: {workout.get('cadence_spm','—')} spm | GCT (פגיעה בקרקע): {workout.get('gct_ms','—')} ms | אורך צעד: {workout.get('stride_length_m','—')} מ'\n"
-            f"- תנודה אנכית: {workout.get('vertical_oscillation_cm','—')} ס\"מ | יחס אנכי: {workout.get('vertical_ratio_pct','—')}% | נשימה ממוצעת: {workout.get('avg_respiration','—')}\n"
-            f"- cardiac drift: {workout.get('hr_drift_bpm','לא זמין')} bpm\n"
-            f"- 🧠 דירוג סובייקטיבי: RPE {workout.get('rpe','—')}/10 · Feel {workout.get('feel','—')}/5 "
-            f"(השווה לדופק/קצב — אי-התאמה = סימן עייפות)\n"
-            f"- זונות (שניות Z1-Z5): {zones}\n"
-            f"- 100m splits: {'כן ('+str(len(workout['splits_100m']))+' מקטעים)' if workout.get('splits_100m') else 'לא זמין'}"
-        )
-
-    run_done_today = bool(
-        workout and workout.get("date") == date.today().isoformat()
-        and workout.get("activity_type") in RUN_TYPES)
-
-    try:
-        import journal
-        _note = journal.todays_note_md()
-    except Exception:
-        _note = ""
-    note_md = (f"\n### 🗒️ הערת המתאמן היום (חובה להתחשב!)\n{_note}\n"
-               f"**אם דיווח על שינוי מודע (קיצר), כאב או שינה גרועה — אל תזהיר על "
-               f"\"חוסר ביצוע\"; התייחס לזה כהחלטה נכונה והתאם את ההמלצה למחר.**\n"
-               if _note else "")
-
-    return f"""
-## ניתוח אחרי אימון — {date.today().isoformat()}
-{note_md}
-### האימון שתוכנן להיום (מקור-אמת — מ-week_plan.json)
-{_todays_planned_run_md()}
-**שדה "planned" = האימון הזה בדיוק (השם הקונקרטי), לא תיאור כללי מהמאקרו.**
-
-### מיקום במאקרו (הקשר פאזה בלבד)
-{macro_md}
-
-### האימון שבוצע היום (נתוני אמת — זו הפעילות היחידה היום)
-{workout_md}
-⚠️ נותחה **פעילות אחת** היום (זו שלמעלה). אל תמציא אימונים נוספים — אין ריצת בוקר נוספת, אין double session. נתח רק את מה שמופיע כאן.
-
-{_format_workout_segments(workout) if workout else ""}
-
-### דגלים אדומים שזוהו (דטרמיניסטי — אל תוסיף דגלים שלא ברשימה)
-{flags_md}
-
-### עומס נוכחי
-- ATL: {metrics['load']['atl']} | TSB: {metrics['load']['tsb']} | ACWR: {metrics['load']['acwr'] or 'לא זמין'} {metrics['acwr_status']['flag']}
-
-### מתוכנן בהמשך (לשדה next)
-{_next_sessions_md(run_done_today)}
-
----
-
-תן ניתוח ב-3 חלקים: (א) משוב מפורט, (ב) אדפטציה לאימון מחר, (ג) דגלים אדומים.
-סיים בבלוק ה-JSON לפי הפורמט.
-"""
 
 
 def latest_workout_today(activities: list) -> dict | None:
@@ -1525,7 +1372,7 @@ def _today_run_weather() -> dict | None:
 #   אחרי אימון (ניתוח, 3×/יום) → Sonnet · שבועי (תכנון+נרטיב, 1×/שבוע) → Fable 5.
 #   שבועי הועלה ל-Fable (המדרגה מעל Opus) 15.7: המשימה הכי מורכבת ורצה נדיר,
 #   ואיכות-הניסוח שם קריטית. פוסט-אימון נשאר Sonnet (יומי — לא מצדיק Fable).
-MODEL_POSTWORKOUT = "claude-sonnet-4-6"
+MODEL_REVISE = "claude-sonnet-4-6"
 MODEL_WEEKLY = "claude-fable-5"
 
 # רמת המאמץ (effort) לכל לולאה — שולט בעומק החשיבה ובעלות.
@@ -1533,7 +1380,7 @@ MODEL_WEEKLY = "claude-fable-5"
 # שבועי: xhigh — עומק גבוה למשימה הכי מורכבת, שרצה פעם בשבוע (עלות זניחה).
 # פוסט-אימון: medium — ניתוח יומי, איזון עלות/איכות.
 WEEKLY_EFFORT = "xhigh"
-POSTWORKOUT_EFFORT = "medium"
+REVISE_EFFORT = "medium"
 
 # Haiku 4.5 לא תומך ב-effort / adaptive thinking (יחזיר 400). Sonnet/Opus כן.
 # מודלים שתומכים ב-effort + adaptive thinking (Haiku לא — יחזיר 400).
@@ -1577,8 +1424,9 @@ def main():
         sys.exit(1)
 
     mode = sys.argv[1].lower() if len(sys.argv) > 1 else "weekly"
-    if mode not in ("weekly", "postworkout"):
-        print(f"מצב לא מוכר: {mode}. השתמש ב: weekly | postworkout")
+    if mode != "weekly":
+        print(f"מצב לא מוכר: {mode}. המצב היחיד הוא: weekly "
+              f"(ניתוח-אחרי-אימון בוטל 26.07 — הנתונים עולים לדשבורד).")
         sys.exit(1)
 
     print("טוען נתוני גרמין...")
@@ -1596,13 +1444,10 @@ def main():
         print(f"🚩 {len(metrics['red_flags'])} דגלים אדומים")
 
     print("טוען בסיס ידע...")
-    knowledge_base = load_knowledge_base(mode=mode)  # T8: postworkout מקבל KB ממוקד
+    knowledge_base = load_knowledge_base()
     client = anthropic.Anthropic()
 
-    if mode == "postworkout":
-        run_postworkout(client, knowledge_base, metrics, data)
-    else:
-        run_weekly(client, knowledge_base, metrics)
+    run_weekly(client, knowledge_base, metrics)
 
 
 # ── Mode Runners ──────────────────────────────────────────────────────────────
@@ -1917,133 +1762,8 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
         chat_mode(client, knowledge_base, full_response)
 
 
-def _parse_postworkout_json(report_text: str) -> dict:
-    """Extract the post-workout JSON, tolerant of how the model wrapped it.
-
-    Uses the shared extract_llm_json hardening: the model (Sonnet at effort=medium)
-    doesn't always emit the literal ---POSTWORKOUT_JSON---/---END_POSTWORKOUT---
-    markers — it may wrap the object in a ```json fence or print a bare {...}.
-    Try each strategy in order, then normalize field-name aliases so the Telegram
-    sender finds the keys it expects. A brittle parser here silently drops the
-    notification AND marks the run analyzed, so the message is lost for good.
-    """
-    return extract_llm_json(
-        report_text, "---POSTWORKOUT_JSON---", "---END_POSTWORKOUT---",
-        aliases={"category": ("category", "type", "workout_type", "קטגוריה"),
-                 "planned": ("planned", "planned_workout"),
-                 "actual": ("actual", "actual_workout", "performed"),
-                 "improve": ("improve", "improvements", "improve_points"),
-                 "keep": ("keep", "maintain", "strength"),
-                 "red_flags": ("red_flags", "flags", "warnings"),
-                 "next": ("next", "next_workout", "upcoming")})
 
 
-def _send_postworkout_telegram(pw: dict) -> int | None:
-    """Send the post-workout analysis to Telegram in the agreed skeleton format."""
-    try:
-        import telegram_notify as tg
-    except ImportError:
-        print("⚠️  telegram_notify לא זמין — מדלג על Telegram.")
-        return None
-
-    # חובה לברוח מתווי HTML (& < >) בכל תוכן מה-LLM — אחרת תו בודד כמו "דופק <130"
-    # שובר את מצב ה-HTML של טלגרם → 400 Bad Request → ההודעה לא נשלחת (תקלה חוזרת 22.06).
-    import html as _html
-    def _e(s): return _html.escape(str(s))
-    today = date.today().strftime("%d/%m/%Y")
-    category = _e(pw.get("category", "אימון"))
-    planned = _e(pw.get("planned", "—"))
-    actual = _e(pw.get("actual", "—"))
-    improve = [_e(x) for x in (pw.get("improve") or [])]
-    keep = _e(pw.get("keep", "—"))
-    red_flags = [_e(f) for f in (pw.get("red_flags") or []) if f and str(f).strip()]
-    nxt = _e(pw.get("next", "—"))
-
-    lines = [
-        f"🏃 <b>ניתוח אימון — {today}</b>",
-        "",
-        f"📍 <b>{category}</b>",
-        f"מתוכנן: {planned}",
-        f"בפועל:  {actual}",
-        "",
-        "📈 <b>2 דברים לשיפור</b>",
-    ]
-    for i, imp in enumerate(improve[:2], 1):
-        lines.append(f"{i}. {imp}")
-    lines += ["", "✅ <b>לשמר</b>", keep]
-    if red_flags:
-        lines += ["", "⚠️ <b>דגלים אדומים</b>"]
-        lines += [f"• {f}" for f in red_flags]
-    else:
-        lines += ["", "🚩 <b>דגלים אדומים:</b> אין ✅"]
-    lines += ["", f"📅 <b>בהמשך / מחר</b>", nxt]
-
-    message_id = tg.send_message("\n".join(lines))
-    if message_id:
-        print(f"✅ Telegram נשלח (message_id={message_id})")
-    else:
-        print("⚠️  Telegram לא נשלח (אין credentials או שגיאה)")
-    return message_id
-
-
-ANALYZED_RUNS_FILE = BASE_DIR / "analyzed_runs.json"
-
-
-# M9.5: גישה דרך store.py — פגם בקובץ מודפס (לא נבלע בשקט: קובץ פגום שנבלע
-# היה גורם לניתוח-מחדש של כל הריצות = ספאם API וטלגרם), וכתיבה אטומית.
-def _load_analyzed_runs() -> set:
-    """קבוצת activity_id של ריצות שכבר נותחו (dedup חוצה-זמן — לא תלוי שעה)."""
-    import store
-    return set(store.load_analyzed()["analyzed"])
-
-
-MAX_POSTWORKOUT_ATTEMPTS = 3  # תקרת ניסיונות חוזרים לפני ויתור (חוסם בזבוז API אינסופי)
-
-
-def _load_pw_pending() -> dict:
-    """מונה כשלונות פתוחים per activity_id (ניסיון חוזר עד התקרה)."""
-    import store
-    return store.load_analyzed()["pending"]
-
-
-def _write_analyzed_payload(analyzed: set, pending: dict) -> None:
-    import store
-    store.save_analyzed(analyzed, pending)
-
-
-def _mark_run_analyzed(activity_id) -> None:
-    """מסמן ריצה כנותחה (אחרי שליחה מוצלחת) — ומנקה את מונה הכשלונות שלה."""
-    analyzed = _load_analyzed_runs()
-    analyzed.add(str(activity_id))
-    pending = _load_pw_pending()
-    pending.pop(str(activity_id), None)
-    _write_analyzed_payload(analyzed, pending)
-
-
-def _postworkout_fail(activity_id, reason: str) -> None:
-    """כשל ניתוח/שליחה: מגדיל מונה ומנסה שוב בריצה הבאה. אחרי MAX ניסיונות —
-    מוותר ומסמן כנותח כדי לא לבזבז API לנצח. כך כשל חולף נרפא לבד, וכשל מתמשך נחסם."""
-    pending = _load_pw_pending()
-    n = pending.get(str(activity_id), 0) + 1
-    if n >= MAX_POSTWORKOUT_ATTEMPTS:
-        print(f"⚠️  {reason} — ניסיון {n}/{MAX_POSTWORKOUT_ATTEMPTS}: מוותר ומסמן כנותח.")
-        _mark_run_analyzed(activity_id)  # מנקה pending בעצמו
-    else:
-        pending[str(activity_id)] = n
-        _write_analyzed_payload(_load_analyzed_runs(), pending)
-        print(f"⚠️  {reason} — ניסיון {n}/{MAX_POSTWORKOUT_ATTEMPTS}: לא מסמן, ינסה שוב בריצה הבאה.")
-
-
-def latest_unanalyzed_run_today(activities: list, analyzed: set) -> dict | None:
-    """הריצה האחרונה של היום שעדיין לא נותחה (לפי activity_id). None אם אין."""
-    today = date.today().isoformat()
-    todays_runs = [a for a in activities
-                   if a.get("date") == today
-                   and a.get("activity_type") in RUN_TYPES
-                   and str(a.get("activity_id")) not in analyzed]
-    if not todays_runs:
-        return None
-    return sorted(todays_runs, key=lambda a: a.get("start_time", ""))[-1]
 
 
 # prompts/revise.md נשמר כבר-מפורמט (קבועי המתאמן ליטרליים, {} יחידים) — בלי format נוסף.
@@ -2065,7 +1785,7 @@ def run_revise(reply_text: str, dry: bool = False) -> tuple[bool, list]:
     client = anthropic.Anthropic()
     print(f"🔧 מעדכן תוכנית לפי: {reply_text!r}")
     full = _stream_report(client, REVISE_SYSTEM, user_prompt,
-                          max_tokens=8000, effort=POSTWORKOUT_EFFORT, model=MODEL_POSTWORKOUT)
+                          max_tokens=8000, effort=REVISE_EFFORT, model=MODEL_REVISE)
     raw = extract_week_plan(full)
     if not raw or not raw.get("sessions"):
         print("⚠️  פרסור התוכנית המעודכנת נכשל — לא שונה דבר.")
@@ -2078,64 +1798,6 @@ def run_revise(reply_text: str, dry: bool = False) -> tuple[bool, list]:
     saved, messages, _ = save_week_plan(
         raw, macro=macro if macro.get("status") == "active" else None)
     return saved, messages
-
-
-def run_postworkout(client, knowledge_base: str, metrics: dict, data: dict) -> None:
-    """
-    ניתוח אחרי אימון — EVENT-DRIVEN. רץ פעמים רבות ביום; מנתח **רק** אם יש
-    ריצה חדשה של היום שעדיין לא נותחה (dedup לפי activity_id). כך לא משנה
-    מתי רצת — תמיד נתפוס, אף פעם לא פעמיים, ו-Sonnet נקרא רק כשבאמת צריך.
-    """
-    analyzed = _load_analyzed_runs()
-    workout = latest_unanalyzed_run_today(data.get("activities", []), analyzed)
-    if not workout:
-        print("אין ריצה חדשה לנתח היום (או שכבר נותחה) — מדלג, ללא קריאת API.")
-        return
-
-    system_prompt = POSTWORKOUT_SYSTEM.format(knowledge_base=knowledge_base,
-                                              **ATHLETE_PROMPT_VARS)
-    user_prompt = build_postworkout_prompt(metrics, workout)
-    print(f"🤖 מודל: {MODEL_POSTWORKOUT} (אחרי אימון — אמצע)")
-    print(f"מנתח ריצה {workout.get('activity_id')} מ-{workout.get('start_time','?')} (streaming)...\n")
-    # max_tokens=16000: ניתוח מפורט (3 חלקים + קדנס/GCT/planned) + חשיבה אדפטיבית
-    # + בלוק POSTWORKOUT_JSON בסוף. ב-8192 (22.06) הפלט נחתך באמצע → אין JSON →
-    # אין טלגרם. תקרה גבוהה זולה (ריצה אחת/יום) ומונעת truncation לתמיד.
-    full = _stream_report(client, system_prompt, user_prompt, max_tokens=16000,
-                          effort=POSTWORKOUT_EFFORT, model=MODEL_POSTWORKOUT)
-    out = BASE_DIR / "postworkout_report.md"
-    out.write_text(f"# ניתוח אחרי אימון — {datetime.now():%Y-%m-%d %H:%M}\n\n{full}\n", encoding="utf-8")
-    print(f"\n\nנשמר: {out}")
-
-    aid = workout.get("activity_id")
-    # פלט ריק = קריאת API נכשלה/נחתכה → ניסיון חוזר (עד התקרה).
-    if not full.strip():
-        _postworkout_fail(aid, "הניתוח חזר ריק")
-        return
-
-    # ── Parse POSTWORKOUT_JSON and send Telegram notification ──────────────
-    pw_json = _parse_postworkout_json(full)
-    if not pw_json:
-        # נחתך/חסר JSON → ניסיון חוזר בריצה הבאה (לא מסמן — אחרת ההודעה אובדת).
-        _postworkout_fail(aid, "לא נמצא POSTWORKOUT_JSON (כנראה נחתך)")
-        return
-    # דריסת שדה next בערך **דטרמיניסטי** מהתוכנית בפועל (ריצה+כוח, היום הקרוב) —
-    # ה-LLM נטה להמציא "אימון הבא" מהמאקרו (למשל טמפו שכבר היה). זה מדייק אותו.
-    _run_done = bool(workout and workout.get("date") == date.today().isoformat()
-                     and workout.get("activity_type") in RUN_TYPES)
-    pw_json["next"] = _next_sessions_md(_run_done)
-    try:
-        msg_id = _send_postworkout_telegram(pw_json)
-    except Exception as exc:
-        _postworkout_fail(aid, f"שגיאת שליחת Telegram: {exc}")
-        return
-    # _send_postworkout_telegram מחזיר None בכשל (אין credentials/שגיאת API) ולא זורק —
-    # לכן בודקים את ערך ההחזרה, לא רק חריגה. None → ניסיון חוזר, לא מסמן.
-    if not msg_id:
-        _postworkout_fail(aid, "Telegram לא נשלח (אין credentials/שגיאה)")
-        return
-    # רק אחרי שליחה מאומתת (message_id חוקי) — מסמן כנותח.
-    _mark_run_analyzed(aid)
-    print(f"✅ ניתוח נשלח לטלגרם (message_id={msg_id}) וסומן כנותח.")
 
 
 # ── Interactive Chat Mode ─────────────────────────────────────────────────────

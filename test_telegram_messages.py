@@ -41,25 +41,6 @@ def _capture(monkeypatch=None):
     return box
 
 
-# ── Tests ────────────────────────────────────────────────────────────────────
-def test_postworkout_message_escapes_and_nonempty():
-    box = _capture()
-    # LLM content deliberately containing HTML-breaking chars
-    pw = {
-        "category": "ריצה קלה",
-        "planned": "Z2 5 ק\"מ · דופק <141 & קל",
-        "actual": "5.0 ק\"מ · 6:59/ק\"מ · דופק 142 · קדנס 171",
-        "improve": ["קדנס <175 → הגבר turnover", "יחס אנכי 9.4% & גבוה"],
-        "keep": "יציב לפי דופק",
-        "red_flags": [],
-        "next": "היום (בהמשך): כוח A",
-    }
-    mid = coach._send_postworkout_telegram(pw)
-    assert mid == 12345, "sender must return the message_id on success"
-    assert box["text"], "no message captured"
-    assert "אין" in box["text"] or "דגלים" in box["text"], "red-flags section missing"
-
-
 def test_weekly_message_escapes_and_nonempty():
     _capture()
     wr = {
@@ -73,19 +54,6 @@ def test_weekly_message_escapes_and_nonempty():
         "tip": "strides בקצב 3:50-4:10 & קדנס 180",
     }
     coach._send_weekly_telegram(wr, safety_messages=["נפח +10% & בטוח"], needs_review=False)
-
-
-def test_postworkout_parse_variants():
-    body = ('{"category":"ריצה קלה","planned":"x","actual":"y",'
-            '"improve":["a","b"],"keep":"k","red_flags":[],"next":"n"}')
-    variants = [
-        f"בלה בלה\n---POSTWORKOUT_JSON---\n{body}\n---END_POSTWORKOUT---\n",
-        f"ניתוח...\n```json\n{body}\n```\n",
-        f"טקסט חופשי\n{body}\n",
-    ]
-    for i, v in enumerate(variants):
-        got = coach._parse_postworkout_json(v)
-        assert got and got.get("category") == "ריצה קלה", f"variant {i} failed to parse: {got}"
 
 
 def test_weekly_parse_markers():
