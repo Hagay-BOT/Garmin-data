@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-26T10:30:52.981580+00:00",
+  "last_updated": "2026-07-26T11:00:53.873775+00:00",
   "activities": [
     {
       "activity_id": 13381622386,
@@ -58232,6 +58232,58 @@
           "duration_sec": 36.0
         }
       ]
+    },
+    {
+      "activity_id": 23737150080,
+      "date": "2026-07-26",
+      "start_time": "2026-07-26 12:40:04",
+      "activity_type": "strength_training",
+      "category": "strength",
+      "rpe": null,
+      "feel": null,
+      "distance_km": null,
+      "duration_sec": 3375,
+      "pace_sec_per_km": null,
+      "best_pace_sec_per_km": null,
+      "avg_hr": 77.0,
+      "max_hr": 114.0,
+      "recovery_hr": null,
+      "cadence_spm": null,
+      "max_cadence_spm": null,
+      "gct_ms": null,
+      "stride_length_m": null,
+      "vertical_oscillation_cm": null,
+      "vertical_ratio_pct": null,
+      "aerobic_effect": 0.10000000149011612,
+      "anaerobic_effect": 0.0,
+      "training_effect_label": "AEROBIC_BASE",
+      "training_stress_score": null,
+      "exercise_load": 1.4539947509765625,
+      "vo2max": null,
+      "stamina_start_pct": null,
+      "stamina_end_pct": null,
+      "active_calories": null,
+      "total_calories": 141.0,
+      "sweat_loss_ml": 426,
+      "body_battery_impact": -3,
+      "avg_respiration": null,
+      "max_respiration": null,
+      "moderate_intensity_min": null,
+      "vigorous_intensity_min": null,
+      "total_ascent_m": null,
+      "total_descent_m": null,
+      "temperature": null,
+      "gps": [],
+      "hr_zones_sec": [
+        159,
+        0,
+        0,
+        0,
+        0
+      ],
+      "hr_drift_bpm": null,
+      "laps": [],
+      "splits_100m": []
     }
   ],
   "daily": {
