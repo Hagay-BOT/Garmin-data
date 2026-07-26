@@ -64,6 +64,8 @@ def scheduled_workouts(client, start_iso: str, end_iso: str) -> list[dict]:
         months.append((cur.year, cur.month))
         cur = (cur.replace(day=28) + datetime.timedelta(days=5)).replace(day=1)
     items = []
+    seen = set()  # באג 26.07: שבוע שחוצה חודש נסרק פעמיים וגרמין מחזיר חפיפה →
+                  # כל אימון נספר כפול (audit הראה 12 במקום 6). דדופ לפי מזהה.
     for y, m in months:
         cal = client.get_scheduled_workouts(y, m) or {}
         raw = (cal.get("calendarItems") or cal.get("items")
@@ -75,6 +77,11 @@ def scheduled_workouts(client, start_iso: str, end_iso: str) -> list[dict]:
             if not (start_iso <= d[:10] <= end_iso):
                 continue
             name = it.get("title") or it.get("workoutName") or ""
+            key = (it.get("id") or it.get("scheduleId")
+                   or (d[:10], name, it.get("workoutId")))
+            if key in seen:
+                continue
+            seen.add(key)
             items.append({
                 "date": d[:10], "name": name,
                 "workout_id": it.get("workoutId") or it.get("workoutUuid"),
