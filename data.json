@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-07-26T23:30:58.026401+00:00",
+  "last_updated": "2026-07-27T00:01:03.370107+00:00",
   "activities": [
     {
       "activity_id": 13381622386,
@@ -57604,9 +57604,9 @@
         {
           "seg": 15,
           "distance_m": 1500,
-          "pace_sec_per_km": 410,
+          "pace_sec_per_km": 960,
           "avg_hr": 145,
-          "duration_sec": 41.0
+          "duration_sec": 96.0
         },
         {
           "seg": 16,
@@ -57814,9 +57814,9 @@
         {
           "seg": 45,
           "distance_m": 4500,
-          "pace_sec_per_km": 410,
+          "pace_sec_per_km": 990,
           "avg_hr": 155,
-          "duration_sec": 41.0
+          "duration_sec": 99.0
         },
         {
           "seg": 46,
@@ -60986,6 +60986,13 @@
       "body_battery_morning": 90,
       "calories_resting": 2138.0,
       "calories_active": 305.0
+    },
+    "2026-07-27": {
+      "sleep_score": null,
+      "sleep_end_time": null,
+      "body_battery_morning": null,
+      "calories_resting": null,
+      "calories_active": null
     }
   },
   "shoes": [
