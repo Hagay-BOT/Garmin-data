@@ -12,6 +12,7 @@ import datetime
 
 import telegram_notify
 import coach
+import store
 
 SENT = []
 
