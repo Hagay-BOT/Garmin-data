@@ -7,51 +7,19 @@ X-WR-CALNAME:אימוני ריצה וכוח
 X-WR-TIMEZONE:Asia/Jerusalem
 REFRESH-INTERVAL;VALUE=DURATION:PT6H
 BEGIN:VEVENT
-UID:2026-07-26-strength-A@garmin-coach
-DTSTAMP:20260726T084137Z
-DTSTART:20260726T150000Z
-DTEND:20260726T160000Z
-SUMMARY:💪 כוח A — Pull/משיכה (גב/יד קדמית)
-DESCRIPTION:Pull: גב, יד קדמית.
+UID:2026-07-30-run-easy@garmin-coach
+DTSTAMP:20260727T132922Z
+DTSTART:20260730T040000Z
+DTEND:20260730T044500Z
+SUMMARY:🚶 בדיקה קלילה — 2.5 ק"מ (רק אם בריא)
+DESCRIPTION:רק אם 24ש בלי חום ואתה מרגיש טוב. דופק ≤125, הליכה-ריצה לגיטימית. מרגיש כבד/דופק גבוה מהרגיל — עוצרים והולכים הביתה.\n\n🌦️ 🌤️ חוץ — אבל גבולי — מרגיש 31°, קרוב לסף. שתה הרבה, צא מוקדם, ושקול הליכון אם לא נעים.
 END:VEVENT
 BEGIN:VEVENT
-UID:2026-07-27-run-easy@garmin-coach
-DTSTAMP:20260726T084137Z
-DTSTART:20260727T040000Z
-DTEND:20260727T044500Z
-SUMMARY:🚶 Z1 קליל — 3 ק"מ
-DESCRIPTION:קל מאוד, דופק ≤130. אם יש כאב חד בכף הרגל בהליכה — לא רצים היום, מנוחה.\n\n🌦️ 🌤️ חוץ — אבל גבולי — מרגיש 30°, קרוב לסף. שתה הרבה, צא מוקדם, ושקול הליכון אם לא נעים.
-END:VEVENT
-BEGIN:VEVENT
-UID:2026-07-28-strength-B@garmin-coach
-DTSTAMP:20260726T084137Z
-DTSTART:20260728T150000Z
-DTEND:20260728T160000Z
-SUMMARY:💪 כוח B — Push/דחיפה (חזה/כתפיים/יד אחורית)
-DESCRIPTION:Push: חזה, כתפיים, יד אחורית.
-END:VEVENT
-BEGIN:VEVENT
-UID:2026-07-29-run-easy@garmin-coach
-DTSTAMP:20260726T084137Z
-DTSTART:20260729T040000Z
-DTEND:20260729T044500Z
-SUMMARY:🏃 קל Z2 — 4 ק"מ
-DESCRIPTION:דופק ≤141 קשיח. אם הקצב יוצא איטי — זה בסדר גמור, הדופק גובר.\n\n🌦️ 🌤️ חוץ — אבל גבולי — מרגיש 30°, קרוב לסף. שתה הרבה, צא מוקדם, ושקול הליכון אם לא נעים.
-END:VEVENT
-BEGIN:VEVENT
-UID:2026-07-31-strength-A@garmin-coach
-DTSTAMP:20260726T084137Z
-DTSTART:20260731T150000Z
-DTEND:20260731T160000Z
-SUMMARY:💪 כוח A — Pull/משיכה (גב/יד קדמית)
-DESCRIPTION:Pull: גב, יד קדמית.
-END:VEVENT
-BEGIN:VEVENT
-UID:2026-08-01-run-long@garmin-coach
-DTSTAMP:20260726T084137Z
-DTSTART:20260801T050000Z
-DTEND:20260801T061500Z
-SUMMARY:🏃 נפח מקוצר — 6 ק"מ Z2
-DESCRIPTION:במקום לונג 10. דופק ≤141 לכל האורך — זו הנקודה: בשבת שעברה רצת 154 (Z3). כאב = מפסיקים.\n\n🌦️ התחזית תתעדכן ~3 ימים לפני הריצה.
+UID:2026-08-01-run-easy@garmin-coach
+DTSTAMP:20260727T132922Z
+DTSTART:20260801T040000Z
+DTEND:20260801T044500Z
+SUMMARY:🏃 קל Z2 — 4 ק"מ (רק אם חמישי עבר טוב)
+DESCRIPTION:דופק ≤141. אם ה-2.5 של חמישי הרגיש קשה — מדלגים, אין מה להוכיח.\n\n🌦️ התחזית תתעדכן ~3 ימים לפני הריצה.
 END:VEVENT
 END:VCALENDAR
