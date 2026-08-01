@@ -1,53 +1,144 @@
 {
-  "week_of": "2026-07-26",
-  "macro_week": 7,
-  "phase": "מנוחה (מחלה)",
+  "week_of": "2026-08-02",
+  "macro_week": 8,
+  "phase": "Build",
   "goal_race": "15K @ 5:20",
-  "notes": "מחלה מ-26.7 + דגלי כאב (ברכיים, כף רגל). מנוחה מלאה עד רביעי לפחות. חמישי/שישי — רק אם אין חום 24ש ומרגיש טוב: הליכה/ריצה קלילה מאוד לבדיקה. שבת — רק אם חמישי עבר חלק. אין אימוני כוח, אין איכות, אין לונג. חזרה הדרגתית מנצחת חזרה מהירה.",
+  "notes": "נבנה דטרמיניסטית (plan_generator). ",
   "sessions": [
     {
-      "date": "2026-07-30",
-      "day": "חמישי",
+      "date": "2026-08-02",
+      "day": "ראשון",
       "type": "run",
       "subtype": "easy",
-      "name": "🚶 בדיקה קלילה — 2.5 ק\"מ (רק אם בריא)",
-      "desc": "רק אם 24ש בלי חום ואתה מרגיש טוב. דופק ≤125, הליכה-ריצה לגיטימית. מרגיש כבד/דופק גבוה מהרגיל — עוצרים והולכים הביתה.",
-      "est_km": 2.5,
+      "name": "🏃 קל Z2 — 3 ק\"מ",
+      "desc": "ריצת בסיס לפי דופק Z2 (6:45–7:00).",
+      "est_km": 3.0,
       "steps": [
         {
           "kind": "warmup",
-          "seconds": 540
+          "seconds": 322
         },
         {
           "kind": "interval",
-          "seconds": 300
+          "seconds": 686
         },
         {
           "kind": "cooldown",
-          "seconds": 360
+          "seconds": 215
         }
       ]
     },
     {
-      "date": "2026-08-01",
-      "day": "שבת",
+      "date": "2026-08-02",
+      "day": "ראשון",
+      "type": "strength",
+      "key": "A"
+    },
+    {
+      "date": "2026-08-03",
+      "day": "שני",
       "type": "run",
-      "subtype": "easy",
-      "name": "🏃 קל Z2 — 4 ק\"מ (רק אם חמישי עבר טוב)",
-      "desc": "דופק ≤141. אם ה-2.5 של חמישי הרגיש קשה — מדלגים, אין מה להוכיח.",
-      "est_km": 4.0,
+      "subtype": "quality",
+      "name": "🏁 מבחן 5K Time-Trial (כיול VDOT)",
+      "desc": "חימום 4.2 ק\"מ קל → 4.2 ק\"מ במאמץ כמעט-מקסימלי אחיד (מהיר-בר-קיימא, לא ספרינט-פתיחה) → שחרור 4.2 ק\"מ. מדוד זמן 5K — ממנו נעדכן קצבי-אימון.",
+      "est_km": 4.2,
       "steps": [
         {
           "kind": "warmup",
-          "seconds": 540
+          "seconds": 322
         },
         {
           "kind": "interval",
-          "seconds": 780
+          "seconds": 674
         },
         {
           "kind": "cooldown",
-          "seconds": 360
+          "seconds": 215
+        }
+      ]
+    },
+    {
+      "date": "2026-08-03",
+      "day": "שני",
+      "type": "strength",
+      "key": "B"
+    },
+    {
+      "date": "2026-08-04",
+      "day": "שלישי",
+      "type": "run",
+      "subtype": "easy",
+      "name": "🏃 קל Z2 — 3 ק\"מ",
+      "desc": "ריצת בסיס לפי דופק Z2 (6:45–7:00).",
+      "est_km": 3.0,
+      "steps": [
+        {
+          "kind": "warmup",
+          "seconds": 322
+        },
+        {
+          "kind": "interval",
+          "seconds": 686
+        },
+        {
+          "kind": "cooldown",
+          "seconds": 215
+        }
+      ]
+    },
+    {
+      "date": "2026-08-05",
+      "day": "רביעי",
+      "type": "strength",
+      "key": "C"
+    },
+    {
+      "date": "2026-08-06",
+      "day": "חמישי",
+      "type": "run",
+      "subtype": "easy",
+      "name": "🚶 התאוששות Z1 — 2.4 ק\"מ (אחרי רגליים)",
+      "desc": "קל מאוד/הליכה-ריצה. אחרי יום רגליים.",
+      "est_km": 2.4,
+      "steps": [
+        {
+          "kind": "warmup",
+          "seconds": 322
+        },
+        {
+          "kind": "interval",
+          "seconds": 489
+        },
+        {
+          "kind": "cooldown",
+          "seconds": 215
+        }
+      ]
+    },
+    {
+      "date": "2026-08-06",
+      "day": "חמישי",
+      "type": "strength",
+      "key": "A"
+    },
+    {
+      "date": "2026-08-07",
+      "day": "שישי",
+      "type": "strength",
+      "key": "B"
+    },
+    {
+      "date": "2026-08-08",
+      "day": "שבת",
+      "type": "run",
+      "subtype": "long",
+      "name": "🏃 ריצת נפח — 4.8 ק\"מ Z2",
+      "desc": "לפי דופק Z2 (עד 141), לא קצב.",
+      "est_km": 4.8,
+      "steps": [
+        {
+          "kind": "interval",
+          "seconds": 1957
         }
       ]
     }
@@ -56,9 +147,9 @@
     "generated_by": "LLM",
     "approval_required": true,
     "needs_review": false,
-    "safety_adjustments": [],
+    "safety_adjustments": [
+      "נפח הופחת ב-40% ל-17.3 ק\"מ (מ-29.0) לעמידה במגבלת התקדמות."
+    ],
     "warnings": []
-  },
-  "approved": true,
-  "approved_at": "2026-07-27T13:29:21+00:00"
+  }
 }

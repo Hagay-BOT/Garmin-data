@@ -439,6 +439,77 @@
         "A",
         "B"
       ]
+    },
+    {
+      "week_of": "2026-07-26",
+      "generated_at": "2026-08-01 18:32",
+      "headline": "🎯 מיקוד סף: פער VDOT 4.6 (נוכחי 33.7 → נדרש 38.3) — הסף הוא המנוע",
+      "threshold_snapshot": {
+        "current_vdot": 33.7,
+        "required_vdot": 38.3,
+        "vdot_gap": 4.6,
+        "threshold_pace": null
+      },
+      "macro": {
+        "week_num": 7,
+        "phase": "Build",
+        "deload": false,
+        "gate": false
+      },
+      "metrics": {
+        "ctl": 26.9,
+        "atl": 9.4,
+        "tsb": 17.5,
+        "acwr": 0.35,
+        "ramp_rate_4w": -8.4
+      },
+      "fitness_4week": {
+        "available": true,
+        "window_days": 28,
+        "runs": 9,
+        "weekly_km_avg": 14.3,
+        "total_km": 57.1,
+        "vdot": 33.7,
+        "vdot_basis": "6.3ק\"מ @ 5:38/ק\"מ (2026-07-06)",
+        "threshold_pace": null,
+        "threshold_runs": 0,
+        "ef_z2_avg": 1.0915,
+        "z2_runs": 6
+      },
+      "zones_28d": {
+        "easy_pct": 57.9,
+        "hard_pct": 9.3
+      },
+      "week_actual": {
+        "run_count": 1,
+        "total_km": 10.4,
+        "total_load": 87.0
+      },
+      "red_flags": [],
+      "recommended_plan": {
+        "focus": "DELOAD + הערכה: 5:20 מרגיש קל יותר?",
+        "key_workout": "1× Threshold",
+        "run_count": 5,
+        "total_km_approx": 29.0
+      },
+      "compliance": {
+        "prior_week_of": "2026-07-19",
+        "plan_focus": "הגדלת race-pace בלונג",
+        "plan_key_workout": "1× Threshold + 3 ק\"מ @5:20",
+        "planned_runs": 5,
+        "actual_runs": 1,
+        "planned_km_approx": 35.0,
+        "actual_km": 10.4,
+        "km_compliance_pct": 30,
+        "compliance_level": "נמוך"
+      },
+      "strength_sequence": [
+        "A",
+        "B",
+        "C",
+        "A",
+        "B"
+      ]
     }
   ]
 }
