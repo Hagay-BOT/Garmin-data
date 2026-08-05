@@ -9,10 +9,11 @@
 
 **לא נמחק שום דבר.** הקוד, הנתונים, התוכניות וההיסטוריה שלמים.
 
-## ⚠️ פעולה אחת שנשארה לך (מחוץ ל-repo)
-**cron-job.org** — הטריגר החיצוני שהגדרת שם ממשיך לנסות לדפוק ל-GitHub.
-ה-workflows מושבתים אז כלום לא ירוץ, אבל **ייתכן שתקבל מיילי-כשל**.
-👉 היכנס ל-cron-job.org והשהה (pause) את הג'וב. זה הדבר היחיד שאני לא יכול לעשות.
+## ✅ cron-job.org — גם הוא כובה (26.07)
+הג'וב **"Garmin Coach Trigger"** (`api.github.com/repos/Hagay-BOT/Garmin-data/dispatches`,
+רץ כל 30 דק') הושבת ידנית בקונסולה: מתג *Enable job* כבוי, ו-*Next execution: **Inactive***.
+**להפשרה:** console.cron-job.org → Cronjobs → Garmin Coach Trigger → EDIT →
+להדליק *Enable job* → Save.
 
 ## איך מפשירים (2 דקות)
 ```bash
@@ -25,7 +26,7 @@ for w in update deploy coach-postworkout coach-weekly coach-weekly-revision \
 או פשוט תגיד לי **"תפשיר"** ואני אעשה הכל.
 
 ### אחרי ההפשרה — 3 דברים לבדוק
-1. **הפעל מחדש את cron-job.org.**
+1. **הפעל מחדש את cron-job.org** (ראה למעלה — EDIT → Enable job → Save).
 2. **`macro_plan.json` יהיה מיושן** — התוכנית בנויה לתחרות 20.09.2026. אם עברו שבועות,
    צריך לכייל מחדש את המאקרו (שבוע נוכחי/יעדי נפח) לפני הסיכום השבועי הראשון.
 3. **דגלי-גוף פעילים** ב-`athlete_state.json`: מחלה + ברכיים + כף רגל (מ-25-26.07).
