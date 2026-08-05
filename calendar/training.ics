@@ -7,19 +7,83 @@ X-WR-CALNAME:אימוני ריצה וכוח
 X-WR-TIMEZONE:Asia/Jerusalem
 REFRESH-INTERVAL;VALUE=DURATION:PT6H
 BEGIN:VEVENT
-UID:2026-07-30-run-easy@garmin-coach
-DTSTAMP:20260801T062906Z
-DTSTART:20260730T040000Z
-DTEND:20260730T044500Z
-SUMMARY:🚶 בדיקה קלילה — 2.5 ק"מ (רק אם בריא)
-DESCRIPTION:רק אם 24ש בלי חום ואתה מרגיש טוב. דופק ≤125, הליכה-ריצה לגיטימית. מרגיש כבד/דופק גבוה מהרגיל — עוצרים והולכים הביתה.
+UID:2026-08-02-run-easy@garmin-coach
+DTSTAMP:20260805T181618Z
+DTSTART:20260802T040000Z
+DTEND:20260802T044500Z
+SUMMARY:🏃 קל Z2 — 3 ק"מ
+DESCRIPTION:ריצת בסיס לפי דופק Z2 (6:45–7:00).
 END:VEVENT
 BEGIN:VEVENT
-UID:2026-08-01-run-easy@garmin-coach
-DTSTAMP:20260801T062906Z
-DTSTART:20260801T040000Z
-DTEND:20260801T044500Z
-SUMMARY:🏃 קל Z2 — 4 ק"מ (רק אם חמישי עבר טוב)
-DESCRIPTION:דופק ≤141. אם ה-2.5 של חמישי הרגיש קשה — מדלגים, אין מה להוכיח.\n\n🌦️ 🏋️ חדר כושר / הליכון — תנאי חוץ לא נוחים: מרגיש 34° (מעל 33°). עדיף פנים.
+UID:2026-08-02-strength-A@garmin-coach
+DTSTAMP:20260805T181618Z
+DTSTART:20260802T150000Z
+DTEND:20260802T160000Z
+SUMMARY:💪 כוח A — Pull/משיכה (גב/יד קדמית)
+DESCRIPTION:Pull: גב, יד קדמית.
+END:VEVENT
+BEGIN:VEVENT
+UID:2026-08-03-run-quality@garmin-coach
+DTSTAMP:20260805T181618Z
+DTSTART:20260803T040000Z
+DTEND:20260803T044500Z
+SUMMARY:🏁 מבחן 5K Time-Trial (כיול VDOT)
+DESCRIPTION:חימום 4.2 ק"מ קל → 4.2 ק"מ במאמץ כמעט-מקסימלי אחיד (מהיר-בר-קיימא, לא ספרינט-פתיחה) → שחרור 4.2 ק"מ. מדוד זמן 5K — ממנו נעדכן קצבי-אימון.
+END:VEVENT
+BEGIN:VEVENT
+UID:2026-08-03-strength-B@garmin-coach
+DTSTAMP:20260805T181618Z
+DTSTART:20260803T150000Z
+DTEND:20260803T160000Z
+SUMMARY:💪 כוח B — Push/דחיפה (חזה/כתפיים/יד אחורית)
+DESCRIPTION:Push: חזה, כתפיים, יד אחורית.
+END:VEVENT
+BEGIN:VEVENT
+UID:2026-08-04-run-easy@garmin-coach
+DTSTAMP:20260805T181618Z
+DTSTART:20260804T040000Z
+DTEND:20260804T044500Z
+SUMMARY:🏃 קל Z2 — 3 ק"מ
+DESCRIPTION:ריצת בסיס לפי דופק Z2 (6:45–7:00).
+END:VEVENT
+BEGIN:VEVENT
+UID:2026-08-05-strength-C@garmin-coach
+DTSTAMP:20260805T181618Z
+DTSTART:20260805T150000Z
+DTEND:20260805T160000Z
+SUMMARY:🦵 כוח C — Legs (רגליים)
+DESCRIPTION:רגליים: סקוואט, hip thrust, calf raises, חיזוק ברך/קרסול.
+END:VEVENT
+BEGIN:VEVENT
+UID:2026-08-06-run-easy@garmin-coach
+DTSTAMP:20260805T181618Z
+DTSTART:20260806T040000Z
+DTEND:20260806T044500Z
+SUMMARY:🚶 התאוששות Z1 — 2.4 ק"מ (אחרי רגליים)
+DESCRIPTION:קל מאוד/הליכה-ריצה. אחרי יום רגליים.\n\n🌦️ 🌤️ חוץ — אבל גבולי — מרגיש 31°, קרוב לסף. שתה הרבה, צא מוקדם, ושקול הליכון אם לא נעים.
+END:VEVENT
+BEGIN:VEVENT
+UID:2026-08-06-strength-A@garmin-coach
+DTSTAMP:20260805T181618Z
+DTSTART:20260806T150000Z
+DTEND:20260806T160000Z
+SUMMARY:💪 כוח A — Pull/משיכה (גב/יד קדמית)
+DESCRIPTION:Pull: גב, יד קדמית.
+END:VEVENT
+BEGIN:VEVENT
+UID:2026-08-07-strength-B@garmin-coach
+DTSTAMP:20260805T181618Z
+DTSTART:20260807T150000Z
+DTEND:20260807T160000Z
+SUMMARY:💪 כוח B — Push/דחיפה (חזה/כתפיים/יד אחורית)
+DESCRIPTION:Push: חזה, כתפיים, יד אחורית.
+END:VEVENT
+BEGIN:VEVENT
+UID:2026-08-08-run-long@garmin-coach
+DTSTAMP:20260805T181618Z
+DTSTART:20260808T050000Z
+DTEND:20260808T061500Z
+SUMMARY:🏃 ריצת נפח — 4.8 ק"מ Z2
+DESCRIPTION:לפי דופק Z2 (עד 141), לא קצב.\n\n🌦️ 🏋️ חדר כושר / הליכון — תנאי חוץ לא נוחים: מרגיש 32° (מעל 29°). עדיף פנים.
 END:VEVENT
 END:VCALENDAR
