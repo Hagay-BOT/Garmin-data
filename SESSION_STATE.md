@@ -1,5 +1,11 @@
 # SESSION STATE
 
+> ## ❄️ הפרויקט מוקפא (26.07.2026) — ראה `FROZEN.md`
+> כל 16 ה-workflows מושבתים לבקשת הגיא. אל תפעיל אוטומציות, אל תשלח הודעות
+> ואל תדחוף לגרמין עד שהגיא אומר "תפשיר" במפורש. הקוד והנתונים שלמים.
+> כשמפשירים: `FROZEN.md` מכיל את הפקודה + 3 בדיקות חובה (cron-job.org, מאקרו
+> מיושן, דגלי-גוף פעילים).
+
 > Read this first when resuming. Tells the next session exactly where to continue.
 
 ## Current milestone
