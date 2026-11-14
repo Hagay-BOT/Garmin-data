@@ -22,7 +22,10 @@ check("data.json loads", isinstance(acts, list) and len(acts) > 0, f"{len(acts)}
 
 # CTL/ATL
 dl = coach.build_daily_load(acts)
-lm = coach.compute_ctl_atl(dl, date.today())
+# תאריך-הייחוס = יום הפעילות האחרונה ב-data.json, לא היום: אחרי הפסקה ארוכה ה-ATL
+# דועך ל-0 באמת, והבדיקה (שבודקת את החישוב, לא את הכושר) נכשלה בלי קשר לקוד.
+_ref = date.fromisoformat(max(a["date"] for a in acts if a.get("date")))
+lm = coach.compute_ctl_atl(dl, _ref)
 check("CTL positive", lm["ctl"] > 0, f"CTL={lm['ctl']}")
 check("ATL positive", lm["atl"] > 0, f"ATL={lm['atl']}")
 check("ACWR sane", lm["acwr"] is None or 0 < lm["acwr"] < 5, f"ACWR={lm['acwr']}")

@@ -62,20 +62,38 @@ def apply(text: str, today: str | None = None) -> list[str]:
     st = store.load_athlete_state()
     flags = st["flags"]
     changes = []
+    dirty = False
     for action, part in actions:
         if action == "open" and part not in flags:
             flags[part] = {"since": today, "note": text.strip()[:120]}
             changes.append(f"🚩 נפתח דגל: {part}")
+        elif action == "open":
+            # דגל שכבר פתוח ומדווח שוב: שומרים מתי, כדי ש«שבוע בלי כאב» יהיה מדיד.
+            # שקט כלפי המשתמש (בלי הודעת-שינוי), אבל נשמר.
+            if flags[part].get("last_reported") != today:
+                flags[part]["last_reported"] = today
+                dirty = True
         elif action == "close" and part in flags:
             del flags[part]
             changes.append(f"✅ נסגר דגל: {part}")
-    if changes:
+    if changes or dirty:
         store.save_athlete_state(st)
     return changes
 
 
 def active_flags() -> dict:
     return store.load_athlete_state()["flags"]
+
+
+_PAIN_PARTS = ("knee", "ankle", "shin", "hip", "achilles", "back", "foot")
+
+
+def pain_since(day_iso: str) -> bool:
+    """האם דווח כאב (דגל חדש או דיווח חוזר) מהתאריך הנתון והלאה. דגל ישן ושקט לא נספר."""
+    for p_, d in active_flags().items():
+        if p_ in _PAIN_PARTS and max(d.get("since", ""), d.get("last_reported", "")) >= day_iso:
+            return True
+    return False
 
 
 def safety_factors() -> set:

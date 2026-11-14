@@ -12,5 +12,11 @@
       "since": "2026-07-26",
       "note": "אני חולה"
     }
+  },
+  "return_to_run": {
+    "active": true,
+    "stage": 1,
+    "days_per_week": 3,
+    "since": "2026-11-14"
   }
 }

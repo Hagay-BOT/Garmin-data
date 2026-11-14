@@ -26,6 +26,10 @@ def test_lifecycle_and_injection():
         assert "ברך" in bs.prompt_line()
         # פתיחה חוזרת = idempotent (לא כפילות)
         assert bs.apply("שוב כאב ברך", today="2026-07-21") == []
+        # דיווח חוזר נשמר בשקט: «שבוע בלי כאב» מדיד גם כשהדגל כבר פתוח
+        assert bs.active_flags()["knee"]["last_reported"] == "2026-07-21"
+        assert bs.pain_since("2026-07-21") is True
+        assert bs.pain_since("2026-07-22") is False
         # מחלה מוסיפה illness
         bs.apply("אני חולה", today="2026-07-21")
         assert "illness" in bs.safety_factors()

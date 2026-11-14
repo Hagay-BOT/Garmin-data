@@ -24,7 +24,10 @@ DELOAD_TARGET_FACTOR = 0.70     # deload = −30% כברירת מחדל
 DELOAD_DEEP_FACTOR = 0.55       # חיתוך עמוק רק עם גורם מצדיק (מחלה/פציעה/עייפות/אחרי-מרוץ)
 ACWR_WARN = 1.5
 ACWR_SEVERE = 1.7
-VALID_STEP_KINDS = {"warmup", "interval", "cooldown"}
+VALID_STEP_KINDS = {"warmup", "interval", "recovery", "cooldown"}  # recovery = הליכה בין מקטעי ריצה
+# תקרת שבוע כשאין שום בסיס (שבוע שעבר 0 וגם ממוצע 4 שבועות 0) — חזרה אחרי הפסקה.
+# 12 ק"מ = שלושה אימוני הליכה-ריצה של כ-4 ק"מ, רובם הליכה. מעל זה נחתך.
+RESTART_WEEK_CAP_KM = 12.0
 MAX_TOTAL_SECONDS = 4 * 3600    # אימון בודד לא יעלה על 4 שעות
 MIN_TOTAL_SECONDS = 5 * 60      # ...ולא יפחת מ-5 דקות
 HARD_SUBTYPES = {"quality", "long"}
@@ -163,26 +166,33 @@ def clamp_and_validate_week_plan(
     is_deload = bool(macro.get("deload"))
     anchor = max(prev_week_km or 0, chronic_week_km or 0)
     cap: float | None = None
-    if prev_week_km and prev_week_km > 0:
-        if is_deload:
-            deep = bool(factors & DEEP_DELOAD_FACTORS)
-            target_factor = DELOAD_DEEP_FACTOR if deep else DELOAD_TARGET_FACTOR
-            cap = round(prev_week_km * target_factor, 1)
-        else:
-            cap = round(max(anchor * VOLUME_CAP_FACTOR, anchor + VOLUME_FLOOR_KM), 1)
-    elif total > 0:
-        warnings.append("אין נתון נפח לשבוע הקודם — לא ניתן לאמת התקדמות נפח.")
+    restart = anchor <= 0
+    if restart:
+        # תוקן 14.11.2026: בסיס אפס השאיר את התוכנית בלי שום תקרה (רק אזהרה). אחרי
+        # הפסקה ארוכה זה בדיוק המצב המסוכן — שבוע מרוץ מלא היה עובר כמו שהוא.
+        cap = RESTART_WEEK_CAP_KM
+        if total > 0:
+            warnings.append(f"אין בסיס נפח (חזרה אחרי הפסקה) — תקרת השבוע {cap:g} ק\"מ.")
+    elif is_deload and prev_week_km and prev_week_km > 0:
+        deep = bool(factors & DEEP_DELOAD_FACTORS)
+        target_factor = DELOAD_DEEP_FACTOR if deep else DELOAD_TARGET_FACTOR
+        cap = round(prev_week_km * target_factor, 1)
+    else:
+        # כולל שבוע-שעבר 0 עם בסיס כרוני חיובי (שבוע מנוחה אחד): העוגן הוא הכרוני.
+        cap = round(max(anchor * VOLUME_CAP_FACTOR, anchor + VOLUME_FLOOR_KM), 1)
 
     if cap is not None and total > cap and total > 0:
         factor = cap / total
         for s in _run_sessions(full_plan):
             _scale_run(s, factor)
         pct = round((1 - factor) * 100)
-        if is_deload:
+        if restart:
+            adjustments.append(f"חזרה מבסיס אפס: נפח הופחת ב-{pct}% ל-{cap:g} ק\"מ (מ-{total}).")
+        elif is_deload:
             adjustments.append(f"שבוע deload: נפח הופחת ב-{pct}% ל-{cap} ק\"מ (מ-{total}).")
         else:
             adjustments.append(f"נפח הופחת ב-{pct}% ל-{cap} ק\"מ (מ-{total}) לעמידה במגבלת התקדמות.")
-    elif is_deload and cap is not None:
+    elif is_deload and cap is not None and not restart:
         warnings.append(f"שבוע deload — יעד נפח ≈ {cap} ק\"מ (התוכנית כבר בטווח).")
 
     # 3) ימי איכות צמודים — התראה + דגל בלבד, ללא שינוי מבנה

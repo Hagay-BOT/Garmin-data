@@ -175,3 +175,150 @@ def generate(week_start: datetime.date, macro: dict,
                   + " ".join(gen_notes)),
         "sessions": sessions,
     }
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# מצב «חזרה לריצה» (14.11.2026) — אחרי הפסקה ארוכה: הליכה-ריצה, בלי איכות ובלי לונג.
+#
+# הכללים (הכרעות הגיא 14.11): המטרה ירידה במשקל וחזרה לכושר, בלי מרוץ; 3 ימים
+# בשבוע; כוח במשקל-גוף; ההתקדמות לשלב הבא רק אחרי שבוע שבוצע ובלי כאב.
+# כל שלב = שבוע אחד לפחות. הקצב לא מוכתב: הריצה בקצב-שיחה, ההליכה נמרצת.
+# ══════════════════════════════════════════════════════════════════════════════
+
+RETURN_WARMUP_SEC = 300          # הליכה נמרצת
+RETURN_COOLDOWN_SEC = 300        # הליכה רגועה
+RETURN_RUN_SEC_PER_KM = 450      # 7:30 — הערכת-מרחק בלבד, לא יעד קצב
+RETURN_WALK_SEC_PER_KM = 600     # 10:00
+RETURN_DEFAULT_DAYS = 3
+
+# (ריצה בשניות, הליכה בשניות, חזרות). הליכה 0 = ריצה רציפה.
+RETURN_STAGES = [
+    (60, 120, 8),     # 1 · 8 דק' ריצה מתוך 24
+    (90, 120, 7),     # 2 · 10.5 דק'
+    (120, 90, 7),     # 3 · 14 דק'
+    (180, 90, 6),     # 4 · 18 דק'
+    (300, 120, 4),    # 5 · 20 דק'
+    (480, 120, 3),    # 6 · 24 דק'
+    (720, 120, 2),    # 7 · 24 דק' בשני מקטעים
+    (1200, 0, 1),     # 8 · 20 דק' רצוף
+    (1500, 0, 1),     # 9 · 25 דק' רצוף
+    (1800, 0, 1),     # 10 · 30 דק' רצוף — סוף המצב
+]
+RETURN_LAST_STAGE = len(RETURN_STAGES)
+
+
+def _fmt_dur(sec: int) -> str:
+    m, s = divmod(int(sec), 60)
+    if m and s:
+        return f"{m}:{s:02d} דק'"
+    return f"{m} דק'" if m else f"{s} שנ'"
+
+
+def return_session_steps(stage: int) -> list:
+    """ה-steps של אימון הליכה-ריצה בשלב נתון: חימום, ריצה/הליכה לסירוגין, שחרור."""
+    run, walk, reps = RETURN_STAGES[stage - 1]
+    steps = [{"kind": "warmup", "seconds": RETURN_WARMUP_SEC}]
+    for i in range(reps):
+        steps.append({"kind": "interval", "seconds": run})
+        if walk and i < reps - 1:
+            steps.append({"kind": "recovery", "seconds": walk})
+    steps.append({"kind": "cooldown", "seconds": RETURN_COOLDOWN_SEC})
+    return steps
+
+
+def return_session_km(stage: int) -> float:
+    """מרחק משוער של האימון כולו (ריצה + הליכה), כפי שהשעון ימדוד אותו."""
+    steps = return_session_steps(stage)
+    run = sum(s["seconds"] for s in steps if s["kind"] == "interval")
+    walk = sum(s["seconds"] for s in steps if s["kind"] != "interval")
+    return round(run / RETURN_RUN_SEC_PER_KM + walk / RETURN_WALK_SEC_PER_KM, 1)
+
+
+def next_return_stage(stage: int, done: int, planned: int, pain: bool) -> tuple:
+    """השלב לשבוע הבא + הסבר. דטרמיניסטי:
+      • כאב בשבוע שעבר → שלב אחד אחורה (לא מתחת ל-1).
+      • בוצעו לפחות planned-1 אימונים (ולפחות 2) ובלי כאב → שלב קדימה.
+      • אחרת → חוזרים על אותו שלב.
+    """
+    stage = max(1, min(int(stage or 1), RETURN_LAST_STAGE))
+    if pain:
+        new = max(1, stage - 1)
+        return new, f"דווח כאב בשבוע שעבר: יורדים לשלב {new}."
+    if planned > 0 and done >= max(2, planned - 1):
+        if stage >= RETURN_LAST_STAGE:
+            return stage, "השלב האחרון הושלם: אפשר לעבור לתוכנית ריצה רגילה."
+        return stage + 1, f"שבוע מלא בלי כאב ({done}/{planned}): עולים לשלב {stage + 1}."
+    if planned > 0:
+        return stage, f"בוצעו {done} מתוך {planned}: חוזרים על שלב {stage}."
+    return stage, f"שבוע ראשון במצב חזרה לריצה: שלב {stage}."
+
+
+def _pick_return_days(n: int, busy: set) -> list:
+    """n ימים פנויים, עדיף בלי שני ימים צמודים. סדר העדפה: ראשון/שלישי/חמישי."""
+    import itertools
+    order = [6, 1, 3, 0, 2, 4, 5]                     # python weekday(), ראשון=6
+    pos = {6: 0, 0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6}  # מיקום בתוך שבוע ראשון–שבת
+    free = [w for w in order if w not in busy]
+    n = min(n, len(free))
+    best, best_score = [], None
+    for combo in itertools.combinations(free, n):
+        p = sorted(pos[w] for w in combo)
+        adjacent = sum(1 for a, b in zip(p, p[1:]) if b - a == 1)
+        score = (adjacent, sum(order.index(w) for w in combo))
+        if best_score is None or score < best_score:
+            best, best_score = list(combo), score
+    return sorted(best, key=lambda w: pos[w])
+
+
+def generate_return(week_start: datetime.date, stage: int = 1,
+                    days_per_week: int = RETURN_DEFAULT_DAYS,
+                    availability: dict | None = None,
+                    stage_note: str = "") -> dict:
+    """WEEK_PLAN למצב «חזרה לריצה»: days_per_week אימוני הליכה-ריצה, בלי איכות ובלי
+    לונג, וכוח משקל-גוף (BW) באימון הראשון והאחרון של השבוע (באותו יום, אחרי הריצה)."""
+    assert week_start.weekday() == 6, "week_start חייב להיות ראשון (עוגן-השבוע)"
+    stage = max(1, min(int(stage or 1), RETURN_LAST_STAGE))
+    busy = set((availability or {}).get("busy_days", []))
+    dates = _dates_for_week(week_start)
+    days = _pick_return_days(max(1, int(days_per_week or RETURN_DEFAULT_DAYS)), busy)
+
+    run, walk, reps = RETURN_STAGES[stage - 1]
+    km = return_session_km(stage)
+    if walk:
+        name = f"🚶🏃 הליכה-ריצה · שלב {stage} · {reps}× ({_fmt_dur(run)} ריצה / {_fmt_dur(walk)} הליכה)"
+        body = (f"{reps} חזרות: {_fmt_dur(run)} ריצה בקצב-שיחה, ואז {_fmt_dur(walk)} הליכה.")
+    else:
+        name = f"🏃 ריצה רצופה · שלב {stage} · {_fmt_dur(run)}"
+        body = f"{_fmt_dur(run)} ריצה רצופה בקצב-שיחה."
+    desc = (f"חימום: {_fmt_dur(RETURN_WARMUP_SEC)} הליכה נמרצת. {body} "
+            f"שחרור: {_fmt_dur(RETURN_COOLDOWN_SEC)} הליכה. "
+            "בלי יעד קצב: אם אי אפשר לדבר משפט שלם, מאטים. "
+            "כאב בברך או בכף הרגל שעולה תוך כדי: עוצרים, הולכים הביתה ומדווחים.")
+
+    sessions = []
+    for wd in days:
+        sessions.append({"date": dates[wd], "type": "run", "subtype": "easy",
+                         "name": name, "desc": desc, "est_km": km,
+                         "steps": return_session_steps(stage)})
+    strength_days = [days[0], days[-1]] if len(days) >= 2 else days
+    for wd in dict.fromkeys(strength_days):
+        sessions.append({"date": dates[wd], "type": "strength", "key": "BW"})
+
+    notes = [f"מצב חזרה לריצה · שלב {stage} מתוך {RETURN_LAST_STAGE}."]
+    if stage_note:
+        notes.append(stage_note)
+    if (availability or {}).get("raw"):
+        notes.append(f"אילוצים: {availability['raw']}")
+    if len(days) < int(days_per_week or RETURN_DEFAULT_DAYS):
+        notes.append(f"⚠️ נמצאו רק {len(days)} ימים פנויים מתוך {days_per_week}.")
+
+    sessions.sort(key=lambda s: (s["date"], 0 if s["type"] == "run" else 1))
+    return {
+        "week_of": week_start.isoformat(),
+        "macro_week": None,
+        "phase": f"חזרה לריצה · שלב {stage}",
+        "goal_race": "חזרה לכושר וירידה במשקל (בלי מרוץ)",
+        "return_stage": stage,
+        "notes": " ".join(notes),
+        "sessions": sessions,
+    }

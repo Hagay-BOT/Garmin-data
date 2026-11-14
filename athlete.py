@@ -46,13 +46,22 @@ STRENGTH_NAMES = {
     "A": "💪 כוח A — Pull/משיכה (גב/יד קדמית)",
     "B": "💪 כוח B — Push/דחיפה (חזה/כתפיים/יד אחורית)",
     "C": "🦵 כוח C — Legs (רגליים)",
+    "BW": "💪 כוח משקל גוף — כל הגוף",
 }
 STRENGTH_DESCS = {
     "A": "Pull: גב, יד קדמית.",
     "B": "Push: חזה, כתפיים, יד אחורית.",
     "C": "רגליים: סקוואט, hip thrust, calf raises, חיזוק ברך/קרסול.",
+    "BW": ("כ-25 דק', 2 סבבים, מנוחה 45 שנ': סקוואט אוויר איטי 12 · שכיבות סמיכה (אפשר על ברכיים) 8 · "
+           "גשר ישבן 15 · חתירה על שולחן או מגבת 10 · עליות עקב 12 · פלאנק 30 שנ'. "
+           "כאב בברך: מקצרים טווח או מדלגים על התרגיל."),
 }
 STRENGTH_MINUTES = 60
+STRENGTH_MINUTES_BY_KEY = {"BW": 25}   # חריגים; כל השאר STRENGTH_MINUTES
+
+
+def strength_minutes(key: str) -> int:
+    return STRENGTH_MINUTES_BY_KEY.get(key, STRENGTH_MINUTES)
 
 
 def week_start(d=None):

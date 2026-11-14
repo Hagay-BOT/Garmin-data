@@ -37,10 +37,11 @@ import store
 
 STRENGTH_SPORT = {"sportTypeId": 5, "sportTypeKey": "strength_training", "displayOrder": 5}
 # מקור-אמת יחיד לשמות הכוח: athlete.py (A/B היו הפוכים כשהוגדרו בכל קובץ בנפרד)
-STRENGTH_DEFS = {k: {"name": athlete.STRENGTH_NAMES[k], "minutes": athlete.STRENGTH_MINUTES,
-                     "desc": athlete.STRENGTH_DESCS[k]} for k in ("A", "B", "C")}
+STRENGTH_DEFS = {k: {"name": athlete.STRENGTH_NAMES[k], "minutes": athlete.strength_minutes(k),
+                     "desc": athlete.STRENGTH_DESCS[k]} for k in athlete.STRENGTH_NAMES}
 
 STEP_BUILDERS = {
+    "recovery": create_recovery_step,   # הליכה בין מקטעי ריצה (מצב חזרה לריצה)
     "warmup": create_warmup_step,
     "interval": create_interval_step,
     "cooldown": create_cooldown_step,
@@ -58,7 +59,7 @@ def load_plan() -> dict:
         sys.exit(1)
 
 
-VALID_STEP_KINDS = {"warmup", "interval", "cooldown"}
+VALID_STEP_KINDS = {"warmup", "interval", "recovery", "cooldown"}
 MAX_TOTAL_SECONDS = 4 * 3600
 MIN_TOTAL_SECONDS = 5 * 60
 

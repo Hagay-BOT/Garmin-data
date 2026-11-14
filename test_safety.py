@@ -77,6 +77,31 @@ def test_structural_reject_out_of_order_dates():
     assert any("ממוין" in w or "INVALID" in w for w in warn)
 
 
+def test_zero_base_has_a_cap():
+    # תוקן 14.11.2026: אחרי הפסקה (שבוע שעבר 0, כרוני 0) שבוע של 25 ק"מ עבר בלי תקרה
+    plan = _plan([_run("2026-11-15", "easy", 8), _run("2026-11-17", "easy", 8),
+                  _run("2026-11-19", "easy", 9)])
+    out, adj, warn, nr = safety.clamp_and_validate_week_plan(plan, prev_week_km=0)
+    total = sum(s["est_km"] for s in out["sessions"])
+    assert total <= safety.RESTART_WEEK_CAP_KM + 0.2, total
+    assert any("בסיס אפס" in a for a in adj), adj
+    # בסיס אפס + deload במאקרו: עדיין תקרת החזרה, לא «אין תקרה»
+    plan = _plan([_run("2026-11-15", "easy", 10), _run("2026-11-17", "easy", 10)])
+    out, adj, _, _ = safety.clamp_and_validate_week_plan(plan, prev_week_km=0,
+                                                         macro={"deload": True})
+    assert sum(s["est_km"] for s in out["sessions"]) <= safety.RESTART_WEEK_CAP_KM + 0.2
+
+
+def test_rest_week_uses_chronic_anchor():
+    # שבוע מנוחה אחד (0) עם בסיס כרוני 20: התקרה מהכרוני (23), לא «אין תקרה» ולא 12
+    plan = _plan([_run("2026-11-15", "easy", 10), _run("2026-11-17", "easy", 10),
+                  _run("2026-11-19", "easy", 10)])
+    out, adj, _, _ = safety.clamp_and_validate_week_plan(plan, prev_week_km=0,
+                                                         chronic_week_km=20)
+    total = sum(s["est_km"] for s in out["sessions"])
+    assert 22.5 <= total <= 23.2, total
+
+
 def test_metadata_block():
     plan = _plan([_run("2026-06-22", "easy", 13), _run("2026-06-24", "easy", 13)])
     out, adj, warn, nr = safety.clamp_and_validate_week_plan(plan, prev_week_km=20)

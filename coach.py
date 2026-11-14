@@ -964,10 +964,12 @@ def materialize_week_plan(raw: dict) -> dict:
         "week_of": raw.get("week_of", ""),
         "macro_week": raw.get("macro_week"),
         "phase": raw.get("phase", ""),
-        "goal_race": athlete.GOAL_RACE_LABEL,
+        "goal_race": raw.get("goal_race") or athlete.GOAL_RACE_LABEL,
         "notes": raw.get("notes", "נוצר אוטומטית מהסקירה השבועית."),
         "sessions": [],
     }
+    if raw.get("return_stage"):
+        out["return_stage"] = raw["return_stage"]
     for s in raw["sessions"]:
         d = s.get("date", "")
         try:
@@ -979,7 +981,10 @@ def materialize_week_plan(raw: dict) -> dict:
             pace_sec = _pace_to_sec(s.get("pace", "6:30"))
             total = int(est_km * pace_sec)
             sub = s.get("subtype", "easy")
-            if sub == "long":
+            if s.get("steps"):
+                # מצב חזרה לריצה: המחולל מספק steps מפורשים (ריצה/הליכה לסירוגין).
+                steps = [dict(st) for st in s["steps"]]
+            elif sub == "long":
                 steps = [{"kind": "interval", "seconds": total}]
             else:
                 # חימום ~9 דק' + עיקר + שחרור ~6 דק'
@@ -1599,7 +1604,29 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
     if availability.get("raw"):
         print(f"🗓️ אילוצי זמינות: {availability['raw'][:80]!r} → ימים עמוסים {availability['busy_days']}")
     last_seq = (history[-1].get("strength_sequence") if history else None) or []
-    raw_week = pg.generate(next_sunday, next_macro, last_seq, availability)
+    # ── מצב «חזרה לריצה» (14.11.2026): גובר על המאקרו. הליכה-ריצה, בלי איכות. ──
+    _ast = _store.load_athlete_state()
+    _rtr = _ast.get("return_to_run") or {}
+    if _rtr.get("active"):
+        import body_state as _bs_rtr
+        _this_sunday = athlete.week_start().isoformat()
+        _planned = int(_rtr.get("planned_runs") or 0) if _rtr.get("planned_week") == _this_sunday else 0
+        _stage, _stage_note = pg.next_return_stage(
+            _rtr.get("stage", 1), metrics["last_week"].get("count", 0) or 0, _planned,
+            _bs_rtr.pain_since(_this_sunday))
+        print(f"🚶🏃 חזרה לריצה: {_stage_note}")
+        raw_week = pg.generate_return(next_sunday, _stage, _rtr.get("days_per_week", 3),
+                                      availability, _stage_note)
+        next_macro = {"week_num": None, "phase": raw_week["phase"], "deload": False,
+                      "quality": "ללא איכות (הליכה-ריצה)",
+                      "focus": "חזרה הדרגתית לריצה, בלי כאב"}
+        if not dry:
+            _rtr.update({"stage": _stage, "planned_week": next_sunday.isoformat(),
+                         "planned_runs": sum(1 for x in raw_week["sessions"] if x["type"] == "run")})
+            _ast["return_to_run"] = _rtr
+            _store.save_athlete_state(_ast)
+    else:
+        raw_week = pg.generate(next_sunday, next_macro, last_seq, availability)
     # באג שנמצא בסקירה 15.7: אילוצי-זמינות הם חד-פעמיים. בלי מחיקה אחרי צריכה,
     # כשל בשאלת-שבת (רשת/cron) היה גורם לאילוצים של שבוע שעבר לחול על שבוע חדש.
     if availability.get("raw") and not dry:
@@ -1625,6 +1652,10 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
                    + plan_md
                    + (f"\n\nאילוצי הזמינות שהמתאמן מסר: {availability['raw']}"
                       if availability.get("raw") else "")
+                   + ("\n\n⚠️ מצב חזרה לריצה אחרי הפסקה ארוכה: אין מרוץ ואין יעד קצב. המטרה "
+                      "ירידה במשקל וחזרה לכושר. התעלם מהמאקרו הישן ומהקצבים הישנים, ואל תמליץ "
+                      "על איכות, לונג או הגדלת נפח מעבר לתוכנית."
+                      if _rtr.get("active") else "")
                    + "\n\nכתוב את הדוח והנרטיב סביב התוכנית הזו. אל תפלוט PLAN_JSON או "
                      "WEEK_PLAN_JSON — רק את הדוח ו-WEEKLY_REPORT_JSON.")
 
