@@ -48,4 +48,4 @@ jobs:
         if: ${{ inputs.dry_run != true }}
         run: |
           bash scripts/git_sync.sh "coach: weekly review $(date -u +%Y-%m-%d)" \
-            data.json coach_report.md coach_history.json week_plan.json weekly_state.json
+            data.json coach_report.md coach_history.json week_plan.json weekly_state.json athlete_state.json

@@ -1408,7 +1408,7 @@ MODEL_CHAT = "claude-opus-5-5"
 #   low · medium · high · xhigh · max  (Fable/Opus 4.7+ תומכים ב-xhigh; Fable גם ב-max)
 # שבועי: xhigh — עומק גבוה למשימה הכי מורכבת, שרצה פעם בשבוע (עלות זניחה).
 # פוסט-אימון: medium — ניתוח יומי, איזון עלות/איכות.
-WEEKLY_EFFORT = "xhigh"
+WEEKLY_EFFORT = "high"   # Fable 5.2: מתחילים ב-high; xhigh רק אם נמדד שיפור
 REVISE_EFFORT = "medium"
 
 # Haiku 4.5 לא תומך ב-effort / adaptive thinking (יחזיר 400). Sonnet/Opus כן.
@@ -1702,9 +1702,11 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
 
     print(f"🤖 מודל: {MODEL_WEEKLY} (שבועי — תכנון כבד)")
     print("קורא ל-Claude Opus (weekly, streaming)...\n")
-    # 12000: דוח + WEEKLY_REPORT_JSON בלבד (מאז M3.3 ה-LLM לא פולט תוכנית — היא
+    # 48000 (14.11.2026): ב-Fable 5.2 החשיבה נספרת בתוך max_tokens. ב-12000 + xhigh היא
+    # אכלה את כל התקרה והדוח נקטע בלי WEEKLY_REPORT_JSON (ריצה 43621577676).
+    # היסטוריה — 12000: דוח + WEEKLY_REPORT_JSON בלבד (מאז M3.3 ה-LLM לא פולט תוכנית — היא
     # נבנית דטרמיניסטית). עדיין מרווח גדול מעל הנצפה כדי למנוע truncation.
-    full_response = _stream_report(client, system_prompt, user_prompt, max_tokens=12000,
+    full_response = _stream_report(client, system_prompt, user_prompt, max_tokens=48000,
                                    effort=WEEKLY_EFFORT)
 
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
