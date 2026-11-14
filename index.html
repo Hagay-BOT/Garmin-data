@@ -825,15 +825,40 @@ function wpToggleDone(i){
   localStorage.setItem('wpManualDone', JSON.stringify([...set]));
   buildWeekPlan(window._wpActs||[]);
 }
+// מצב «חזרה לריצה»: מד 14 השבועות של המרוץ הישן מוחלף במד השלבים (1 עד 10).
+function renderReturnStage(plan){
+  const old=document.getElementById('wk-tracker');
+  if(!old||!plan||!plan.return_stage) return;
+  old.style.display='none';   // לא מוחקים: הקוד של המד הישן עדיין מחזיק הפניות לאלמנטים שלו
+  let el=document.getElementById('rtr-card');
+  if(!el){ el=document.createElement('div'); el.id='rtr-card'; el.className='chart-sec card'; old.parentNode.insertBefore(el,old); }
+  const n=10, cur=Math.max(1,Math.min(n,plan.return_stage));
+  const dots=Array.from({length:n},(_,i)=>{
+    const k=i+1, c=k<cur?'var(--green)':k===cur?'var(--blue)':'var(--b2)';
+    return `<span style="display:inline-flex;align-items:center;justify-content:center;width:1.7rem;height:1.7rem;border-radius:50%;background:${c};color:${k<=cur?'#06131c':'var(--t2)'};font-size:.72rem;font-weight:700">${k}</span>`;
+  }).join('');
+  el.innerHTML=`<div class="sec-title">חזרה לריצה</div>
+    <div style="text-align:center;padding:.3rem 0 .2rem">
+      <div style="font-size:1.5rem;font-weight:700">שלב ${cur} מתוך ${n}</div>
+      <div style="font-size:.76rem;color:var(--t2);margin:.35rem 0 .9rem">עולים שלב אחרי שבוע שבוצע ובלי כאב. היעד: 30 דקות ריצה רצופה.</div>
+      <div dir="ltr" style="display:flex;justify-content:center;gap:.35rem;flex-wrap:wrap">${dots}</div>
+    </div>`;
+}
 function buildWeekPlan(acts){
   const list=document.getElementById('wp-list'), progEl=document.getElementById('wp-prog');
   if(!list) return;
-  fetch('week_plan.json').then(r=>r.ok?r.json():null).then(plan=>{
+  fetch('week_plan.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(plan=>{
     if(!plan||!plan.sessions||!plan.sessions.length){
       list.innerHTML='<div class="wp-none">אין תוכנית שבועית פעילה.</div>'; return;
     }
     const today=new Date(); today.setHours(0,0,0,0);
     const todayStr=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    renderReturnStage(plan);
+    window._wpPreNote='';
+    if(plan.week_of && todayStr<plan.week_of){
+      const ws=new Date(plan.week_of+'T00:00:00');
+      window._wpPreNote=`<div class="wp-none">השבוע הזה מתחיל ביום ראשון ${ws.getDate()}/${ws.getMonth()+1}. להיום אין אימון בתוכנית.</div>`;
+    }
     const byDate={};
     acts.forEach(a=>{ if(a.date){ (byDate[a.date]=byDate[a.date]||[]).push(a); } });
     window._wpActs=acts;
@@ -878,7 +903,7 @@ function buildWeekPlan(acts){
       </div>
       <div class="wp-detail" id="wpd-${i}"></div>`;
     }).join('');
-    list.innerHTML=rows;
+    list.innerHTML=(window._wpPreNote||'')+rows;
     if(progEl) progEl.innerHTML=`<b>${done}</b>/${plan.sessions.length} הושלמו`;
   }).catch(()=>{ list.innerHTML='<div class="wp-none">לא ניתן לטעון את התוכנית.</div>'; });
 }
@@ -903,7 +928,7 @@ function renderJournal(){
       const d=(n.date||'').slice(5).replace('-','/');
       return `<div class="jn-row"><div class="jn-date">${d}</div><div class="jn-text">${flag}${t}</div></div>`;
     }).join('');
-    list.innerHTML=rows;
+    list.innerHTML=(window._wpPreNote||'')+rows;
     const cnt=document.getElementById('jn-count');
     if(cnt) cnt.textContent=`${Math.min(notes.length,6)} אחרונות`;
     // ברירת מחדל: סגור. נפתח רק אם הגיא בחר לפתוח בעבר.
@@ -1616,7 +1641,7 @@ fetch('data.json')
     if(data.last_updated){
       const d=new Date(data.last_updated);
       document.getElementById('nav-upd').textContent=
-        ` — ${d.toLocaleDateString('he-IL')} ${d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}`;
+        ` — סנכרון גרמין: ${d.toLocaleDateString('he-IL')} ${d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}`;
     }
     renderWeight(data.weight);
     buildDashboard(acts, globalMaxHR);
