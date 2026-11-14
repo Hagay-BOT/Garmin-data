@@ -49,7 +49,7 @@ def login(attempts: int = 4):
 # קונבנציית-השמות שלנו — מזהה את האימונים שאנחנו יצרנו: אמוג'י (push_week)
 # + שמות הכוח המפורטים מ-strength_workouts.json (push_strength: "משיכה — גב...").
 # ה-audit הראשון מול השעון (13.07) תפס שהמפורטים סומנו "חיצוני" — תוקן כאן.
-OUR_MARKERS = ("🏃", "💪", "🦵", "🚶", "משיכה", "דחיפה", "רגליים")
+OUR_MARKERS = ("🏃", "💪", "🦵", "🚶", "🧘", "משיכה", "דחיפה", "רגליים")
 
 
 def scheduled_workouts(client, start_iso: str, end_iso: str) -> list[dict]:

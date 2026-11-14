@@ -55,7 +55,7 @@ def load_week_plan() -> dict:
     # M9.3: ולידציית-מבנה רועשת — סשן חסר-שדות מתפשט בשקט לגרמין/יומן/פרומטים.
     bad = [i for i, s in enumerate(plan.get("sessions", []))
            if not (isinstance(s, dict) and s.get("date") and s.get("type") in ("run", "strength")
-                   and (s.get("type") != "strength" or s.get("key") in ("A", "B", "C", "BW")))]
+                   and (s.get("type") != "strength" or s.get("key") in ("A", "B", "C", "BW", "YG")))]
     if bad:
         print(f"🔴 store: week_plan.json — sessions פגומים באינדקסים {bad} (חסר date/type/key)!")
     return plan

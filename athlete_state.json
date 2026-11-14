@@ -7,16 +7,14 @@
     "knee": {
       "since": "2026-07-26",
       "note": "הברכיים שלי גומרות אותי"
-    },
-    "illness": {
-      "since": "2026-07-26",
-      "note": "אני חולה"
     }
   },
   "return_to_run": {
     "active": true,
     "stage": 1,
-    "days_per_week": 3,
+    "run_days": 2,
+    "strength_days": 2,
+    "yoga_days": 2,
     "since": "2026-11-14"
   }
 }

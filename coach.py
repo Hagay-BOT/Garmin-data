@@ -1626,8 +1626,10 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
             _rtr.get("stage", 1), metrics["last_week"].get("count", 0) or 0, _planned,
             _bs_rtr.pain_since(_this_sunday))
         print(f"🚶🏃 חזרה לריצה: {_stage_note}")
-        raw_week = pg.generate_return(next_sunday, _stage, _rtr.get("days_per_week", 3),
-                                      availability, _stage_note)
+        raw_week = pg.generate_return(next_sunday, _stage, _rtr.get("run_days", 2),
+                                      availability, _stage_note,
+                                      strength_days=_rtr.get("strength_days", 2),
+                                      yoga_days=_rtr.get("yoga_days", 2))
         next_macro = {"week_num": None, "phase": raw_week["phase"], "deload": False,
                       "quality": "ללא איכות (הליכה-ריצה)",
                       "focus": "חזרה הדרגתית לריצה, בלי כאב"}
@@ -1648,7 +1650,7 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
     _plan_runs = [s for s in raw_week["sessions"] if s["type"] == "run"]
     plan_md = "\n".join(
         f"- {s['date']} · " + (f"🏃 {s['name']} ({s['est_km']} ק\"מ)" if s["type"] == "run"
-                               else f"💪 כוח {s['key']}")
+                               else athlete.STRENGTH_NAMES.get(s['key'], f"💪 כוח {s['key']}"))
         for s in raw_week["sessions"])
 
     system_prompt = SYSTEM_PROMPT_TEMPLATE.format(knowledge_base=knowledge_base,

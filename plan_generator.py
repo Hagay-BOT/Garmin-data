@@ -180,8 +180,8 @@ def generate(week_start: datetime.date, macro: dict,
 # ══════════════════════════════════════════════════════════════════════════════
 # מצב «חזרה לריצה» (14.11.2026) — אחרי הפסקה ארוכה: הליכה-ריצה, בלי איכות ובלי לונג.
 #
-# הכללים (הכרעות הגיא 14.11): המטרה ירידה במשקל וחזרה לכושר, בלי מרוץ; 3 ימים
-# בשבוע; כוח במשקל-גוף; ההתקדמות לשלב הבא רק אחרי שבוע שבוצע ובלי כאב.
+# הכללים (הכרעות הגיא 14.11): המטרה ירידה במשקל וחזרה לכושר, בלי מרוץ; 2 ריצות,
+# 2 אימוני כוח משקל-גוף ו-2 יוגה וגמישות בשבוע; ההתקדמות לשלב הבא רק אחרי שבוע שבוצע ובלי כאב.
 # כל שלב = שבוע אחד לפחות. הקצב לא מוכתב: הריצה בקצב-שיחה, ההליכה נמרצת.
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -189,7 +189,7 @@ RETURN_WARMUP_SEC = 300          # הליכה נמרצת
 RETURN_COOLDOWN_SEC = 300        # הליכה רגועה
 RETURN_RUN_SEC_PER_KM = 450      # 7:30 — הערכת-מרחק בלבד, לא יעד קצב
 RETURN_WALK_SEC_PER_KM = 600     # 10:00
-RETURN_DEFAULT_DAYS = 3
+RETURN_DEFAULT_DAYS = 2          # ימי ריצה בשבוע
 
 # (ריצה בשניות, הליכה בשניות, חזרות). הליכה 0 = ריצה רציפה.
 RETURN_STAGES = [
@@ -253,34 +253,54 @@ def next_return_stage(stage: int, done: int, planned: int, pain: bool) -> tuple:
     return stage, f"שבוע ראשון במצב חזרה לריצה: שלב {stage}."
 
 
-def _pick_return_days(n: int, busy: set) -> list:
-    """n ימים פנויים, עדיף בלי שני ימים צמודים. סדר העדפה: ראשון/שלישי/חמישי."""
+_RET_ORDER = [6, 2, 0, 3, 1, 4, 5]                    # python weekday(), ראשון=6
+_RET_POS = {6: 0, 0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6}   # מיקום בשבוע ראשון–שבת
+
+
+def _pick_spread(n: int, candidates: list, prefer: list) -> list:
+    """n ימים מתוך candidates: קודם כמה שפחות ימים צמודים, אחר כך לפי סדר ההעדפה."""
     import itertools
-    order = [6, 1, 3, 0, 2, 4, 5]                     # python weekday(), ראשון=6
-    pos = {6: 0, 0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6}  # מיקום בתוך שבוע ראשון–שבת
-    free = [w for w in order if w not in busy]
-    n = min(n, len(free))
+    n = min(n, len(candidates))
+    if n <= 0:
+        return []
+    rank = {w: i for i, w in enumerate(prefer + [w for w in _RET_ORDER if w not in prefer])}
     best, best_score = [], None
-    for combo in itertools.combinations(free, n):
-        p = sorted(pos[w] for w in combo)
+    for combo in itertools.combinations(candidates, n):
+        p = sorted(_RET_POS[w] for w in combo)
         adjacent = sum(1 for a, b in zip(p, p[1:]) if b - a == 1)
-        score = (adjacent, sum(order.index(w) for w in combo))
+        score = (adjacent, sum(rank[w] for w in combo))
         if best_score is None or score < best_score:
             best, best_score = list(combo), score
-    return sorted(best, key=lambda w: pos[w])
+    return sorted(best, key=lambda w: _RET_POS[w])
 
 
 def generate_return(week_start: datetime.date, stage: int = 1,
                     days_per_week: int = RETURN_DEFAULT_DAYS,
                     availability: dict | None = None,
-                    stage_note: str = "") -> dict:
-    """WEEK_PLAN למצב «חזרה לריצה»: days_per_week אימוני הליכה-ריצה, בלי איכות ובלי
-    לונג, וכוח משקל-גוף (BW) באימון הראשון והאחרון של השבוע (באותו יום, אחרי הריצה)."""
+                    stage_note: str = "",
+                    strength_days: int = 2, yoga_days: int = 2) -> dict:
+    """WEEK_PLAN למצב «חזרה לריצה» (הכרעת הגיא 14.11.2026):
+      • days_per_week אימוני הליכה-ריצה (ברירת מחדל 2), בלי איכות ובלי לונג, לא ביומיים צמודים.
+      • strength_days אימוני כוח משקל-גוף (BW), בימים נפרדים מהריצה כשיש ימים פנויים.
+      • yoga_days אימוני יוגה וגמישות (YG) בימים שנותרו.
+    ברירת המחדל: ראשון ריצה · שני כוח · שלישי יוגה · רביעי ריצה · חמישי כוח · שישי יוגה · שבת מנוחה.
+    כשאין מספיק ימים פנויים: כוח נצמד ליום ריצה (אחריה), ויוגה לכל יום אימון."""
     assert week_start.weekday() == 6, "week_start חייב להיות ראשון (עוגן-השבוע)"
     stage = max(1, min(int(stage or 1), RETURN_LAST_STAGE))
     busy = set((availability or {}).get("busy_days", []))
     dates = _dates_for_week(week_start)
-    days = _pick_return_days(max(1, int(days_per_week or RETURN_DEFAULT_DAYS)), busy)
+    free = [w for w in _RET_ORDER if w not in busy]
+    n_runs = max(1, int(days_per_week or RETURN_DEFAULT_DAYS))
+
+    run_wds = _pick_spread(n_runs, free, [6, 2, 0, 3])
+    rest = [w for w in free if w not in run_wds]
+    str_wds = _pick_spread(int(strength_days or 0), rest, [0, 3, 1, 4])
+    if len(str_wds) < int(strength_days or 0):               # אין יום נפרד → אחרי ריצה
+        str_wds += [w for w in run_wds if w not in str_wds][:int(strength_days) - len(str_wds)]
+    rest = [w for w in rest if w not in str_wds]
+    yoga_wds = _pick_spread(int(yoga_days or 0), rest, [1, 4, 5])
+    if len(yoga_wds) < int(yoga_days or 0):                  # אין יום נפרד → אחרי אימון
+        yoga_wds += [w for w in run_wds + str_wds if w not in yoga_wds][:int(yoga_days) - len(yoga_wds)]
 
     run, walk, reps = RETURN_STAGES[stage - 1]
     km = return_session_km(stage)
@@ -296,23 +316,25 @@ def generate_return(week_start: datetime.date, stage: int = 1,
             "כאב בברך או בכף הרגל שעולה תוך כדי: עוצרים, הולכים הביתה ומדווחים.")
 
     sessions = []
-    for wd in days:
+    for wd in run_wds:
         sessions.append({"date": dates[wd], "type": "run", "subtype": "easy",
                          "name": name, "desc": desc, "est_km": km,
                          "steps": return_session_steps(stage)})
-    strength_days = [days[0], days[-1]] if len(days) >= 2 else days
-    for wd in dict.fromkeys(strength_days):
+    for wd in str_wds:
         sessions.append({"date": dates[wd], "type": "strength", "key": "BW"})
+    for wd in yoga_wds:
+        sessions.append({"date": dates[wd], "type": "strength", "key": "YG"})
 
     notes = [f"מצב חזרה לריצה · שלב {stage} מתוך {RETURN_LAST_STAGE}."]
     if stage_note:
         notes.append(stage_note)
     if (availability or {}).get("raw"):
         notes.append(f"אילוצים: {availability['raw']}")
-    if len(days) < int(days_per_week or RETURN_DEFAULT_DAYS):
-        notes.append(f"⚠️ נמצאו רק {len(days)} ימים פנויים מתוך {days_per_week}.")
+    if len(run_wds) < n_runs:
+        notes.append(f"⚠️ נמצאו רק {len(run_wds)} ימים פנויים לריצה מתוך {n_runs}.")
 
-    sessions.sort(key=lambda s: (s["date"], 0 if s["type"] == "run" else 1))
+    _ord = {"run": 0, "BW": 1, "YG": 2}
+    sessions.sort(key=lambda s: (s["date"], _ord.get(s.get("key") or s["type"], 3)))
     return {
         "week_of": week_start.isoformat(),
         "macro_week": None,

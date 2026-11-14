@@ -113,14 +113,19 @@ def test_gate_week_builds_5k_tt():
 
 
 def test_return_mode_week():
-    # חזרה לריצה: 3 אימוני הליכה-ריצה, בלי איכות ובלי לונג, ימים לא צמודים, כוח BW
-    p = pg.generate_return(SUNDAY, stage=1, days_per_week=3)
+    # חזרה לריצה (הכרעת הגיא 14.11): 2 הליכה-ריצה, 2 כוח משקל-גוף, 2 יוגה. כל אחד ביום משלו.
+    p = pg.generate_return(SUNDAY, stage=1)
     runs, strength = _by(p, "run"), _by(p, "strength")
-    assert len(runs) == 3, runs
+    assert len(runs) == 2, runs
     assert all(r["subtype"] == "easy" for r in runs), "אין איכות ואין לונג במצב חזרה"
-    wds = sorted((_wd(r["date"]) + 1) % 7 for r in runs)   # ראשון=0
-    assert all(b - a >= 2 for a, b in zip(wds, wds[1:])), f"ימים צמודים: {wds}"
-    assert [s["key"] for s in strength] == ["BW", "BW"], strength
+    pos = lambda s_: (_wd(s_["date"]) + 1) % 7              # ראשון=0
+    rp = sorted(pos(r) for r in runs)
+    assert rp[1] - rp[0] >= 2, f"ריצות בימים צמודים: {rp}"
+    assert sorted(s["key"] for s in strength) == ["BW", "BW", "YG", "YG"], strength
+    assert len({s["date"] for s in p["sessions"]}) == 6, "שישה ימי פעילות, אחד לכל אימון"
+    assert all(pos(s) != 6 for s in p["sessions"]), "שבת מנוחה"
+    bw = sorted(pos(s) for s in strength if s["key"] == "BW")
+    assert bw[1] - bw[0] >= 2, f"כוח בימים צמודים: {bw}"
     st = runs[0]["steps"]
     assert st[0]["kind"] == "warmup" and st[-1]["kind"] == "cooldown"
     assert sum(1 for x in st if x["kind"] == "interval") == 8
@@ -129,11 +134,16 @@ def test_return_mode_week():
     assert "שלב 1" in runs[0]["name"]
     # יום עמוס לא מקבל אימון
     av = pg.parse_availability("ראשון אני עמוס")
-    p2 = pg.generate_return(SUNDAY, 1, 3, av)
+    p2 = pg.generate_return(SUNDAY, 1, 2, av)
     assert all(_wd(s["date"]) != 6 for s in p2["sessions"])
-    assert len(_by(p2, "run")) == 3
+    assert len(_by(p2, "run")) == 2 and len(_by(p2, "strength")) == 4
+    # שבוע צפוף (3 ימים פנויים): הכול עדיין משובץ, הריצות לא צמודות
+    av3 = pg.parse_availability("שני עמוס, שלישי עמוס, חמישי עמוס, שבת עמוס")
+    p3 = pg.generate_return(SUNDAY, 1, 2, av3)
+    assert len(_by(p3, "run")) == 2 and len(_by(p3, "strength")) == 4, p3["sessions"]
+    assert all(_wd(s["date"]) in (6, 2, 4) for s in p3["sessions"])
     # השלב האחרון = ריצה רצופה, בלי הליכה באמצע
-    last = pg.generate_return(SUNDAY, pg.RETURN_LAST_STAGE, 3)
+    last = pg.generate_return(SUNDAY, pg.RETURN_LAST_STAGE)
     kinds = [x["kind"] for x in _by(last, "run")[0]["steps"]]
     assert kinds == ["warmup", "interval", "cooldown"], kinds
 
@@ -142,6 +152,8 @@ def test_return_stage_progression():
     # מתקדמים רק אחרי שבוע שבוצע ובלי כאב
     assert pg.next_return_stage(1, 3, 3, False)[0] == 2
     assert pg.next_return_stage(1, 2, 3, False)[0] == 2      # 2 מתוך 3 מספיק
+    assert pg.next_return_stage(1, 2, 2, False)[0] == 2      # 2 מתוך 2
+    assert pg.next_return_stage(1, 1, 2, False)[0] == 1      # 1 מתוך 2 → חוזרים
     assert pg.next_return_stage(2, 1, 3, False)[0] == 2      # לא בוצע → חוזרים
     assert pg.next_return_stage(3, 3, 3, True)[0] == 2       # כאב → שלב אחורה
     assert pg.next_return_stage(1, 3, 3, True)[0] == 1       # לא מתחת ל-1
@@ -155,7 +167,7 @@ def test_return_stage_progression():
 def test_return_plan_passes_materialize_and_safety():
     # מקצה לקצה: המחולל → materialize → שכבת הבטיחות, מבסיס אפס, בלי קיצוץ
     import coach, safety
-    full = coach.materialize_week_plan(pg.generate_return(SUNDAY, 1, 3))
+    full = coach.materialize_week_plan(pg.generate_return(SUNDAY, 1))
     assert full["goal_race"].startswith("חזרה לכושר")
     assert any(st["kind"] == "recovery" for st in full["sessions"][0]["steps"])
     out, adj, warn, nr = safety.clamp_and_validate_week_plan(full, prev_week_km=0)
