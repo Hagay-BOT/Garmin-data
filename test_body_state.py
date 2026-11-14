@@ -15,7 +15,10 @@ def test_detect():
 
 
 def test_lifecycle_and_injection():
-    orig = store.load_athlete_state()
+    # שחזור בייט-לבייט: שמירה מחדש דרך store שינתה סיומות שורה, השאירה את הקובץ
+    # «שונה» ב-git וחסמה את ה-pull --rebase של ship.py (14.11.2026).
+    _path = store.BASE / "athlete_state.json"
+    orig_bytes = _path.read_bytes() if _path.exists() else None
     try:
         store.save_athlete_state({"flags": {}})
         # פתיחה
@@ -38,7 +41,10 @@ def test_lifecycle_and_injection():
         assert any("נסגר" in c for c in chg), chg
         assert "knee" not in bs.active_flags()
     finally:
-        store.save_athlete_state(orig)
+        if orig_bytes is None:
+            _path.unlink(missing_ok=True)
+        else:
+            _path.write_bytes(orig_bytes)
 
 
 def main():
