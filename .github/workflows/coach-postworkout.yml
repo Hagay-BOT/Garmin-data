@@ -35,6 +35,7 @@ jobs:
         env:
           GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+          GARMINTOKENS: ${{ secrets.GARMINTOKENS }}
 
       - name: Capture coach-journal notes from Telegram
         run: python capture_notes.py

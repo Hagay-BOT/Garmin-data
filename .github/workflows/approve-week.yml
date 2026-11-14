@@ -28,6 +28,7 @@ jobs:
         env:
           GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+          GARMINTOKENS: ${{ secrets.GARMINTOKENS }}
           RESYNC: ${{ github.event.inputs.resync }}
         run: python confirm_week.py
 

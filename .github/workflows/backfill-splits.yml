@@ -30,12 +30,14 @@ jobs:
         env:
           GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+          GARMINTOKENS: ${{ secrets.GARMINTOKENS }}
 
       - name: Run backfill (write + commit)
         if: ${{ github.event.inputs.mode == 'write' }}
         env:
           GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+          GARMINTOKENS: ${{ secrets.GARMINTOKENS }}
         run: |
           python backfill_splits.py
           bash scripts/git_sync.sh "Backfill 100m splits for last 2 quality runs" data.json

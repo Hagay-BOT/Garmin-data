@@ -36,6 +36,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+          GARMINTOKENS: ${{ secrets.GARMINTOKENS }}
           REVISE_TEXT: ${{ github.event.inputs.revise_text }}
         run: python weekly_revise.py
 

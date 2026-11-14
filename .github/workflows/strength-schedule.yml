@@ -45,6 +45,7 @@ jobs:
         env:
           GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+          GARMINTOKENS: ${{ secrets.GARMINTOKENS }}
         run: python push_strength.py --push-one "${{ github.event.inputs.push_key }}"
 
       - name: Schedule week to Garmin calendar
@@ -52,6 +53,7 @@ jobs:
         env:
           GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+          GARMINTOKENS: ${{ secrets.GARMINTOKENS }}
         run: python push_strength.py --schedule-week
 
       - name: Cleanup a scheduled workout
@@ -59,4 +61,5 @@ jobs:
         env:
           GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+          GARMINTOKENS: ${{ secrets.GARMINTOKENS }}
         run: python push_strength.py --cleanup "${{ github.event.inputs.cleanup_id }}"

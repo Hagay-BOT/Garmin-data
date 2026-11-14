@@ -35,6 +35,7 @@ jobs:
         env:
           GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+          GARMINTOKENS: ${{ secrets.GARMINTOKENS }}
 
       - name: Run weekly review (high effort — full plan)
         run: python coach.py weekly < /dev/null

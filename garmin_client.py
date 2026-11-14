@@ -20,6 +20,19 @@ logger = logging.getLogger("garmin_client")
 def login(attempts: int = 4):
     """התחברות עם retry+backoff (20/40/60ש') — 429/timeout חולפים לא מפילים ריצה.
     חסרים credentials או כשל מתמשך → SystemExit רועש (fail-fast, לא דגימה שקטה)."""
+    # 14.11.2026: קודם אסימונים שמורים (GARMINTOKENS, נוצרים ב-garmin_login_local.py).
+    # התחברות-סיסמה מ-GitHub Actions נדחית ב-401 גם עם סיסמה נכונה; אסימונים לא עוברים ב-SSO.
+    tokens = os.environ.get("GARMINTOKENS")
+    if tokens:
+        try:
+            from garminconnect import Garmin
+            client = Garmin()
+            client.login(tokens)
+            print("✅ התחברות לגרמין הצליחה (אסימונים שמורים)")
+            return client
+        except Exception as e:  # noqa: BLE001
+            print(f"⚠️ התחברות באסימונים נכשלה ({str(e)[:120]}) — מנסה סיסמה. "
+                  f"אם גם זה נכשל: להריץ שוב garmin_login_local.py.", file=sys.stderr)
     email = os.environ.get("GARMIN_EMAIL")
     password = os.environ.get("GARMIN_PASSWORD")
     if not email or not password:
