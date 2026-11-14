@@ -47,6 +47,15 @@ def classify(text: str, awaiting_choice: bool = False) -> str:
         return "choice"
     if is_approval(t):
         return "approval"
+    # 14.11.2026: עריכה או הערה — קודם מודל קטן (message_nlu), ואם אינו זמין הכללים.
+    # אישור ובחירה למעלה נשארים דטרמיניסטיים תמיד.
+    try:
+        import message_nlu
+        u = message_nlu.understand(t)
+    except Exception:  # noqa: BLE001
+        u = None
+    if u is not None:
+        return u["intent"]
     if _PLAN_VOCAB.search(t):
         return "revision"
     return "note"

@@ -53,9 +53,21 @@ def detect(text: str) -> list[tuple[str, str]]:
     return out
 
 
+def detect_smart(text: str) -> list[tuple[str, str]]:
+    """כמו detect, אבל קודם דרך מודל קטן (message_nlu) שמבין ניסוח חופשי.
+    המודל לא זמין (אין מפתח, שגיאה, סירוב) → הכללים הדטרמיניסטיים של detect."""
+    try:
+        import message_nlu
+        u = message_nlu.understand(text)
+    except Exception:  # noqa: BLE001
+        u = None
+    return list(u["body"]) if u is not None else detect(text)
+
+
 def apply(text: str, today: str | None = None) -> list[str]:
-    """מעדכן את athlete_state לפי הטקסט. מחזיר רשימת-שינויים לתצוגה. דטרמיניסטי."""
-    actions = detect(text)
+    """מעדכן את athlete_state לפי הטקסט. מחזיר רשימת-שינויים לתצוגה.
+    הזיהוי דרך detect_smart; פתיחה/סגירה של הדגלים עצמם דטרמיניסטית."""
+    actions = detect_smart(text)
     if not actions:
         return []
     today = today or datetime.date.today().isoformat()

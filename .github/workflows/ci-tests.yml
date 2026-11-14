@@ -45,3 +45,4 @@ jobs:
           python test_approval_gates.py
           python test_weekly_analysis.py
           python test_weight.py
+          python test_message_nlu.py

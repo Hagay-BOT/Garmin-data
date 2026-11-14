@@ -1374,11 +1374,14 @@ def _today_run_weather() -> dict | None:
 
 
 # מודל לכל לולאה — לפי איזון עלות/איכות שנבחר:
-#   אחרי אימון (ניתוח, 3×/יום) → Sonnet · שבועי (תכנון+נרטיב, 1×/שבוע) → Fable 5.
+#   עריכת-תוכנית בטלגרם → Sonnet 5.5 · שבועי (תכנון+נרטיב, 1×/שבוע) → Fable 5.2.
+#   הבנת הודעות (כוונה + דגלי-גוף) → Haiku 5.5, ב-message_nlu.py.
+#   עודכן 14.11.2026 מ-sonnet-4-6 / fable-5 / opus-4-8.
 #   שבועי הועלה ל-Fable (המדרגה מעל Opus) 15.7: המשימה הכי מורכבת ורצה נדיר,
 #   ואיכות-הניסוח שם קריטית. פוסט-אימון נשאר Sonnet (יומי — לא מצדיק Fable).
-MODEL_REVISE = "claude-sonnet-4-6"
-MODEL_WEEKLY = "claude-fable-5"
+MODEL_REVISE = "claude-sonnet-5-5"
+MODEL_WEEKLY = "claude-fable-5-2"
+MODEL_CHAT = "claude-opus-5-5"
 
 # רמת המאמץ (effort) לכל לולאה — שולט בעומק החשיבה ובעלות.
 #   low · medium · high · xhigh · max  (Fable/Opus 4.7+ תומכים ב-xhigh; Fable גם ב-max)
@@ -1390,7 +1393,7 @@ REVISE_EFFORT = "medium"
 # Haiku 4.5 לא תומך ב-effort / adaptive thinking (יחזיר 400). Sonnet/Opus כן.
 # מודלים שתומכים ב-effort + adaptive thinking (Haiku לא — יחזיר 400).
 # Fable 5 חייב להיות כאן: בלעדיו השבועי היה רץ ללא thinking ובלי effort.
-_ADAPTIVE_MODELS = {"claude-sonnet-4-6", "claude-opus-4-8", "claude-fable-5"}
+_ADAPTIVE_MODELS = {MODEL_REVISE, MODEL_WEEKLY, MODEL_CHAT}
 
 
 def _stream_report(client, system_prompt: str, user_prompt: str,
@@ -1414,6 +1417,14 @@ def _stream_report(client, system_prompt: str, user_prompt: str,
         for text in stream.text_stream:
             print(text, end="", flush=True)
             full += text
+        # המודלים החדשים יכולים לסרב (HTTP 200, stop_reason="refusal") או להיקטע:
+        # בלי הבדיקה הזו דוח ריק/חלקי היה ממשיך הלאה כאילו הוא תקין.
+        try:
+            _stop = stream.get_final_message().stop_reason
+        except Exception:  # noqa: BLE001
+            _stop = None
+        if _stop in ("refusal", "max_tokens"):
+            print(f"\n🔴 הדוח לא הושלם: stop_reason={_stop} (מודל {model}).", file=sys.stderr)
     return full
 
 
@@ -1846,8 +1857,10 @@ def _stream_chat_response(client: "anthropic.Anthropic", messages: list[dict], s
     full_text = ""
     with Live("", refresh_per_second=15, vertical_overflow="visible") as live:
         with client.messages.stream(
-            model="claude-opus-4-8",
-            max_tokens=1024,
+            model=MODEL_CHAT,
+            # Opus 5.5: thinking תמיד פועל. 1024 היה נגמר על החשיבה ומחזיר פלט ריק.
+            max_tokens=8192,
+            output_config={"effort": "low"},
             # Cache the coach-persona + knowledge-base prefix across chat turns
             system=[{"type": "text", "text": system,
                      "cache_control": {"type": "ephemeral"}}],

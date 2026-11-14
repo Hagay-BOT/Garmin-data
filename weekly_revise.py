@@ -79,7 +79,7 @@ def main() -> None:
         # באג 26.07: הודעת-כאב בזמן שתוכנית ממתינה לאישור נבלעה בשקט — הגיא נשאר
         # בלי מענה והתוכנית לא עלתה. הערה רגילה עדיין שקטה; הערת-גוף מקבלת מענה.
         import body_state
-        pains = [p for a, p in body_state.detect(reply) if a == "open"]
+        pains = [p for a, p in body_state.detect_smart(reply) if a == "open"]
         body_state.apply(reply)
         if pains and st.get("last_pain_ack") != reply[:80]:
             labels = ", ".join(body_state._LABELS_HE.get(p, p) for p in pains)
