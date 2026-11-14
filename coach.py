@@ -1585,12 +1585,8 @@ def _send_weekly_telegram(wr: dict, safety_messages: list, needs_review: bool,
         lines += ["", "⚠️ <b>לתשומת לב</b>"] + [f"• {_e(c)}" for c in concerns]
     if plan:
         lines += ["", "🗓️ <b>תוכנית השבוע הבא</b>"] + [f"• {_e(d)}" for d in plan]
-    if wr.get("focus"):
-        lines += ["", f"🎯 <b>דגש השבוע:</b> {_e(wr['focus'])}"]
-    if wr.get("tip"):
-        lines += ["", f"💡 <b>טיפ מעשי:</b> {_e(wr['tip'])}"]
-    if safety_messages:
-        lines += ["", "🛡️ <b>בטיחות</b>"] + [f"• {_e(m)}" for m in safety_messages]
+    # הכרעת הגיא 14.11.2026: «דגש השבוע», «טיפ מעשי» ו«בטיחות» ירדו מההודעה.
+    # שכבת הבטיחות ממשיכה לפעול ולהירשם ב-week_plan.json (plan_metadata) ובלוג הריצה.
     if needs_review:
         lines += ["", "⚠️ נדרש אישורך המפורש לפני סנכרון לגרמין."]
     else:
@@ -1754,13 +1750,8 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
             print(f"   • {m}")
         if needs_review:
             print("   ⚠️ נדרש אישור מפורש שלך לפני סנכרון (needs_review).")
-        try:
-            import telegram_notify as _tg
-            ack = "\n⚠️ נדרש אישור מפורש לפני סנכרון." if needs_review else ""
-            _tg.send_message("🛡️ <b>בטיחות תוכנית שבועית</b>\n" +
-                             "\n".join(f"• {m}" for m in safety_messages) + ack)
-        except Exception:
-            pass
+        # הודעת הבטיחות הנפרדת בטלגרם בוטלה (הגיא 14.11.2026). כשנדרש אישור מפורש,
+        # השורה על כך מופיעה בסוף הדוח השבועי עצמו.
 
     # ── שליחת דוח שבועי מובנה לטלגרם (סעיפים A–F) ─────────────────────────
     weekly_report = _parse_weekly_report_json(full_response)
