@@ -813,7 +813,7 @@ function buildFitness(runs){
 }
 
 // ── Weekly workout plan (auto-checks completed sessions) ────────────────────
-const WP_STR={A:'💪 כוח A — משיכה',B:'💪 כוח B — דחיפה',C:'🦵 כוח C — רגליים',BW:'💪 כוח משקל גוף',YG:'🧘 יוגה וגמישות',BL:'🦵 כוח רגליים וליבה'};
+const WP_STR={A:'💪 כוח A — משיכה',B:'💪 כוח B — דחיפה',C:'🦵 כוח C — רגליים',BW:'💪 כוח משקל גוף',YG:'🧘 יוגה וגמישות',BL:'🦵 כוח רגליים וליבה',UB:'💪 כוח פלג גוף עליון'};
 const WP_DAYS=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
 // סימון ידני (localStorage) — ללחוץ על העיגול כשהשעון פספס (סוללה מתה וכו').
 function _wpKey(s){ return `${s.date}|${s.type}|${s.key||s.subtype||s.name||''}`; }
@@ -855,7 +855,7 @@ function buildWeekPlan(acts){
     const todayStr=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
     renderReturnStage(plan);
     window._wpPreNote='';
-    if(plan.week_of && todayStr<plan.week_of){
+    if(plan.week_of && todayStr<plan.week_of && !plan.sessions.some(x=>x.date===todayStr)){
       const ws=new Date(plan.week_of+'T00:00:00');
       window._wpPreNote=`<div class="wp-none">השבוע הזה מתחיל ביום ראשון ${ws.getDate()}/${ws.getMonth()+1}. להיום אין אימון בתוכנית.</div>`;
     }

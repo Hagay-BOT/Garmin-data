@@ -1,5 +1,5 @@
 // Service worker for the Garmin dashboard PWA
-const CACHE = 'garmin-dash-v10';  // bump on index.html changes → clean reinstall + evict stale (T7)
+const CACHE = 'garmin-dash-v11';  // bump on index.html changes → clean reinstall + evict stale (T7)
 const SHELL = [
   './',
   './index.html',
@@ -34,7 +34,8 @@ self.addEventListener('fetch', (e) => {
     || url.pathname === '/' || url.pathname.endsWith('/Garmin-data/');
   if (isShell) {
     e.respondWith(
-      fetch(e.request)
+      // no-store: בלי זה מטמון ה-HTTP של Pages (10 דק') החזיר גרסה ישנה אחרי פריסה
+      fetch(e.request, { cache: 'no-store' })
         .then((r) => {
           const copy = r.clone();
           caches.open(CACHE).then((c) => c.put('./index.html', copy));
