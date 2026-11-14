@@ -10,6 +10,10 @@ on:
         description: 'בדיקה — שולח דוח לטלגרם אבל לא כותב/קובע תוכנית, לא commit'
         type: boolean
         default: false
+      skip_fetch:
+        description: 'לדלג על משיכת גרמין (כשההתחברות לגרמין שבורה) — הסיכום רץ על data.json הקיים'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -26,6 +30,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Fetch latest Garmin data (full week)
+        if: ${{ !inputs.skip_fetch }}
         run: python fetch_garmin.py
         env:
           GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}

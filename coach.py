@@ -1066,18 +1066,39 @@ def format_history_for_prompt(history: list[dict]) -> str:
 # 1. פרופיל אישי  2. תוכנית מאקרו  3. מסגרת המשוב  4. בסיס ראיות אקדמי  5. ניהול עומסים.
 KB_PRIORITY = {
     "user_profile.md": 0,
-    "macro_plan.md": 1,
+    "return_to_running.md": 1,
     "feedback_framework.md": 2,
     "academic_research.md": 3,
     "load_management.md": 4,
 }
 
 
+# מצב «חזרה לריצה»: קבצים שעוסקים באיכות, במחזוריות ובמרוץ לא נטענים — הם לא
+# רלוונטיים עד סוף השלבים, ורק מושכים את הנרטיב חזרה לקצבים ולמרוץ.
+KB_EXCLUDE_IN_RETURN_MODE = {
+    "interval_protocols.md", "periodization.md", "polarized_training.md",
+    "race_psychology.md", "running_metrics_families.md", "heat_training.md",
+}
+
+
+def return_mode_active() -> bool:
+    try:
+        import store as _s
+        return bool((_s.load_athlete_state().get("return_to_run") or {}).get("active"))
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def load_knowledge_base() -> str:
-    """מחזיר את בסיס-הידע המלא (רק הלולאה השבועית צורכת אותו מאז ביטול ניתוח-האימון)."""
+    """מחזיר את בסיס-הידע (רק הלולאה השבועית צורכת אותו מאז ביטול ניתוח-האימון).
+    במצב חזרה לריצה: בלי קובצי האיכות/מרוץ, ו-return_to_running.md מיד אחרי הפרופיל."""
     if not KB_DIR.exists():
         return ""
     md_files = sorted(KB_DIR.glob("*.md"))
+    if return_mode_active():
+        md_files = [p for p in md_files if p.name not in KB_EXCLUDE_IN_RETURN_MODE]
+    else:
+        md_files = [p for p in md_files if p.name != "return_to_running.md"]
     md_files.sort(key=lambda p: (KB_PRIORITY.get(p.name, 99), p.name))
     parts = []
     for path in md_files:
@@ -1653,8 +1674,11 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
                                else athlete.STRENGTH_NAMES.get(s['key'], f"💪 כוח {s['key']}"))
         for s in raw_week["sessions"])
 
+    _prompt_vars = dict(ATHLETE_PROMPT_VARS)
+    if _rtr.get("active"):
+        _prompt_vars["goal_race"] = "חזרה לכושר וירידה במשקל (בלי מרוץ ובלי יעד קצב)"
     system_prompt = SYSTEM_PROMPT_TEMPLATE.format(knowledge_base=knowledge_base,
-                                                  **ATHLETE_PROMPT_VARS)
+                                                  **_prompt_vars)
     import body_state as _bs
     _body_line = _bs.prompt_line()
     user_prompt = (_format_weekly_analysis_section(analysis)
@@ -1667,7 +1691,11 @@ def run_weekly(client, knowledge_base: str, metrics: dict) -> None:
                       if availability.get("raw") else "")
                    + ("\n\n⚠️ מצב חזרה לריצה אחרי הפסקה ארוכה: אין מרוץ ואין יעד קצב. המטרה "
                       "ירידה במשקל וחזרה לכושר. התעלם מהמאקרו הישן ומהקצבים הישנים, ואל תמליץ "
-                      "על איכות, לונג או הגדלת נפח מעבר לתוכנית."
+                      "על איכות, לונג או הגדלת נפח מעבר לתוכנית. כללים 11 ו-13 (מאקרו וגיוון "
+                      "איכות) וחלק ה-strides של «המלצה להוסיף» אינם חלים. פעל לפי "
+                      "return_to_running.md. הריצות האחרונות בנתונים הן מלפני ההפסקה: אל תנתח "
+                      "אותן כ«שבוע שעבר». אם אין אימונים בשבוע האחרון, אמור זאת בפשטות ופתח את "
+                      "השבוע הראשון. ה-compass מתייחס לעקביות, לכאב ולמשקל, לא לקצב."
                       if _rtr.get("active") else "")
                    + "\n\nכתוב את הדוח והנרטיב סביב התוכנית הזו. אל תפלוט PLAN_JSON או "
                      "WEEK_PLAN_JSON — רק את הדוח ו-WEEKLY_REPORT_JSON.")
@@ -1839,8 +1867,17 @@ def run_revise(reply_text: str, dry: bool = False) -> tuple[bool, list]:
         print(json.dumps(raw, ensure_ascii=False, indent=2))
         return True, []
     macro = get_macro_week()
+    # בסיס הנפח האמיתי: בלי זה prev=0 היה מפעיל את תקרת בסיס-האפס (12 ק"מ) על כל עריכה.
+    prev_km = chronic_km = 0.0
+    try:
+        _m = build_metrics(load_data())
+        prev_km = _m["last_week"].get("total_km", 0) or 0
+        chronic_km = _m.get("fitness_4week", {}).get("weekly_km_avg") or 0
+    except Exception as e:  # noqa: BLE001
+        print(f"⚠️ run_revise: מדדי נפח לא זמינים ({e}) — תקרת בסיס-אפס.")
     saved, messages, _ = save_week_plan(
-        raw, macro=macro if macro.get("status") == "active" else None)
+        raw, prev_week_km=prev_km, chronic_week_km=chronic_km,
+        macro=macro if macro.get("status") == "active" else None)
     return saved, messages
 
 

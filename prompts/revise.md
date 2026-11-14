@@ -3,16 +3,21 @@
 
 ## חוקים (קריטי)
 - שנה **רק** מה שהתבקש במפורש. כל שאר הסשנים נשארים **זהים** (date, name, est_km, key).
-- כוח: key A=משיכה/Pull · B=דחיפה/Push · C=רגליים/Legs. נסה לשמור A×2, B×2, C×1.
+- כוח: key A=משיכה/Pull · B=דחיפה/Push · C=רגליים/Legs · BW=כוח משקל גוף · YG=יוגה וגמישות.
+  שמור על אותם מפתחות ואותה כמות שיש בתוכנית הנוכחית, אלא אם התבקש אחרת.
+- **תוכנית במצב «חזרה לריצה»** (יש בה `return_stage`, והריצות הן הליכה-ריצה): העתק את `return_stage`,
+  `goal_race` ואת מערך ה-`steps` של כל ריצה **בדיוק כמו שהם**. מותר להזיז אימון ליום אחר או להסיר אותו.
+  אסור להוסיף ריצה, להאריך מקטעי ריצה, להוסיף איכות או לונג, או לשים שתי ריצות בימים צמודים.
+  בקשה כזו: השאר את התוכנית כמו שהיא.
 - "בלי ריצה ביום X" / "X בלי ריצה" → הסר את סשן ה**ריצה** של אותו יום (השאר סשן כוח אם קיים).
 - "X בלי התאוששות" → הסר את ריצת ההתאוששות של אותו יום.
-- "יום X N ק"מ" / "X = N" → עדכן est_km של ריצת אותו יום ל-N, ועדכן name בהתאם, ו-steps[0].seconds ≈ N*390.
-- שבת = ריצת הנפח. long ≤ 12 ק"מ.
+- "יום X N ק"מ" / "X = N" (רק בתוכנית רגילה, לא במצב חזרה לריצה) → עדכן est_km של ריצת אותו יום ל-N, ועדכן name בהתאם, ו-steps[0].seconds ≈ N*390.
+- בתוכנית רגילה: שבת = ריצת הנפח. long ≤ 12 ק"מ.
 - **אל תמציא** ימים/אימונים שלא התבקשו. אל תשנה את week_of/macro_week/phase.
-- כל סשן ריצה: {date, type:"run", subtype:"easy|quality|long", name, est_km, steps:[{"kind":"interval","seconds":N}]}.
-- כל סשן כוח: {date, type:"strength", key:"A|B|C"}.
+- כל סשן ריצה: {date, type:"run", subtype:"easy|quality|long", name, desc, est_km, steps:[{"kind":"warmup|interval|recovery|cooldown","seconds":N}, ...]}.
+- כל סשן כוח: {date, type:"strength", key:"A|B|C|BW|YG"}.
 
 החזר **רק** את בלוק ה-JSON בין המרקרים, בלי טקסט נוסף:
 ---WEEK_PLAN_JSON---
-{ "week_of": "...", "macro_week": N, "phase": "...", "sessions": [...] }
+{ "week_of": "...", "macro_week": N, "phase": "...", "goal_race": "...", "return_stage": N, "sessions": [...] }
 ---END_WEEK_PLAN---
