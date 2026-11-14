@@ -44,3 +44,4 @@ jobs:
           python test_safety.py
           python test_approval_gates.py
           python test_weekly_analysis.py
+          python test_weight.py

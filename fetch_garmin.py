@@ -520,6 +520,24 @@ for d in to_fetch:
         "calories_active": calories_active,
     }
 
+# ── משקל (14.11.2026) — קריאה אחת לטווח; מצטבר ב-data.json["weight"]. ──────────
+# ריצה ראשונה: 180 יום אחורה (כדי לראות את העלייה בהפסקה). אחר כך: 30 יום.
+import weight as _weight
+_existing_weight = (_prev.get("weight") if isinstance(globals().get("_prev"), dict) else None) or {}
+weight_out = dict(_existing_weight)
+try:
+    _w_days = 30 if _existing_weight else 180
+    _w_start = (today_dt - timedelta(days=_w_days)).isoformat()
+    _w_resp = client.get_weigh_ins(_w_start, today_dt.isoformat())
+    if os.environ.get("WEIGHT_DEBUG"):
+        print("WEIGHT_DEBUG keys:", list(_w_resp.keys()) if isinstance(_w_resp, dict) else type(_w_resp))
+        print("WEIGHT_DEBUG sample:", json.dumps(_w_resp, ensure_ascii=False)[:1200])
+    _w_new = _weight.parse_weigh_ins(_w_resp)
+    weight_out = _weight.merge(_existing_weight, _w_new)
+    print(f"Weight: {len(_w_new)} weigh-ins fetched ({_w_start}→today), {len(weight_out)} total")
+except Exception as e:
+    logger.warning("כשל בשליפת משקל: %s", e)
+
 # ── M9.1 · Slim, don't drop: פעילויות ישנות (>180 יום) מאבדות את השדות הכבדים ──
 # gps (59% מהמשקל!) / laps / splits_100m נצרכים רק לאחרונות: גלריית GPS = 6 ריצות
 # אחרונות, ניתוח laps = היום/שבוע. שדות-הסיכום (מרחק/קצב/דופק/תאריך) נשמרים לתמיד
@@ -539,6 +557,7 @@ output = {
     "last_updated": datetime.now(timezone.utc).isoformat(),
     "activities": sorted(records, key=lambda r: r["date"]),
     "daily": daily,
+    "weight": weight_out,
     "shoes": shoes_output,
     "global_max_hr": global_max_hr,
 }
