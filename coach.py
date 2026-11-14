@@ -1401,7 +1401,9 @@ def _today_run_weather() -> dict | None:
 #   שבועי הועלה ל-Fable (המדרגה מעל Opus) 15.7: המשימה הכי מורכבת ורצה נדיר,
 #   ואיכות-הניסוח שם קריטית. פוסט-אימון נשאר Sonnet (יומי — לא מצדיק Fable).
 MODEL_REVISE = "claude-sonnet-5-5"
-MODEL_WEEKLY = "claude-fable-5-2"
+# הכרעת הגיא 14.11.2026 (עלות): הדוח השבועי על Sonnet 5.5 כל עוד מצב «חזרה לריצה»
+# פעיל — הדוח שם פשוט. כשחוזרים לתוכנית מלאה (קצבים/עומסים) אפשר להחזיר ל-fable-5-2.
+MODEL_WEEKLY = "claude-sonnet-5-5"
 MODEL_CHAT = "claude-opus-5-5"
 
 # רמת המאמץ (effort) לכל לולאה — שולט בעומק החשיבה ובעלות.
