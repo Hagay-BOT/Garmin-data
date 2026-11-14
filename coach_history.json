@@ -510,6 +510,65 @@
         "A",
         "B"
       ]
+    },
+    {
+      "week_of": "2026-11-08",
+      "generated_at": "2026-11-14 17:33",
+      "headline": "💪 כוח: כוח חסר (0/שבוע) — קריטי למניעת פציעות ברך/קרסול",
+      "threshold_snapshot": {
+        "current_vdot": null,
+        "required_vdot": 38.3,
+        "vdot_gap": null,
+        "threshold_pace": null
+      },
+      "macro": {
+        "week_num": null,
+        "phase": null,
+        "deload": null,
+        "gate": null
+      },
+      "metrics": {
+        "ctl": 2.1,
+        "atl": 0.0,
+        "tsb": 2.1,
+        "acwr": 0.0,
+        "ramp_rate_4w": -2.1
+      },
+      "fitness_4week": {
+        "available": false,
+        "runs": 0
+      },
+      "zones_28d": {
+        "easy_pct": null,
+        "hard_pct": null
+      },
+      "week_actual": {
+        "run_count": 0,
+        "total_km": 0,
+        "total_load": 0
+      },
+      "red_flags": [],
+      "recommended_plan": {
+        "focus": "חזרה הדרגתית לריצה, בלי כאב",
+        "key_workout": "ללא איכות (הליכה-ריצה)",
+        "run_count": 2,
+        "total_km_approx": 7.0
+      },
+      "compliance": {
+        "prior_week_of": "2026-07-26",
+        "plan_focus": "DELOAD + הערכה: 5:20 מרגיש קל יותר?",
+        "plan_key_workout": "1× Threshold",
+        "planned_runs": 5,
+        "actual_runs": 0,
+        "planned_km_approx": 29.0,
+        "actual_km": 0
+      },
+      "strength_sequence": [
+        "BW",
+        "YG",
+        "BW",
+        "YG"
+      ]
     }
   ]
 }

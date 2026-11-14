@@ -1,155 +1,201 @@
 {
-  "week_of": "2026-08-02",
-  "macro_week": 8,
-  "phase": "Build",
-  "goal_race": "15K @ 5:20",
-  "notes": "נבנה דטרמיניסטית (plan_generator). ",
+  "week_of": "2026-11-15",
+  "macro_week": null,
+  "phase": "חזרה לריצה · שלב 1",
+  "goal_race": "חזרה לכושר וירידה במשקל (בלי מרוץ)",
+  "notes": "מצב חזרה לריצה · שלב 1 מתוך 10. שבוע ראשון במצב חזרה לריצה: שלב 1.",
   "sessions": [
     {
-      "date": "2026-08-02",
+      "date": "2026-11-15",
       "day": "ראשון",
       "type": "run",
       "subtype": "easy",
-      "name": "🏃 קל Z2 — 3 ק\"מ",
-      "desc": "ריצת בסיס לפי דופק Z2 (6:45–7:00).",
-      "est_km": 3.0,
+      "name": "🚶🏃 הליכה-ריצה · שלב 1 · 8× (1 דק' ריצה / 2 דק' הליכה)",
+      "desc": "חימום: 5 דק' הליכה נמרצת. 8 חזרות: 1 דק' ריצה בקצב-שיחה, ואז 2 דק' הליכה. שחרור: 5 דק' הליכה. בלי יעד קצב: אם אי אפשר לדבר משפט שלם, מאטים. כאב בברך או בכף הרגל שעולה תוך כדי: עוצרים, הולכים הביתה ומדווחים.",
+      "est_km": 3.5,
       "steps": [
         {
           "kind": "warmup",
-          "seconds": 322
+          "seconds": 300
         },
         {
           "kind": "interval",
-          "seconds": 686
+          "seconds": 60
+        },
+        {
+          "kind": "recovery",
+          "seconds": 120
+        },
+        {
+          "kind": "interval",
+          "seconds": 60
+        },
+        {
+          "kind": "recovery",
+          "seconds": 120
+        },
+        {
+          "kind": "interval",
+          "seconds": 60
+        },
+        {
+          "kind": "recovery",
+          "seconds": 120
+        },
+        {
+          "kind": "interval",
+          "seconds": 60
+        },
+        {
+          "kind": "recovery",
+          "seconds": 120
+        },
+        {
+          "kind": "interval",
+          "seconds": 60
+        },
+        {
+          "kind": "recovery",
+          "seconds": 120
+        },
+        {
+          "kind": "interval",
+          "seconds": 60
+        },
+        {
+          "kind": "recovery",
+          "seconds": 120
+        },
+        {
+          "kind": "interval",
+          "seconds": 60
+        },
+        {
+          "kind": "recovery",
+          "seconds": 120
+        },
+        {
+          "kind": "interval",
+          "seconds": 60
         },
         {
           "kind": "cooldown",
-          "seconds": 215
+          "seconds": 300
         }
       ]
     },
     {
-      "date": "2026-08-02",
-      "day": "ראשון",
-      "type": "strength",
-      "key": "A"
-    },
-    {
-      "date": "2026-08-03",
-      "day": "שני",
-      "type": "run",
-      "subtype": "quality",
-      "name": "🏁 מבחן 5K Time-Trial (כיול VDOT)",
-      "desc": "חימום 4.2 ק\"מ קל → 4.2 ק\"מ במאמץ כמעט-מקסימלי אחיד (מהיר-בר-קיימא, לא ספרינט-פתיחה) → שחרור 4.2 ק\"מ. מדוד זמן 5K — ממנו נעדכן קצבי-אימון.",
-      "est_km": 4.2,
-      "steps": [
-        {
-          "kind": "warmup",
-          "seconds": 322
-        },
-        {
-          "kind": "interval",
-          "seconds": 674
-        },
-        {
-          "kind": "cooldown",
-          "seconds": 215
-        }
-      ]
-    },
-    {
-      "date": "2026-08-03",
+      "date": "2026-11-16",
       "day": "שני",
       "type": "strength",
-      "key": "B"
+      "key": "BW"
     },
     {
-      "date": "2026-08-04",
+      "date": "2026-11-17",
       "day": "שלישי",
-      "type": "run",
-      "subtype": "easy",
-      "name": "🏃 קל Z2 — 3 ק\"מ",
-      "desc": "ריצת בסיס לפי דופק Z2 (6:45–7:00).",
-      "est_km": 3.0,
-      "steps": [
-        {
-          "kind": "warmup",
-          "seconds": 322
-        },
-        {
-          "kind": "interval",
-          "seconds": 686
-        },
-        {
-          "kind": "cooldown",
-          "seconds": 215
-        }
-      ]
+      "type": "strength",
+      "key": "YG"
     },
     {
-      "date": "2026-08-05",
+      "date": "2026-11-18",
       "day": "רביעי",
-      "type": "strength",
-      "key": "C"
-    },
-    {
-      "date": "2026-08-06",
-      "day": "חמישי",
       "type": "run",
       "subtype": "easy",
-      "name": "🚶 התאוששות Z1 — 2.4 ק\"מ (אחרי רגליים)",
-      "desc": "קל מאוד/הליכה-ריצה. אחרי יום רגליים.",
-      "est_km": 2.4,
+      "name": "🚶🏃 הליכה-ריצה · שלב 1 · 8× (1 דק' ריצה / 2 דק' הליכה)",
+      "desc": "חימום: 5 דק' הליכה נמרצת. 8 חזרות: 1 דק' ריצה בקצב-שיחה, ואז 2 דק' הליכה. שחרור: 5 דק' הליכה. בלי יעד קצב: אם אי אפשר לדבר משפט שלם, מאטים. כאב בברך או בכף הרגל שעולה תוך כדי: עוצרים, הולכים הביתה ומדווחים.",
+      "est_km": 3.5,
       "steps": [
         {
           "kind": "warmup",
-          "seconds": 322
+          "seconds": 300
         },
         {
           "kind": "interval",
-          "seconds": 489
+          "seconds": 60
+        },
+        {
+          "kind": "recovery",
+          "seconds": 120
+        },
+        {
+          "kind": "interval",
+          "seconds": 60
+        },
+        {
+          "kind": "recovery",
+          "seconds": 120
+        },
+        {
+          "kind": "interval",
+          "seconds": 60
+        },
+        {
+          "kind": "recovery",
+          "seconds": 120
+        },
+        {
+          "kind": "interval",
+          "seconds": 60
+        },
+        {
+          "kind": "recovery",
+          "seconds": 120
+        },
+        {
+          "kind": "interval",
+          "seconds": 60
+        },
+        {
+          "kind": "recovery",
+          "seconds": 120
+        },
+        {
+          "kind": "interval",
+          "seconds": 60
+        },
+        {
+          "kind": "recovery",
+          "seconds": 120
+        },
+        {
+          "kind": "interval",
+          "seconds": 60
+        },
+        {
+          "kind": "recovery",
+          "seconds": 120
+        },
+        {
+          "kind": "interval",
+          "seconds": 60
         },
         {
           "kind": "cooldown",
-          "seconds": 215
+          "seconds": 300
         }
       ]
     },
     {
-      "date": "2026-08-06",
+      "date": "2026-11-19",
       "day": "חמישי",
       "type": "strength",
-      "key": "A"
+      "key": "BW"
     },
     {
-      "date": "2026-08-07",
+      "date": "2026-11-20",
       "day": "שישי",
       "type": "strength",
-      "key": "B"
-    },
-    {
-      "date": "2026-08-08",
-      "day": "שבת",
-      "type": "run",
-      "subtype": "long",
-      "name": "🏃 ריצת נפח — 4.8 ק\"מ Z2",
-      "desc": "לפי דופק Z2 (עד 141), לא קצב.",
-      "est_km": 4.8,
-      "steps": [
-        {
-          "kind": "interval",
-          "seconds": 1957
-        }
-      ]
+      "key": "YG"
     }
   ],
+  "return_stage": 1,
   "plan_metadata": {
     "generated_by": "LLM",
     "approval_required": true,
     "needs_review": false,
-    "safety_adjustments": [
-      "נפח הופחת ב-40% ל-17.3 ק\"מ (מ-29.0) לעמידה במגבלת התקדמות."
-    ],
-    "warnings": []
+    "safety_adjustments": [],
+    "warnings": [
+      "אין בסיס נפח (חזרה אחרי הפסקה) — תקרת השבוע 12 ק\"מ."
+    ]
   }
 }
