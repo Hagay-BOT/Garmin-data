@@ -7,83 +7,67 @@ X-WR-CALNAME:אימוני ריצה וכוח
 X-WR-TIMEZONE:Asia/Jerusalem
 REFRESH-INTERVAL;VALUE=DURATION:PT6H
 BEGIN:VEVENT
-UID:2026-08-02-run-easy@garmin-coach
-DTSTAMP:20260805T181618Z
-DTSTART:20260802T040000Z
-DTEND:20260802T044500Z
-SUMMARY:🏃 קל Z2 — 3 ק"מ
-DESCRIPTION:ריצת בסיס לפי דופק Z2 (6:45–7:00).
+UID:2026-11-14-strength-UB@garmin-coach
+DTSTAMP:20261118T231757Z
+DTSTART:20261114T160000Z
+DTEND:20261114T170000Z
+SUMMARY:💪 כוח פלג גוף עליון — פולי ומשקולות
+DESCRIPTION:כ-35 דק', 3 סטים, דקה מנוחה, 3 חזרות במיכל: פולי עליון 10–12 · לחיצת חזה בפולי 10–12 · חתירה בפולי תחתון 10–12 · לחיצת כתפיים 10 · Face pull 12–15 · פשיטת מרפק 12 · כפיפת מרפק 12 · פלאנק 30 שנ'.
 END:VEVENT
 BEGIN:VEVENT
-UID:2026-08-02-strength-A@garmin-coach
-DTSTAMP:20260805T181618Z
-DTSTART:20260802T150000Z
-DTEND:20260802T160000Z
-SUMMARY:💪 כוח A — Pull/משיכה (גב/יד קדמית)
-DESCRIPTION:Pull: גב, יד קדמית.
+UID:2026-11-14-strength-YG@garmin-coach
+DTSTAMP:20261118T231757Z
+DTSTART:20261114T160000Z
+DTEND:20261114T170000Z
+SUMMARY:🧘 יוגה וגמישות
+DESCRIPTION:כ-20 דק', נשימה רגועה, בלי כאב: חתול-פרה · כלב מביט מטה · לאנג' נמוך לכל צד · יונה או ספרה 4 בשכיבה לכל צד · מתיחת האמסטרינג בשכיבה · מתיחת שוק מול קיר · פיתול בשכיבה · תנוחת הילד.
 END:VEVENT
 BEGIN:VEVENT
-UID:2026-08-03-run-quality@garmin-coach
-DTSTAMP:20260805T181618Z
-DTSTART:20260803T040000Z
-DTEND:20260803T044500Z
-SUMMARY:🏁 מבחן 5K Time-Trial (כיול VDOT)
-DESCRIPTION:חימום 4.2 ק"מ קל → 4.2 ק"מ במאמץ כמעט-מקסימלי אחיד (מהיר-בר-קיימא, לא ספרינט-פתיחה) → שחרור 4.2 ק"מ. מדוד זמן 5K — ממנו נעדכן קצבי-אימון.
+UID:2026-11-15-run-easy@garmin-coach
+DTSTAMP:20261118T231757Z
+DTSTART:20261115T050000Z
+DTEND:20261115T054500Z
+SUMMARY:🚶🏃 הליכה-ריצה · שלב 1 · 8× (1 דק' ריצה / 2 דק' הליכה)
+DESCRIPTION:חימום: 5 דק' הליכה נמרצת. 8 חזרות: 1 דק' ריצה בקצב-שיחה, ואז 2 דק' הליכה. שחרור: 5 דק' הליכה. בלי יעד קצב: אם אי אפשר לדבר משפט שלם, מאטים. כאב בברך או בכף הרגל שעולה תוך כדי: עוצרים, הולכים הביתה ומדווחים.
 END:VEVENT
 BEGIN:VEVENT
-UID:2026-08-03-strength-B@garmin-coach
-DTSTAMP:20260805T181618Z
-DTSTART:20260803T150000Z
-DTEND:20260803T160000Z
-SUMMARY:💪 כוח B — Push/דחיפה (חזה/כתפיים/יד אחורית)
-DESCRIPTION:Push: חזה, כתפיים, יד אחורית.
+UID:2026-11-16-strength-BL@garmin-coach
+DTSTAMP:20261118T231757Z
+DTSTART:20261116T160000Z
+DTEND:20261116T170000Z
+SUMMARY:🦵 כוח משקל גוף — רגליים וליבה
+DESCRIPTION:כ-30 דק', 3 סבבים, מנוחה 45 שנ': סקוואט אוויר איטי 12 · גשר ישבן 15 · לאנג' לאחור 8 לכל רגל · עליות עקב 12 · פלאנק 30 שנ' · Dead Bug 10 · פלאנק צד 20 שנ' לכל צד. כאב בברך: מקצרים טווח או מדלגים על התרגיל.
 END:VEVENT
 BEGIN:VEVENT
-UID:2026-08-04-run-easy@garmin-coach
-DTSTAMP:20260805T181618Z
-DTSTART:20260804T040000Z
-DTEND:20260804T044500Z
-SUMMARY:🏃 קל Z2 — 3 ק"מ
-DESCRIPTION:ריצת בסיס לפי דופק Z2 (6:45–7:00).
+UID:2026-11-17-strength-YG@garmin-coach
+DTSTAMP:20261118T231757Z
+DTSTART:20261117T160000Z
+DTEND:20261117T170000Z
+SUMMARY:🧘 יוגה וגמישות
+DESCRIPTION:כ-20 דק', נשימה רגועה, בלי כאב: חתול-פרה · כלב מביט מטה · לאנג' נמוך לכל צד · יונה או ספרה 4 בשכיבה לכל צד · מתיחת האמסטרינג בשכיבה · מתיחת שוק מול קיר · פיתול בשכיבה · תנוחת הילד.
 END:VEVENT
 BEGIN:VEVENT
-UID:2026-08-05-strength-C@garmin-coach
-DTSTAMP:20260805T181618Z
-DTSTART:20260805T150000Z
-DTEND:20260805T160000Z
-SUMMARY:🦵 כוח C — Legs (רגליים)
-DESCRIPTION:רגליים: סקוואט, hip thrust, calf raises, חיזוק ברך/קרסול.
+UID:2026-11-18-run-easy@garmin-coach
+DTSTAMP:20261118T231757Z
+DTSTART:20261118T050000Z
+DTEND:20261118T054500Z
+SUMMARY:🚶🏃 הליכה-ריצה · שלב 1 · 8× (1 דק' ריצה / 2 דק' הליכה)
+DESCRIPTION:חימום: 5 דק' הליכה נמרצת. 8 חזרות: 1 דק' ריצה בקצב-שיחה, ואז 2 דק' הליכה. שחרור: 5 דק' הליכה. בלי יעד קצב: אם אי אפשר לדבר משפט שלם, מאטים. כאב בברך או בכף הרגל שעולה תוך כדי: עוצרים, הולכים הביתה ומדווחים.\n\n🌦️ 🏃 חוץ — תנאים נוחים: 17° (מרגיש 17°), גשם 0%, רוח 7 קמ"ש.
 END:VEVENT
 BEGIN:VEVENT
-UID:2026-08-06-run-easy@garmin-coach
-DTSTAMP:20260805T181618Z
-DTSTART:20260806T040000Z
-DTEND:20260806T044500Z
-SUMMARY:🚶 התאוששות Z1 — 2.4 ק"מ (אחרי רגליים)
-DESCRIPTION:קל מאוד/הליכה-ריצה. אחרי יום רגליים.\n\n🌦️ 🌤️ חוץ — אבל גבולי — מרגיש 31°, קרוב לסף. שתה הרבה, צא מוקדם, ושקול הליכון אם לא נעים.
+UID:2026-11-19-strength-BW@garmin-coach
+DTSTAMP:20261118T231757Z
+DTSTART:20261119T160000Z
+DTEND:20261119T170000Z
+SUMMARY:💪 כוח משקל גוף — כל הגוף
+DESCRIPTION:כ-25 דק', 2 סבבים, מנוחה 45 שנ': סקוואט אוויר איטי 12 · שכיבות סמיכה (אפשר על ברכיים) 8 · גשר ישבן 15 · חתירה על שולחן או מגבת 10 · עליות עקב 12 · פלאנק 30 שנ'. כאב בברך: מקצרים טווח או מדלגים על התרגיל.
 END:VEVENT
 BEGIN:VEVENT
-UID:2026-08-06-strength-A@garmin-coach
-DTSTAMP:20260805T181618Z
-DTSTART:20260806T150000Z
-DTEND:20260806T160000Z
-SUMMARY:💪 כוח A — Pull/משיכה (גב/יד קדמית)
-DESCRIPTION:Pull: גב, יד קדמית.
-END:VEVENT
-BEGIN:VEVENT
-UID:2026-08-07-strength-B@garmin-coach
-DTSTAMP:20260805T181618Z
-DTSTART:20260807T150000Z
-DTEND:20260807T160000Z
-SUMMARY:💪 כוח B — Push/דחיפה (חזה/כתפיים/יד אחורית)
-DESCRIPTION:Push: חזה, כתפיים, יד אחורית.
-END:VEVENT
-BEGIN:VEVENT
-UID:2026-08-08-run-long@garmin-coach
-DTSTAMP:20260805T181618Z
-DTSTART:20260808T050000Z
-DTEND:20260808T061500Z
-SUMMARY:🏃 ריצת נפח — 4.8 ק"מ Z2
-DESCRIPTION:לפי דופק Z2 (עד 141), לא קצב.\n\n🌦️ 🏋️ חדר כושר / הליכון — תנאי חוץ לא נוחים: מרגיש 32° (מעל 29°). עדיף פנים.
+UID:2026-11-20-strength-YG@garmin-coach
+DTSTAMP:20261118T231757Z
+DTSTART:20261120T160000Z
+DTEND:20261120T170000Z
+SUMMARY:🧘 יוגה וגמישות
+DESCRIPTION:כ-20 דק', נשימה רגועה, בלי כאב: חתול-פרה · כלב מביט מטה · לאנג' נמוך לכל צד · יונה או ספרה 4 בשכיבה לכל צד · מתיחת האמסטרינג בשכיבה · מתיחת שוק מול קיר · פיתול בשכיבה · תנוחת הילד.
 END:VEVENT
 END:VCALENDAR
